@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第01集 - 认识人工智能 | LangChain学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f8f9fc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f8;
+    --bg-code: #1a1d26;
+    --text-primary: #1a1d26;
+    --text-secondary: #5a6072;
+    --text-muted: #949aad;
+    --primary: oklch(0.55 0.22 250);
+    --primary-light: oklch(0.75 0.15 250);
+    --accent: oklch(0.70 0.18 85);
+    --success: oklch(0.55 0.16 155);
+    --danger: oklch(0.55 0.20 25);
+    --info: oklch(0.55 0.15 230);
+    --border: #e2e4ea;
+    --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+    --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 6px rgba(26,29,38,0.04);
+    --shadow-lg: 0 8px 30px rgba(26,29,38,0.10), 0 4px 12px rgba(26,29,38,0.06);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --font-scale: 1;
+    --line-height-scale: 1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page); color: var(--text-primary);
+    line-height: 1.7 * var(--line-height-scale);
+    font-size: 16px * var(--font-scale);
+    -webkit-font-smoothing: antialiased;
+    transition: font-size .3s ease, line-height .3s ease;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(248,249,252,0.78);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    transition: box-shadow .3s ease;
+  }
+  .header.scrolled { box-shadow: var(--shadow-sm); }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; padding: 0 24px;
+  }
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px;
+    color: var(--primary); text-decoration: none; letter-spacing: -0.02em;
+  }
+  .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .header-nav { display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 720px; }
+  .header-nav a {
+    text-decoration: none; color: var(--text-secondary);
+    font-size: 11.5px; font-weight: 500; padding: 5px 9px;
+    border-radius: 20px; transition: all .2s; white-space: nowrap;
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .header-nav a:hover, .header-nav a.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+
+  /* ===== Hero ===== */
+  .hero {
+    padding: 120px 24px 56px; max-width: 1200px; margin: 0 auto;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -200px; left: -200px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, oklch(0.55 0.22 250 / 0.06) 0%, transparent 70%);
+    border-radius: 50%; pointer-events: none;
+  }
+  .hero > * { position: relative; z-index: 1; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--bg-subtle));
+    border: 1px solid oklch(0.85 0.05 250);
+    padding: 6px 20px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 28px;
+  }
+  .hero-badge::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success); animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5.5vw, 52px);
+    font-weight: 800; line-height: 1.12;
+    letter-spacing: -0.03em; margin-bottom: 20px;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero-desc {
+    font-size: 17.5px; color: var(--text-secondary);
+    max-width: 760px; margin: 0 auto 32px; line-height: 1.7;
+  }
+  .hero-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+  .meta-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: var(--radius-xs);
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .meta-tag svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+  /* ===== Content Sections ===== */
+  .content { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+
+  .section {
+    background: var(--bg-surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 36px 40px; margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .section::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary); border-radius: 4px 0 0 4px;
+  }
+  .section.accent::before { background: var(--accent); }
+  .section.success::before { background: var(--success); }
+  .section.info::before { background: var(--info); }
+  .section.danger::before { background: var(--danger); }
+  .section.visible { opacity: 1; transform: translateY(0); }
+  .section:hover { box-shadow: var(--shadow-md); }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--primary); color: #fff;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .section p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  h3.sub-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 17px; font-weight: 600;
+    margin: 24px 0 14px; color: var(--text-primary);
+  }
+
+  /* ===== Highlight Box ===== */
+  .highlight-box {
+    display: flex; gap: 16px;
+    background: linear-gradient(135deg, oklch(0.97 0.01 250), var(--bg-surface));
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 20px 22px; margin: 20px 0;
+  }
+  .highlight-box.accent { background: linear-gradient(135deg, oklch(0.98 0.015 85), var(--bg-surface)); border-left-color: var(--accent); }
+  .highlight-box.success { background: linear-gradient(135deg, oklch(0.97 0.01 155), var(--bg-surface)); border-left-color: var(--success); }
+  .highlight-box.danger { background: linear-gradient(135deg, oklch(0.98 0.015 25), var(--bg-surface)); border-left-color: var(--danger); }
+  .highlight-box.info { background: linear-gradient(135deg, oklch(0.97 0.01 230), var(--bg-surface)); border-left-color: var(--info); }
+  .hb-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-top: 2px; }
+  .hb-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.7; }
+  .hb-body strong { color: var(--text-primary); }
+  .hb-body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-subtle); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: var(--primary);
+  }
+
+  /* ===== Timeline (History) ===== */
+  .timeline { margin: 24px 0; position: relative; padding-left: 36px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 13px; top: 8px; bottom: 8px;
+    width: 2px; background: linear-gradient(to bottom, var(--primary), var(--accent), var(--success));
+    border-radius: 2px;
+  }
+  .timeline-item {
+    position: relative; margin-bottom: 20px;
+    padding: 16px 20px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all .25s ease;
+  }
+  .timeline-item:hover { box-shadow: var(--shadow-sm); border-color: var(--primary-light); }
+  .timeline-item::before {
+    content: ''; position: absolute; left: -30px; top: 20px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--primary); border: 3px solid var(--bg-page);
+    box-shadow: 0 0 0 2px var(--primary);
+  }
+  .timeline-item:nth-child(2)::before { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .timeline-item:nth-child(3)::before { background: var(--success); box-shadow: 0 0 0 2px var(--success); }
+  .ti-year {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 700;
+    color: var(--primary); margin-bottom: 4px;
+  }
+  .ti-event {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 15px; color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .ti-desc { font-size: 13.5px; color: var(--text-secondary); line-height: 1.65; }
+
+  /* ===== Three Schools Grid ===== */
+  .schools-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0;
+  }
+  @media (max-width: 768px) { .schools-grid { grid-template-columns: 1fr; } }
+  .school-card {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 26px 22px;
+    transition: all .25s ease; position: relative; overflow: hidden;
+  }
+  .school-card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+  .school-card.s1::after { background: var(--primary); }
+  .school-card.s2::after { background: var(--accent); }
+  .school-card.s3::after { background: var(--success); }
+  .school-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+  .school-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 14px;
+  }
+  .school-card.s1 .school-icon { background: oklch(0.55 0.22 250 / 0.10); }
+  .school-card.s2 .school-icon { background: oklch(0.70 0.18 85 / 0.10); }
+  .school-card.s3 .school-icon { background: oklch(0.55 0.16 155 / 0.10); }
+  .school-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px; color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .school-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; font-family: 'JetBrains Mono', monospace; }
+  .school-desc { font-size: 13.5px; color: var(--text-secondary); line-height: 1.65; }
+  .school-examples {
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .school-example-tag {
+    display: inline-block; font-size: 11.5px; padding: 3px 9px;
+    border-radius: 5px; margin: 2px 4px 2px 0;
+    background: var(--bg-subtle); color: var(--text-secondary);
+  }
+
+  /* ===== Pyramid Diagram ===== */
+  .pyramid-container {
+    display: flex; justify-content: center; margin: 28px 0;
+  }
+  .pyramid {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; width: 100%; max-width: 480px;
+  }
+  .pyramid-level {
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; color: #fff;
+    border-radius: 8px; transition: all .25s ease;
+    cursor: default;
+  }
+  .pyramid-level:hover { transform: scale(1.03); filter: brightness(1.08); }
+  .pl-4 { width: 58%; padding: 18px 16px; font-size: 14px; background: linear-gradient(135deg, var(--primary), oklch(0.50 0.20 280)); }
+  .pl-3 { width: 72%; padding: 18px 16px; font-size: 14px; background: linear-gradient(135deg, oklch(0.55 0.18 260), var(--primary)); }
+  .pl-2 { width: 86%; padding: 18px 16px; font-size: 14px; background: linear-gradient(135deg, var(--accent), oklch(0.65 0.16 75)); }
+  .pl-1 { width: 100%; padding: 18px 16px; font-size: 14px; background: linear-gradient(135deg, var(--success), oklch(0.50 0.14 170)); }
+  .pyramid-label {
+    font-size: 11px; color: var(--text-muted); margin-top: 8px;
+    text-align: center; font-style: italic;
+  }
+
+  /* ===== Relationship Diagram (Venn-like) ===== */
+  .relation-diagram {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin: 24px 0; flex-wrap: wrap;
+    padding: 20px 0;
+  }
+  .rel-circle {
+    border-radius: 50%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all .3s ease; cursor: default;
+    position: relative;
+  }
+  .rel-circle:hover { transform: scale(1.06); z-index: 2; box-shadow: var(--shadow-lg); }
+  .rc-ml { width: 150px; height: 150px; background: linear-gradient(135deg, oklch(0.55 0.16 155), oklch(0.48 0.14 160)); z-index: 1; }
+  .rc-dl { width: 180px; height: 180px; background: linear-gradient(135deg, var(--primary), oklch(0.50 0.20 270)); margin-left: -35px; z-index: 2; }
+  .rc-llm { width: 220px; height: 220px; background: linear-gradient(135deg, var(--accent), oklch(0.62 0.16 70)); margin-left: -45px; z-index: 3; }
+  .rel-circle .rc-label { font-size: 11px; opacity: 0.85; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px; }
+  .rel-circle .rc-name { font-size: 16px; font-weight: 700; line-height: 1.2; }
+  .rel-circle .rc-desc { font-size: 10.5px; opacity: 0.75; margin-top: 4px; line-height: 1.4; }
+
+  /* ===== Application Cards Grid ===== */
+  .app-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px; margin: 20px 0;
+  }
+  .app-card {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 22px 20px;
+    transition: all .25s ease;
+  }
+  .app-card:hover {
+    background: var(--bg-surface); box-shadow: var(--shadow-sm);
+    transform: translateY(-2px); border-color: var(--primary-light);
+  }
+  .app-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .app-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .app-card .app-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 15px; color: var(--text-primary);
+  }
+  .app-card .app-abbr {
+    font-size: 11px; color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .app-card .app-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .app-examples {
+    margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px;
+  }
+  .app-examples span {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    background: var(--bg-surface); color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  /* ===== Tables ===== */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--primary); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 13px; text-align: left;
+    padding: 12px 16px; color: #fff; letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  tbody td { padding: 11px 16px; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: top; }
+  tbody tr:nth-child(even) { background: var(--bg-subtle); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.97 0.005 250); }
+  table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; background: var(--bg-subtle);
+    padding: 1px 6px; border-radius: 4px; color: var(--primary);
+  }
+
+  /* ===== Code Blocks ===== */
+  .code-block {
+    position: relative; margin: 20px 0; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border); background: var(--bg-code);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: oklch(0.75 0.08 250);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .code-copy-btn {
+    cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+    color: oklch(0.7 0.03 250); font-family: 'Outfit', sans-serif;
+    font-size: 12px; padding: 4px 12px; border-radius: 6px; transition: all .2s;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); }
+  .code-copy-btn.copied { color: var(--success); border-color: oklch(0.55 0.16 155); }
+  pre {
+    margin: 0; padding: 20px 20px 20px 0; overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; line-height: 1.7; color: #e0e2e8; tab-size: 2;
+  }
+  pre .kw { color: #c792ea; }
+  pre .fn { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .cmt { color: rgba(255,255,255,0.35); font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .op { color: #89ddff; }
+
+  /* ===== Footer Nav ===== */
+  .footer-nav {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 60px;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link-card {
+    flex: 1; display: flex; align-items: center; gap: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit; transition: all .25s ease;
+  }
+  .nav-link-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .nav-link-card.disabled { opacity: .45; pointer-events: none; }
+  .nl-dir { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .nl-label { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .nl-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; }
+
+  .footer-ref {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 40px;
+    text-align: center; font-size: 12.5px; color: var(--text-muted);
+  }
+  .footer-ref a { color: var(--primary); text-decoration: none; }
+
+  /* ===== Tweaks Panel ===== */
+  .tweaks-panel { position: fixed; right: 20px; bottom: 20px; z-index: 999; }
+  .tweaks-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-md); transition: all .25s ease;
+  }
+  .tweaks-toggle:hover { transform: scale(1.08); box-shadow: var(--shadow-lg); }
+  .tweaks-body {
+    position: absolute; bottom: 54px; right: 0;
+    width: 280px; background: var(--bg-surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 20px;
+    display: none; animation: tweaksIn .2s ease;
+  }
+  .tweaks-body.open { display: block; }
+  @keyframes tweaksIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .tweaks-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tweaks-close { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 2px; }
+  .tweaks-group { margin-bottom: 14px; }
+  .tweaks-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tweaks-slider {
+    width: 100%; height: 4px; border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--bg-subtle); outline: none;
+  }
+  .tweaks-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--primary);
+    cursor: pointer; border: 2px solid #fff; box-shadow: var(--shadow-sm);
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .section { padding: 24px 20px; }
+    .hero { padding: 100px 16px 40px; }
+    .header-inner { padding: 0 16px; }
+    .content { padding: 0 16px 60px; }
+    .table-wrap { margin: 16px -20px; border-radius: 0; border-left: none; border-right: none; }
+    .header-nav { display: none; }
+    .schools-grid { grid-template-columns: 1fr; }
+    .relation-diagram { flex-direction: column; align-items: center; }
+    .rel-circle { margin-left: 0 !important; margin-bottom: -40px; }
+    .rel-circle:first-child { margin-bottom: 0; }
+    .app-grid { grid-template-columns: 1fr; }
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="hdr">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">LC Notes <span>LangChain</span></a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 AI 的定义与发展历程</a>
+      <a href="#s2" class="nav-anchor">&sect;2 AI 的三大技术流派</a>
+      <a href="#s3" class="nav-anchor">&sect;3 机器学习 / 深度学习 ...</a>
+      <a href="#s4" class="nav-anchor">&sect;4 当前 AI 应用场景分类</a>
+      <a href="#s5" class="nav-anchor">&sect;5 为什么现在是 AI Ag...</a>
+
+      <a href="00-课程介绍.html">P00</a>
+      <a href="01-认识人工智能.html" class="active">P01</a>
+      <a href="02-神经网络原理.html">P02</a>
+      <a href="03-大语言模型.html">P03</a>
+      <a href="#">P04</a><a href="#">P05</a><a href="#">P06</a><a href="#">P07</a>
+      <a href="#">P08</a><a href="#">P09</a><a href="#">P10</a><a href="#">P11</a>
+      <a href="#">P12</a>
+      <a href="13-认识LangChain.html">P13</a>
+      <a href="14-快速入门和Agent原理.html">P14</a>
+      <a href="15-初始化模型.html">P15</a>
+      <a href="16-调用模型.html">P16</a>
+      <a href="17-消息Message.html">P17</a>
+      <a href="18-提示词工程.html">P18</a>
+      <a href="19-工具Tools.html">P19</a>
+      <a href="20-预定义工具Tavily.html">P20</a>
+      <a href="21-短期记忆.html">P21</a>
+      <a href="22-短期记忆-持久存储.html">P22</a>
+      <a href="23-记忆管理策略.html">P23</a>
+      <a href="24-需求分析与功能验证.html">P24</a>
+      <a href="25-对接LangSmith.html">P25</a>
+      <a href="26-搭建服务端并对接OSS.html">P26</a>
+      <a href="27-AI私厨完成Agent开发.html">P27</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">第 01 集 &middot; 1.1 认识人工智能</div>
+  <h1>认识 <span class="highlight">人工智能</span></h1>
+  <p class="hero-desc">从图灵测试到达特茅斯会议，梳理 AI 七十余年的发展脉络；理解三大技术流派的核心思想与代表方法；建立对 AI 能力层级的系统性认知，为后续学习 LangChain 打下坚实的理论基础。</p>
+  <div class="hero-meta">
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 时长 04:57</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 第1章 基础理论</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg> AI 通识</span>
+  </div>
+</section>
+
+<!-- Content -->
+<main class="content">
+
+<!-- S1: Definition & History -->
+<article class="section" id="s1">
+  <h2 class="section-title"><span class="num">1</span> AI 的定义与发展历程</h2>
+
+  <p><strong>人工智能（Artificial Intelligence，简称 AI）</strong>是指由计算机系统所表现出的智能行为——包括学习、推理、感知、理解、决策等能力。它不是一个单一的技术，而是一个跨学科的领域，融合了计算机科学、数学、认知科学、神经科学等多个方向。</p>
+
+  <div class="highlight-box">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>广义定义：</strong>AI 是让机器模拟人类智能的技术总称。其核心目标是创造出能够<strong>感知环境、理解信息、做出决策、执行行动</strong>的智能系统。从狭义的「规则引擎」到如今的大语言模型，AI 的内涵在不断演进和扩展。
+    </div>
+  </div>
+
+  <h3 class="sub-title">发展历程中的关键里程碑</h3>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="ti-year">1950 年</div>
+      <div class="ti-event">&#128202; 图灵测试（Turing Test）</div>
+      <div class="ti-desc">Alan Turing 发表《Computing Machinery and Intelligence》，提出著名的「图灵测试」：如果一台机器在文字对话中能够让人无法分辨其是否为人类，则可认为该机器具有智能。这奠定了<strong>「机器能否思考」</strong>这一根本问题的讨论框架。</div>
+    </div>
+    <div class="timeline-item">
+      <div class="ti-year">1956 年</div>
+      <div class="ti-event">&#127775; 达特茅斯会议 — AI 正式诞生</div>
+      <div class="ti-desc">John McCarthy、Marvin Minsky、Nathan Rochester、Claude Shannon 等人在达特茅斯学院组织了一次为期两个月的研讨会，首次正式提出<strong>「Artificial Intelligence」</strong>这一术语。这次会议被公认为 AI 学科的诞生标志，开启了人类探索机器智能的新纪元。</div>
+    </div>
+    <div class="timeline-item">
+      <div class="ti-year">1950s ~ 至今</div>
+      <div class="ti-event">&#128640; 三次 AI 浪潮演进</div>
+      <div class="ti-desc">AI 发展经历了三次标志性浪潮：<strong>符号主义时代</strong>（1950s-1980s，基于规则的专家系统）、<strong>连接主义复兴</strong>（2010s，深度学习突破）到<strong>大模型时代</strong>（2020s至今，LLM 引领的通用人工智能雏形）。每一次浪潮都带来了范式级的思维转变。</div>
+    </div>
+  </div>
+</article>
+
+<!-- S2: Three Waves -->
+<article class="section accent" id="s2">
+  <h2 class="section-title"><span class="num">2</span> AI 的三大技术流派</h2>
+
+  <p>AI 领域并非铁板一块，而是沿着三条不同的研究路径并行发展。理解这三大流派，有助于你把握不同 AI 技术的本质差异：</p>
+
+  <div class="schools-grid">
+    <!-- Symbolic AI -->
+    <div class="school-card s1">
+      <div class="school-icon">&#128220;</div>
+      <div class="school-name">符号主义 AI</div>
+      <div class="school-sub">Symbolic AI / GOFAI</div>
+      <div class="school-desc">
+        也称「老式 AI」（Good Old-Fashioned AI）。核心思想是：<strong>智能 = 符号操作 + 逻辑推理</strong>。通过人工定义的规则和知识库来模拟推理过程。
+        <div class="school-examples">
+          <span class="school-example-tag">专家系统</span>
+          <span class="school-example-tag">知识图谱</span>
+          <span class="school-example-tag">逻辑编程</span>
+          <span class="school-example-tag">搜索算法</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connectionist AI -->
+    <div class="school-card s2">
+      <div class="school-icon">&#129504;</div>
+      <div class="school-name">连接主义 AI</div>
+      <div class="school-sub">Connectionism / Neural Networks</div>
+      <div class="school-desc">
+        核心思想是：<strong>智能 = 大量简单单元的互联与协同</strong>。受生物神经系统启发，通过神经网络结构进行分布式表示和学习。
+        <div class="school-examples">
+          <span class="school-example-tag">深度学习</span>
+          <span class="school-example-tag">CNN</span>
+          <span class="school-example-tag">Transformer</span>
+          <span class="school-example-tag">大语言模型</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Behaviorist AI -->
+    <div class="school-card s3">
+      <div class="school-icon">&#127939;</div>
+      <div class="school-name">行为主义 AI</div>
+      <div class="school-sub">Behaviorism / Reinforcement Learning</div>
+      <div class="school-desc">
+        核心思想是：<strong>智能 = 通过与环境交互来优化行为策略</strong>。不关心内部机制，只关注输入-输出映射的最优性。
+        <div class="school-examples">
+          <span class="school-example-tag">强化学习</span>
+          <span class="school-example-tag">Q-Learning</span>
+          <span class="school-example-tag">AlphaGo</span>
+          <span class="school-example-tag">RLHF</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>当前格局：</strong>现代 AI 实际上是三者的融合——<strong>大语言模型以连接主义（Transformer）为骨架</strong>，融入了<strong>行为主义的 RLHF（基于人类反馈的强化学习）训练方法</strong>，并通过<strong>Prompt Engineering 体现了符号主义的规则引导思想</strong>。三者不再对立，而是共同构成了当代 AI 系统的技术底座。
+    </div>
+  </div>
+</article>
+
+<!-- S3: ML/DL/LLM Relationship -->
+<article class="section info" id="s3">
+  <h2 class="section-title"><span class="num">3</span> 机器学习 / 深度学习 / LLM 关系</h2>
+
+  <p>初学者最容易混淆的概念就是这三者之间的层级关系。用一个形象的比喻来理解：</p>
+
+  <div class="pyramid-container">
+    <div class="pyramid">
+      <div class="pyramid-level pl-4">
+        &#127919; 创造<br><span style="font-size:11px;opacity:0.85;font-weight:400;">生成新内容、创新方案</span>
+      </div>
+      <div class="pyramid-level pl-3">
+        &#129504; 推理<br><span style="font-size:11px;opacity:0.85;font-weight:400;">逻辑推导、多步规划</span>
+      </div>
+      <div class="pyramid-level pl-2">
+        &#128220; 理解<br><span style="font-size:11px;opacity:0.85;font-weight:400;">语义解析、上下文关联</span>
+      </div>
+      <div class="pyramid-level pl-1">
+        &#128065; 感知<br><span style="font-size:11px;opacity:0.85;font-weight:400;">识别模式、提取特征</span>
+      </div>
+    </div>
+    <div class="pyramid-label">AI 能力层级金字塔 — 越往上越接近通用智能</div>
+  </div>
+
+  <h3 class="sub-title">三个概念的关系图谱</h3>
+
+  <div class="relation-diagram">
+    <div class="rel-circle rc-ml">
+      <div class="rc-label">Foundation</div>
+      <div class="rc-name">ML</div>
+      <div class="rc-desc">机器学习<br>从数据中学习规律</div>
+    </div>
+    <div class="rel-circle rc-dl">
+      <div class="rc-label">Subset</div>
+      <div class="rc-name">DL</div>
+      <div class="rc-desc">深度学习<br>多层神经网络</div>
+    </div>
+    <div class="rel-circle rc-llm">
+      <div class="rc-label">Application</div>
+      <div class="rc-name">LLM</div>
+      <div class="rc-desc">大语言模型<br>GPT / Claude / DeepSeek</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:20%">概念</th><th style="width:30%">核心方法</th><th style="width:25%">典型任务</th><th>代表技术</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>机器学习 ML</strong></td>
+          <td>从数据中自动学习规律，无需显式编程</td>
+          <td>分类、回归、聚类</td>
+          <td>SVM、随机森林、XGBoost</td>
+        </tr>
+        <tr>
+          <td><strong>深度学习 DL</strong></td>
+          <td>使用多层神经网络进行表征学习</td>
+          <td>图像识别、语音处理、NLP</td>
+          <td>CNN、RNN、Transformer</td>
+        </tr>
+        <tr>
+          <td><strong>大语言模型 LLM</strong></td>
+          <td>在海量文本上预训练的超大规模神经网络</td>
+          <td>文本生成、对话、推理、代码</td>
+          <td>GPT-4o、Claude 3.5、DeepSeek-V3</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#9989;</div>
+    <div class="hb-body">
+      <strong>一句话总结关系：</strong>深度学习是机器学习的子集（用神经网络实现），而大语言模型是深度学习在自然语言领域的<strong>最成功应用形态</strong>。<code>ML &sup; DL &sup; LLM</code> —— 这是一个逐层递进、能力不断跃升的包含关系。
+    </div>
+  </div>
+</article>
+
+<!-- S4: Application Scenarios -->
+<article class="section success" id="s4">
+  <h2 class="section-title"><span class="num">4</span> 当前 AI 应用场景分类</h2>
+
+  <p>AI 技术已经渗透到了各行各业。根据应用领域的不同，我们可以将当前主流的 AI 应用划分为以下四大类别：</p>
+
+  <div class="app-grid">
+    <!-- NLP -->
+    <div class="app-card">
+      <div class="app-card-header">
+        <div class="app-icon" style="background:oklch(0.55 0.22 250 / 0.10);">&#128172;</div>
+        <div>
+          <div class="app-title">自然语言处理</div>
+          <div class="app-abbr">NLP — Natural Language Processing</div>
+        </div>
+      </div>
+      <div class="app-desc">让计算机理解、解释和生成人类语言。这是 LLM 最核心的应用领域，也是本课程的重点方向。</div>
+      <div class="app-examples">
+        <span>机器翻译</span>
+        <span>情感分析</span>
+        <span>智能客服</span>
+        <span>文本摘要</span>
+        <span>对话系统</span>
+      </div>
+    </div>
+
+    <!-- CV -->
+    <div class="app-card">
+      <div class="app-card-header">
+        <div class="app-icon" style="background:oklch(0.70 0.18 85 / 0.10);">&#128247;</div>
+        <div>
+          <div class="app-title">计算机视觉</div>
+          <div class="app-abbr">CV — Computer Vision</div>
+        </div>
+      </div>
+      <div class="app-desc">让计算机从图像或视频中获取高层理解。CV 与 NLP 的融合（多模态）是当前前沿热点。</div>
+      <div class="app-examples">
+        <span>图像分类</span>
+        <span>目标检测</span>
+        <span>人脸识别</span>
+        <span>医学影像</span>
+        <span>自动驾驶</span>
+      </div>
+    </div>
+
+    <!-- Recommender -->
+    <div class="app-card">
+      <div class="app-card-header">
+        <div class="app-icon" style="background:oklch(0.55 0.16 155 / 0.10);">&#128200;</div>
+        <div>
+          <div class="app-title">推荐系统</div>
+          <div class="app-abbr">Recommender Systems</div>
+        </div>
+      </div>
+      <div class="app-desc">根据用户历史行为和偏好，预测并推荐用户可能感兴趣的内容或商品。</div>
+      <div class="app-examples">
+        <span>电商推荐</span>
+        <span>短视频流</span>
+        <span>音乐推荐</span>
+        <span>广告定向</span>
+        <span>内容分发</span>
+      </div>
+    </div>
+
+    <!-- AIGC -->
+    <div class="app-card">
+      <div class="app-card-header">
+        <div class="app-icon" style="background:oklch(0.50 0.18 300 / 0.10);">&#127912;</div>
+        <div>
+          <div class="app-title">生成式 AI</div>
+          <div class="app-abbr">AIGC — AI Generated Content</div>
+        </div>
+      </div>
+      <div class="app-desc">利用 AI 模型自动生成文本、图像、音频、视频等内容。这是 2022 年 ChatGPT 爆发后最受关注的领域。</div>
+      <div class="app-examples">
+        <span>ChatGPT 对话</span>
+        <span>Midjourney 作画</span>
+        <span>Suno 音乐</span>
+        <span>Sora 视频</span>
+        <span>代码生成</span>
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- S5: Why Agent Era -->
+<article class="section danger" id="s5">
+  <h2 class="section-title"><span class="num">5</span> 为什么现在是 AI Agent 的黄金时代？</h2>
+
+  <p>如果说 2023 年是「LLM 元年」，那么 2024-2026 年正在成为<strong>AI Agent（智能体）爆发期</strong>。为什么 Agent 在这个时间节点迎来了前所未有的发展机遇？</p>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#128640;</div>
+    <div class="hb-body">
+      <strong>核心驱动力一：模型能力质变</strong> — GPT-4 / Claude 3.5 等模型的<strong>推理能力</strong>和<strong>工具调用能力（Function Calling）</strong>已经达到可以自主规划和执行的阈值。模型不再是只会「说话」，而是能「做事」。
+    </div>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#128736;</div>
+    <div class="hb-body">
+      <strong>核心驱动力二：工程框架成熟</strong> — LangChain / LangGraph 等框架提供了<strong>标准化的组件抽象</strong>（Model、Tool、Memory、Agent），大幅降低了构建 Agent 的工程门槛。开发者不需要从零设计架构。
+    </div>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#128176;</div>
+    <div class="hb-body">
+      <strong>核心驱动力三：商业价值明确</strong> — 企业不再满足于「聊天机器人」式的单轮问答，而是需要能<strong>自主完成复杂工作流</strong>的 Agent：自动检索文档、调用 API 操作数据库、编排多个子任务、输出结构化结果。Agent 是 LLM 从「玩具」走向「生产力工具」的关键一步。
+    </div>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>核心驱动力四：生态工具链完善</strong> — 向量数据库（Pinecone / Milvus）、Embedding 模型、RAG 架构、LangSmith 可观测平台等周边生态已经成熟，构建生产级 Agent 所需的全部基础设施均已就绪。
+    </div>
+  </div>
+
+  <p style="margin-top: 16px;">总结来说：<strong>模型够强 + 框架够好 + 场景够明确 + 工具链够完整 = AI Agent 的黄金时代</strong>。而这门课程的目标，就是让你在这个黄金窗口期内掌握 Agent 开发的核心技能。</p>
+</article>
+
+</main>
+
+<!-- Footer Nav -->
+<nav class="footer-nav">
+  <a href="00-课程介绍.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 00 集 - 课程介绍</div>
+    </div>
+  </a>
+  <a href="02-神经网络原理.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 02 集 - 神经网络原理</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="footer-ref">
+  参考来源：<a href="https://www.langchain.com.cn/docs/" target="_blank">LangChain 官方文档</a> &middot;
+  视频来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">B站 黑马程序员 BV178w1z7EHQ</a>
+</div>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+  <button class="tweaks-toggle" onclick="toggleTweaks()" title="调节面板">&#9881;</button>
+  <div class="tweaks-body" id="tweaksBody">
+    <div class="tweaks-title">
+      Tweaks
+      <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">字体大小</label>
+      <input type="range" class="tweaks-slider" min="0.85" max="1.25" step="0.05" value="1" oninput="setFontSize(this.value)">
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">行距</label>
+      <input type="range" class="tweaks-slider" min="0.9" max="1.4" step="0.05" value="1" oninput="setLineHeight(this.value)">
+    </div>
+  </div>
+</div>
+
+<script>
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => { hdr.classList.toggle('scrolled', window.scrollY > 20); });
+
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) setTimeout(() => entry.target.classList.add('visible'), i * 80);
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = '已复制!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function toggleTweaks() { document.getElementById('tweaksBody').classList.toggle('open'); }
+function setFontSize(val) { document.documentElement.style.setProperty('--font-scale', val); }
+function setLineHeight(val) { document.documentElement.style.setProperty('--line-height-scale', val); }
+</script>
+</body>
+</html>

@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第03集 - 大语言模型 | LangChain学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f8f9fc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f8;
+    --bg-code: #1a1d26;
+    --text-primary: #1a1d26;
+    --text-secondary: #5a6072;
+    --text-muted: #949aad;
+    --primary: oklch(0.55 0.22 250);
+    --primary-light: oklch(0.75 0.15 250);
+    --accent: oklch(0.70 0.18 85);
+    --success: oklch(0.55 0.16 155);
+    --danger: oklch(0.55 0.20 25);
+    --info: oklch(0.55 0.15 230);
+    --border: #e2e4ea;
+    --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+    --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 6px rgba(26,29,38,0.04);
+    --shadow-lg: 0 8px 30px rgba(26,29,38,0.10), 0 4px 12px rgba(26,29,38,0.06);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --font-scale: 1;
+    --line-height-scale: 1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page); color: var(--text-primary);
+    line-height: 1.7 * var(--line-height-scale);
+    font-size: 16px * var(--font-scale);
+    -webkit-font-smoothing: antialiased;
+    transition: font-size .3s ease, line-height .3s ease;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(248,249,252,0.78);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--border); transition: box-shadow .3s ease;
+  }
+  .header.scrolled { box-shadow: var(--shadow-sm); }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; padding: 0 24px;
+  }
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px;
+    color: var(--primary); text-decoration: none; letter-spacing: -0.02em;
+  }
+  .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .header-nav { display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 720px; }
+  .header-nav a {
+    text-decoration: none; color: var(--text-secondary);
+    font-size: 11.5px; font-weight: 500; padding: 5px 9px;
+    border-radius: 20px; transition: all .2s; white-space: nowrap;
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .header-nav a:hover, .header-nav a.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+
+  /* ===== Hero ===== */
+  .hero {
+    padding: 120px 24px 56px; max-width: 1200px; margin: 0 auto;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -200px; left: -200px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, oklch(0.55 0.22 250 / 0.06) 0%, transparent 70%);
+    border-radius: 50%; pointer-events: none;
+  }
+  .hero > * { position: relative; z-index: 1; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--bg-subtle));
+    border: 1px solid oklch(0.85 0.05 250);
+    padding: 6px 20px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 28px;
+  }
+  .hero-badge::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success); animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5.5vw, 52px);
+    font-weight: 800; line-height: 1.12;
+    letter-spacing: -0.03em; margin-bottom: 20px;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero-desc {
+    font-size: 17.5px; color: var(--text-secondary);
+    max-width: 760px; margin: 0 auto 32px; line-height: 1.7;
+  }
+  .hero-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+  .meta-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: var(--radius-xs);
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .meta-tag svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+  /* ===== Content Sections ===== */
+  .content { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+
+  .section {
+    background: var(--bg-surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 36px 40px; margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .section::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary); border-radius: 4px 0 0 4px;
+  }
+  .section.accent::before { background: var(--accent); }
+  .section.success::before { background: var(--success); }
+  .section.info::before { background: var(--info); }
+  .section.danger::before { background: var(--danger); }
+  .section.visible { opacity: 1; transform: translateY(0); }
+  .section:hover { box-shadow: var(--shadow-md); }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--primary); color: #fff;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .section p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  h3.sub-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 17px; font-weight: 600;
+    margin: 24px 0 14px; color: var(--text-primary);
+  }
+
+  /* ===== Highlight Box ===== */
+  .highlight-box {
+    display: flex; gap: 16px;
+    background: linear-gradient(135deg, oklch(0.97 0.01 250), var(--bg-surface));
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 20px 22px; margin: 20px 0;
+  }
+  .highlight-box.accent { background: linear-gradient(135deg, oklch(0.98 0.015 85), var(--bg-surface)); border-left-color: var(--accent); }
+  .highlight-box.success { background: linear-gradient(135deg, oklch(0.97 0.01 155), var(--bg-surface)); border-left-color: var(--success); }
+  .highlight-box.danger { background: linear-gradient(135deg, oklch(0.98 0.015 25), var(--bg-surface)); border-left-color: var(--danger); }
+  .highlight-box.info { background: linear-gradient(135deg, oklch(0.97 0.01 230), var(--bg-surface)); border-left-color: var(--info); }
+  .hb-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-top: 2px; }
+  .hb-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.7; }
+  .hb-body strong { color: var(--text-primary); }
+  .hb-body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-subtle); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: var(--primary);
+  }
+
+  /* ===== Milestone Timeline ===== */
+  .milestone-timeline { margin: 24px 0; position: relative; padding-left: 32px; }
+  .milestone-timeline::before {
+    content: ''; position: absolute; left: 11px; top: 4px; bottom: 4px;
+    width: 2px; background: linear-gradient(to bottom,
+      var(--primary) 0%,
+      var(--accent) 35%,
+      var(--success) 65%,
+      var(--danger) 100%);
+    border-radius: 2px;
+  }
+  .ms-item {
+    position: relative; margin-bottom: 16px;
+    padding: 14px 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    transition: all .25s ease;
+  }
+  .ms-item:hover { box-shadow: var(--shadow-sm); border-color: var(--primary-light); }
+  .ms-item::before {
+    content: ''; position: absolute; left: -27px; top: 18px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--primary); border: 2px solid var(--bg-page);
+  }
+  .ms-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+  .ms-year {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px; font-weight: 700; color: var(--primary);
+    background: oklch(0.97 0.01 250); padding: 2px 8px; border-radius: 4px;
+  }
+  .ms-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 14.5px; color: var(--text-primary);
+  }
+  .ms-badge {
+    font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px;
+  }
+  .ms-badge.breakthrough { background: oklch(0.70 0.18 85 / 0.12); color: #c47a00; }
+  .ms-badge.open-source { background: oklch(0.55 0.16 155 / 0.12); color: #0d8a5e; }
+  .ms-badge.domestic { background: oklch(0.50 0.18 300 / 0.10); color: #7c3aed; }
+  .ms-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+  /* ===== Architecture Comparison ===== */
+  .arch-compare {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0;
+  }
+  @media (max-width: 768px) { .arch-compare { grid-template-columns: 1fr; } }
+  .arch-card {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 22px 20px;
+    text-align: center; transition: all .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .arch-card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .arch-card.enc::after { background: var(--info); }
+  .arch-card.dec::after { background: var(--accent); }
+  .arch-card.enc-only::after { background: var(--primary); }
+  .arch-card:hover { background: var(--bg-surface); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+  .arch-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 16px; color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .arch-full { font-size: 11.5px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; }
+  .arch-rep { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 10px; }
+  .arch-examples { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+  .arch-examples span {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    background: var(--bg-surface); color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  /* ===== Capability Cards ===== */
+  .cap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 20px 0; }
+  .cap-card {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px; transition: all .25s ease;
+  }
+  .cap-card:hover { background: var(--bg-surface); box-shadow: var(--shadow-sm); border-color: var(--primary-light); }
+  .cap-icon { font-size: 28px; margin-bottom: 10px; }
+  .cap-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 15px; color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .cap-en { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 8px; }
+  .cap-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
+
+  /* ===== Tables ===== */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    background: var(--primary); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 12px; text-align: left;
+    padding: 11px 14px; color: #fff; letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  tbody td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: top; }
+  tbody tr:nth-child(even) { background: var(--bg-subtle); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.97 0.005 250); }
+  table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px; background: var(--bg-subtle);
+    padding: 1px 6px; border-radius: 4px; color: var(--primary);
+  }
+  .tag-open { font-size: 10px; padding: 2px 7px; border-radius: 4px; background: oklch(0.55 0.16 155 / 0.12); color: #0d8a5e; font-weight: 600; }
+  .tag-closed { font-size: 10px; padding: 2px 7px; border-radius: 4px; background: oklch(0.70 0.18 85 / 0.10); color: #c47a00; font-weight: 600; }
+  .tag-api { font-size: 10px; padding: 2px 7px; border-radius: 4px; background: oklch(0.55 0.22 250 / 0.10); color: var(--primary); font-weight: 600; }
+
+  /* ===== Token Visualization ===== */
+  .token-demo {
+    background: var(--bg-code); border-radius: var(--radius-sm);
+    padding: 20px; margin: 20px 0;
+  }
+  .token-row { margin-bottom: 14px; }
+  .token-row:last-child { margin-bottom: 0; }
+  .token-label {
+    font-size: 11.5px; color: oklch(0.7 0.05 250);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .token-text {
+    display: flex; flex-wrap: wrap; gap: 4px;
+  }
+  .token-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; cursor: default; transition: all .2s;
+  }
+  .token-chip:hover { filter: brightness(1.2); }
+  .tc-cn { background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.25); }
+  .tc-en { background: rgba(74,222,128,0.12); color: #86efac; border: 1px solid rgba(74,222,128,0.2); }
+  .tc-num { background: rgba(251,191,36,0.12); color: #fcd34d; border: 1px solid rgba(251,191,36,0.2); }
+  .tc-punct { background: rgba(248,113,113,0.12); color: #fca5a5; border: 1px solid rgba(248,113,113,0.2); }
+  .token-id {
+    font-size: 9px; opacity: 0.5; font-style: normal;
+  }
+
+  /* ===== Limitation Cards ===== */
+  .limit-list { list-style: none; }
+  .limit-list li {
+    display: flex; gap: 14px; padding: 16px 18px;
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-xs); margin-bottom: 10px;
+    transition: all .2s ease;
+  }
+  .limit-list li:hover { background: oklch(0.98 0.005 25); }
+  .limit-icon {
+    flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+  }
+  .limit-body { flex: 1; }
+  .limit-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 14.5px; color: var(--text-primary);
+    margin-bottom: 3px;
+  }
+  .limit-title code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; color: var(--danger);
+    background: transparent; padding: 0;
+  }
+  .limit-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .limit-solution {
+    font-size: 12px; color: var(--success); margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* ===== Code Blocks ===== */
+  .code-block {
+    position: relative; margin: 20px 0; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border); background: var(--bg-code);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: oklch(0.75 0.08 250);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .code-copy-btn {
+    cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+    color: oklch(0.7 0.03 250); font-family: 'Outfit', sans-serif;
+    font-size: 12px; padding: 4px 12px; border-radius: 6px; transition: all .2s;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); }
+  .code-copy-btn.copied { color: var(--success); border-color: oklch(0.55 0.16 155); }
+  pre {
+    margin: 0; padding: 20px 20px 20px 0; overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; line-height: 1.7; color: #e0e2e8; tab-size: 2;
+  }
+  pre .kw { color: #c792ea; }
+  pre .fn { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .cmt { color: rgba(255,255,255,0.35); font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .op { color: #89ddff; }
+
+  /* ===== Footer Nav ===== */
+  .footer-nav {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 60px;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link-card {
+    flex: 1; display: flex; align-items: center; gap: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit; transition: all .25s ease;
+  }
+  .nav-link-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .nav-link-card.disabled { opacity: .45; pointer-events: none; }
+  .nl-dir { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .nl-label { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .nl-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; }
+
+  .footer-ref {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 40px;
+    text-align: center; font-size: 12.5px; color: var(--text-muted);
+  }
+  .footer-ref a { color: var(--primary); text-decoration: none; }
+
+  /* ===== Tweaks Panel ===== */
+  .tweaks-panel { position: fixed; right: 20px; bottom: 20px; z-index: 999; }
+  .tweaks-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-md); transition: all .25s ease;
+  }
+  .tweaks-toggle:hover { transform: scale(1.08); box-shadow: var(--shadow-lg); }
+  .tweaks-body {
+    position: absolute; bottom: 54px; right: 0;
+    width: 280px; background: var(--bg-surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 20px;
+    display: none; animation: tweaksIn .2s ease;
+  }
+  .tweaks-body.open { display: block; }
+  @keyframes tweaksIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .tweaks-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tweaks-close { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 2px; }
+  .tweaks-group { margin-bottom: 14px; }
+  .tweaks-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tweaks-slider {
+    width: 100%; height: 4px; border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--bg-subtle); outline: none;
+  }
+  .tweaks-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--primary);
+    cursor: pointer; border: 2px solid #fff; box-shadow: var(--shadow-sm);
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .section { padding: 24px 20px; }
+    .hero { padding: 100px 16px 40px; }
+    .header-inner { padding: 0 16px; }
+    .content { padding: 0 16px 60px; }
+    .table-wrap { margin: 16px -20px; border-radius: 0; border-left: none; border-right: none; }
+    .header-nav { display: none; }
+    .cap-grid { grid-template-columns: 1fr; }
+    .arch-compare { grid-template-columns: 1fr; }
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="hdr">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">LC Notes <span>LangChain</span></a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 什么是大语言模型（LLM...</a>
+      <a href="#s2" class="nav-anchor">&sect;2 LLM 发展里程碑时间轴</a>
+      <a href="#s3" class="nav-anchor">&sect;3 Transformer ...</a>
+      <a href="#s4" class="nav-anchor">&sect;4 LLM 的核心能力</a>
+      <a href="#s5" class="nav-anchor">&sect;5 主流大语言模型对比</a>
+      <a href="#s6" class="nav-anchor">&sect;6 Token 的概念</a>
+      <a href="#s7" class="nav-anchor">&sect;7 LLM 的局限性</a>
+
+      <a href="00-课程介绍.html">P00</a>
+      <a href="01-认识人工智能.html">P01</a>
+      <a href="02-神经网络原理.html">P02</a>
+      <a href="03-大语言模型.html" class="active">P03</a>
+      <a href="#">P04</a><a href="#">P05</a><a href="#">P06</a><a href="#">P07</a>
+      <a href="#">P08</a><a href="#">P09</a><a href="#">P10</a><a href="#">P11</a>
+      <a href="#">P12</a>
+      <a href="13-认识LangChain.html">P13</a>
+      <a href="14-快速入门和Agent原理.html">P14</a>
+      <a href="15-初始化模型.html">P15</a>
+      <a href="16-调用模型.html">P16</a>
+      <a href="17-消息Message.html">P17</a>
+      <a href="18-提示词工程.html">P18</a>
+      <a href="19-工具Tools.html">P19</a>
+      <a href="20-预定义工具Tavily.html">P20</a>
+      <a href="21-短期记忆.html">P21</a>
+      <a href="22-短期记忆-持久存储.html">P22</a>
+      <a href="23-记忆管理策略.html">P23</a>
+      <a href="24-需求分析与功能验证.html">P24</a>
+      <a href="25-对接LangSmith.html">P25</a>
+      <a href="26-搭建服务端并对接OSS.html">P26</a>
+      <a href="27-AI私厨完成Agent开发.html">P27</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">第 03 集 &middot; 1.3 大语言模型</div>
+  <h1><span class="highlight">大语言模型</span>（LLM）</h1>
+  <p class="hero-desc">深入理解大语言模型的本质——从 GPT-1 到 ChatGPT 的技术演进，Transformer 架构的 Self-Attention 革命，主流 LLM 的全方位对比，以及 Token 计费机制和模型的固有局限性。这是通往 LangChain Agent 开发的最后一道理论门槛。</p>
+  <div class="hero-meta">
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 时长 22:43</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 第1章 基础理论</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg> 核心概念</span>
+  </div>
+</section>
+
+<!-- Content -->
+<main class="content">
+
+<!-- S1: What is LLM -->
+<article class="section" id="s1">
+  <h2 class="section-title"><span class="num">1</span> 什么是大语言模型（LLM）？</h2>
+
+  <p><strong>Large Language Model（简称 LLM）</strong>是指在<strong>海量文本数据</strong>上训练的、具有<strong>超大规模参数量</strong>的神经网络模型。它不是传统意义上的「程序」，而是一个通过阅读互联网上几乎全部公开文本来「学会」语言的统计模型。</p>
+
+  <div class="highlight-box">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>形式化定义：</strong>LLM 是一个函数 <code>P(next_token | context)</code> —— 给定上文（context），预测下一个 token 的概率分布。通过自回归方式逐个生成 token，最终输出完整的文本。看似简单，但这个函数内部蕴含了数千亿参数对人类语言规律的压缩编码。
+    </div>
+  </div>
+
+  <h3 class="sub-title">「大」到底有多大？</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:25%">维度</th><th>规模级别</th><th>直观类比</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>参数量 Parameters</strong></td>
+          <td>B 级（十亿）~ T 级（万亿）</td>
+          <td>GPT-3 有 175B（1750 亿）参数，相当于人脑突触连接数的约 0.0001%</td>
+        </tr>
+        <tr>
+          <td><strong>训练数据 Data</strong></td>
+          <td>TB 级文本（万亿级 token）</td>
+          <td>相当于一个人不间断阅读数百万年才能读完的文本量</td>
+        </tr>
+        <tr>
+          <td><strong>计算成本 Compute</strong></td>
+          <td>数百万 ~ 数千万 GPU 小时</td>
+          <td>训练一次 GPT-4 级别的模型，算力成本可达 亿美元级别</td>
+        </tr>
+        <tr>
+          <td><strong>上下文窗口 Context</strong></td>
+          <td>4K ~ 2M+ tokens</td>
+          <td>从一篇短文的长度到整本书甚至更多</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#9989;</div>
+    <div class="hb-body">
+      <strong>关键认知：</strong>LLM 的「智能」并非来自显式编程规则，而是来自<strong>海量数据中的统计规律压缩</strong>。它本质上是一个极其复杂的<strong>文本补全机器</strong>——但当你把「补全文本」这件事做到极致时，涌现出了推理、创作、编程等令人惊叹的能力。
+    </div>
+  </div>
+</article>
+
+<!-- S2: Development Milestones -->
+<article class="section accent" id="s2">
+  <h2 class="section-title"><span class="num">2</span> LLM 发展里程碑时间轴</h2>
+
+  <p>从 2018 年到今天，大语言模型经历了从学术实验到全民应用的惊人跃迁：</p>
+
+  <div class="milestone-timeline">
+    <div class="ms-item">
+      <div class="ms-header">
+        <span class="ms-year">2018.06</span>
+        <span class="ms-name">GPT-1</span>
+        <span class="ms-badge breakthrough">突破性</span>
+      </div>
+      <div class="ms-desc">OpenAI 发布 Generative Pre-trained Transformer，首次证明<strong>无监督预训练 + 微调</strong>范式在 NLP 任务上的有效性。117M 参数，开启 GPT 序列。</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-header">
+        <span class="ms-year">2019.02</span>
+        <span class="ms-name">GPT-2</span>
+      </div>
+      <div class="ms-desc">1.5B 参数，展示出惊人的零样本生成能力。因担心被滥用，OpenAI 最初选择不发布完整模型——这引发了关于 AI 安全的首次大规模讨论。</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-header">
+        <span class="ms-year">2020.05</span>
+        <span class="ms-name">GPT-3</span>
+        <span class="ms-badge breakthrough">突破性</span>
+      </div>
+      <div class="ms-desc"><strong>175B 参数</strong>，Few-shot 能力惊艳学术界。「In-Context Learning」（上下文学习）概念正式确立。Prompt Engineering 开始成为独立技能。</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-header">
+        <span class="ms-year">2022.11</span>
+        <span class="ms-name">ChatGPT</span>
+        <span class="ms-badge breakthrough">现象级</span>
+      </div>
+      <div class="ms-desc">基于 GPT-3.5 + RLHF + 对话优化的产品上线。<strong>2 个月破亿用户</strong>，成为历史上增长最快的消费级应用。AI 从研究圈走向大众视野。</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-header">
+        <span class="ms-year">2023.02~07</span>
+        <span class="ms-name">LLaMA 系列</span>
+        <span class="ms-badge open-source">开源</span>
+      </div>
+      <div class="ms-desc">Meta 发布 LLaMA（7B~65B），<strong>开源大模型时代开启</strong>。后续 LLaMA 2/3 进一步降低使用门槛，催生了本地部署、微调生态的爆发。</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-header">
+        <span class="ms-year">2023.03~2024</span>
+        <span class="ms-name">Claude / Gemini</span>
+        <span class="ms-badge closed">闭源</span>
+      </div>
+      <div class="ms-desc">Anthropic Claude 3.5 在代码和长文本任务上表现卓越；Google Gemini Pro/Ultra 加入多模态竞争格局。形成 OpenAI / Anthropic / Google 三足鼎立。</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-header">
+        <span class="ms-year">2024~2025</span>
+        <span class="ms-name">DeepSeek / 国产大模型</span>
+        <span class="ms-badge domestic">国产</span>
+      </div>
+      <div class="ms-desc">DeepSeek-V3 以极低训练成本达到顶尖水平；通义千问（Qwen）、文心一言（ERNIE）、智谱 GLM 等国产模型快速追赶。开源社区呈现百花齐放态势。</div>
+    </div>
+  </div>
+</article>
+
+<!-- S3: Transformer Architecture -->
+<article class="section info" id="s3">
+  <h2 class="section-title"><span class="num">3</span> Transformer 架构核心思想</h2>
+
+  <p>2017 年 Google 团队在论文《Attention Is All You Need》中提出的 <strong>Transformer 架构</strong>，是所有现代 LLM 的共同基石。它彻底改变了序列建模的方式：</p>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>Self-Attention 自注意力机制（直觉解释）：</strong>想象你在读一句话时，每个词都会同时「关注」句子中的所有其他词，并根据相关性分配不同的注意力权重。比如处理「苹果很好吃」中的「苹果」时，它会更多地关注「好吃」，而不是其他无关词汇。这种<strong>全局依赖建模能力</strong>就是 Self-Attention 的核心。
+    </div>
+  </div>
+
+  <h3 class="sub-title">三种架构变体对比</h3>
+
+  <div class="arch-compare">
+    <div class="arch-card enc">
+      <div class="arch-name">Encoder-Only</div>
+      <div class="arch-full">仅编码器</div>
+      <div class="arch-rep">输入完整序列，输出每个位置的表征。擅长<strong>理解类任务</strong>。</div>
+      <div class="arch-examples">
+        <span>BERT</span>
+        <span>RoBERTa</span>
+        <span>DeBERTa</span>
+      </div>
+    </div>
+    <div class="arch-card dec">
+      <div class="arch-name">Decoder-Only</div>
+      <div class="arch-full">仅解码器</div>
+      <div class="arch-rep">自回归生成，每次预测下一个 token。擅长<strong>生成类任务</strong>。</div>
+      <div class="arch-examples">
+        <span>GPT 系列</span>
+        <span>LLaMA</span>
+        <span>Claude</span>
+        <span>DeepSeek</span>
+      </div>
+    </div>
+    <div class="arch-card enc-only">
+      <div class="arch-name">Encoder-Decoder</div>
+      <div class="arch-full">编解码器</div>
+      <div class="arch-rep">先编码输入再逐步解码输出。适合<strong>序列到序列</strong>任务。</div>
+      <div class="arch-examples">
+        <span>T5</span>
+        <span>BART</span>
+        <span>原版 Transformer</span>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub-title">为什么 Transformer 取代了 RNN？</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:22%">对比维度</th><th>RNN / LSTM</th><th>Transformer</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>并行计算</strong></td>
+          <td>&#10060; 必须顺序计算，t 步依赖 t-1 步</td>
+          <td>&#9989; 所有位置可并行计算，GPU 利用率极高</td>
+        </tr>
+        <tr>
+          <td><strong>长距离依赖</strong></td>
+          <td>&#10060; 梯度消失/爆炸，长序列信息丢失严重</td>
+          <td>&#9989; Self-Attention 直接建模任意距离的词间关系</td>
+        </tr>
+        <tr>
+          <td><strong>训练效率</strong></td>
+          <td>慢，难以利用现代硬件并行能力</td>
+          <td>快，完美适配 GPU/TPU 大规模并行训练</td>
+        </tr>
+        <tr>
+          <td><strong>位置表示</strong></td>
+          <td>隐含在顺序中</td>
+          <td>需要显式的 Positional Encoding（位置编码）</td>
+        </tr>
+        <tr>
+          <td><strong>复杂度</strong></td>
+          <td>O(n) 每步，总 O(n&sup2;) 但串行</td>
+          <td>O(n&sup2;) Attention，但完全并行；可用 FlashAttention 优化至 O(n)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>当前主流选择：</strong>几乎所有顶级 LLM 都采用 <strong>Decoder-Only Transformer</strong> 架构（GPT 系列、LLaMA、Claude、Gemini 等）。原因很简单：<strong>统一架构 = 统一训练目标 = 更好的扩展性</strong>。同一个模型可以通过 Prompt 变成翻译器、摘要器、对话机器人或代码生成器。
+    </div>
+  </div>
+</article>
+
+<!-- S4: Core Capabilities -->
+<article class="section success" id="s4">
+  <h2 class="section-title"><span class="num">4</span> LLM 的核心能力</h2>
+
+  <p>大语言模型展现出的能力远超传统的 NLP 模型。以下是其四大核心能力：</p>
+
+  <div class="cap-grid">
+    <!-- Capability 1 -->
+    <div class="cap-card">
+      <div class="cap-icon">&#128218;</div>
+      <div class="cap-title">文本理解与生成</div>
+      <div class="cap-en">Understanding & Generation</div>
+      <div class="cap-desc">能够理解自然语言的语义、情感、意图，并生成流畅、连贯、符合语境的回复。支持多语言、多风格、多体裁的文本处理。</div>
+    </div>
+    <!-- Capability 2 -->
+    <div class="cap-card">
+      <div class="cap-icon">&#128202;</div>
+      <div class="cap-title">少样本学习</div>
+      <div class="cap-en">Few-shot Learning</div>
+      <div class="cap-desc">无需额外微调，仅需在 Prompt 中提供 1~3 个示例，即可让模型理解新任务的格式和要求并正确执行。即「看一眼就会」。</div>
+    </div>
+    <!-- Capability 3 -->
+    <div class="cap-card">
+      <div class="cap-icon">&#129504;</div>
+      <div class="cap-title">思维链推理</div>
+      <div class="cap-en">Chain-of-Thought (CoT)</div>
+      <div class="cap-desc">通过引导模型「一步步思考」（Show your work），显著提升复杂推理任务的准确率。数学题、逻辑推理、多步骤问题求解的核心技巧。</div>
+    </div>
+    <!-- Capability 4 -->
+    <div class="cap-card">
+      <div class="cap-icon">&#128214;</div>
+      <div class="cap-title">知识记忆与推理</div>
+      <div class="cap-en">Knowledge & Reasoning</div>
+      <div class="cap-desc">在海量训练数据中「记住」了人类各领域的常识和专业知识，并能基于这些知识进行逻辑推理、因果分析和创意组合。</div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">CoT 示例</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt"># Chain-of-Thought Prompt 示例</span>
+<span class="str">"""问题：小明有 5 个苹果，给了小红 2 个，又买了 3 个。
+请问小明现在有几个苹果？
+
+请一步一步思考：
+1. 小明一开始有 5 个苹果
+2. 给了小红 2 个后，还剩 5 - 2 = 3 个
+3. 又买了 3 个，所以现在有 3 + 3 = 6 个
+
+答案：6 个"""</span></code></pre>
+  </div>
+</article>
+
+<!-- S5: Mainstream LLM Comparison -->
+<article class="section" id="s5">
+  <h2 class="section-title"><span class="num">5</span> 主流大语言模型对比</h2>
+
+  <p>当前市场上的 LLM 产品众多，以下是各主要玩家的横向对比：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:16%">模型</th>
+          <th style="width:10%">厂商</th>
+          <th style="width:12%">参数量</th>
+          <th style="width:14%">上下文窗口</th>
+          <th style="width:14%">API 价格（输入）</th>
+          <th style="width:34%">核心特点</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>GPT-4o</strong> <span class="tag-closed">Closed</span></td>
+          <td>OpenAI</td>
+          <td>未公开（预估 1T+）</td>
+          <td>128K tokens</td>
+          <td>$2.5 / 1M tokens</td>
+          <td>多模态原生（文本+图像+音频）、速度最快的主流旗舰、Function Calling 成熟</td>
+        </tr>
+        <tr>
+          <td><strong>Claude 3.5 Sonnet</strong> <span class="tag-closed">Closed</span></td>
+          <td>Anthropic</td>
+          <td>未公开</td>
+          <td>200K tokens</td>
+          <td>$3 / 1M tokens</td>
+          <td>长文本处理最强、代码能力突出、Constitutional AI 安全设计、200K 超长上下文</td>
+        </tr>
+        <tr>
+          <td><strong>Gemini 2.0 Pro</strong> <span class="tag-closed">Closed</span></td>
+          <td>Google</td>
+          <td>未公开</td>
+          <td>1M ~ 2M tokens</td>
+          <td>$1.25 / 1M tokens</td>
+          <td>原生多模态、超长上下文（百万级）、Google 生态深度集成、搜索增强</td>
+        </tr>
+        <tr>
+          <td><strong>DeepSeek-V3</strong> <span class="tag-open">Open</span></td>
+          <td>DeepSeek</td>
+          <td>671B（MoE 37B 活跃）</td>
+          <td>64K tokens</td>
+          <td>$0.14 / 1M tokens</td>
+          <td>极致性价比、MoE 架构、接近 GPT-4 级别性能、国产之光</td>
+        </tr>
+        <tr>
+          <td><strong>文心一言 ERNIE 4.0</strong> <span class="tag-closed">Closed</span></td>
+          <td>百度</td>
+          <td>未公开</td>
+          <td>128K tokens</td>
+          <td>按次/包月</td>
+          <td>中文理解优秀、国内合规、企业级服务成熟、搜索增强</td>
+        </tr>
+        <tr>
+          <td><strong>通义千问 Qwen-Max</strong> <span class="tag-open">Open</span></td>
+          <td>阿里云</td>
+          <td>未公开</td>
+          <td>128K tokens</td>
+          <td>$0.40 / 1M tokens</td>
+          <td>中文能力强、开源版本丰富（0.5B~72B）、API 性价比高</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#128176;</div>
+    <div class="hb-body">
+      <strong>选型建议：</strong>如果预算充足且追求最佳效果 &rarr; <code>GPT-4o</code> 或 <code>Claude 3.5</code>；如果注重性价比和长文本 &rarr; <code>DeepSeek-V3</code> 或 <code>Qwen</code>；如果有中文场景和合规需求 &rarr; 国产模型（<code>ERNIE</code> / <code>Qwen</code>）；如果要本地私有化部署 &rarr; <code>LLaMA 3</code> 或 <code>Qwen2.5</code> 开源版本。
+    </div>
+  </div>
+</article>
+
+<!-- S6: Token Concept -->
+<article class="section danger" id="s6">
+  <h2 class="section-title"><span class="num">6</span> Token 的概念</h2>
+
+  <p><strong>Token 是 LLM 处理文本的最小单位</strong>。理解 Token 对于掌握 API 使用成本、优化 Prompt 效率至关重要：</p>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>什么是 Token？</strong>Token 不是「字」也不是「词」，而是介于两者之间的子单位。它可以是：<br>
+      &#x2022; 一个完整的英文单词（如 <code>"hello"</code> = 1 token）<br>
+      &#x2022> 一个汉字或半个词组（如 <code>"人工智能"</code> 可能 = 2~3 tokens）<br>
+      &#x2022; 一部分英文单词（如 <code>"unbelievable"</code> 可能 = 3 tokens: un + believ + able）<br>
+      &#x2022> 标点符号、数字、特殊字符（通常各占 1 token）
+    </div>
+  </div>
+
+  <!-- Token Demo -->
+  <div class="token-demo">
+    <div class="token-row">
+      <div class="token-label">中文示例 Token 化结果</div>
+      <div class="token-text">
+        <span class="token-chip tc-cn">我<span class="token-id">#2938</span></span>
+        <span class="token-chip tc-cn">喜欢<span class="token-id">#8210</span></span>
+        <span class="token-chip tc-cn">用<span class="token-id">#1042</span></span>
+        <span class="token-chip tc-en">LangChain<span class="token-id">#18420</span></span>
+        <span class="token-chip tc-cn">开发<span class="token-id">#5678</span></span>
+        <span class="token-chip tc-punct">！<span class="token-id">#321</span></span>
+      </div>
+    </div>
+    <div class="token-row">
+      <div class="token-label">英文示例 Token 化结果</div>
+      <div class="token-text">
+        <span class="token-chip tc-en">I<span class="token-id">#46</span></span>
+        <span class="token-chip tc-en">love<span class="token-id">#1839</span></span>
+        <span class="token-chip tc-en">using<span class="token-id">#2019</span></span>
+        <span class="token-chip tc-en">LangChain<span class="token-id">#45230</span></span>
+        <span class="token-chip tc-en">for<span class="token-id">#329</span></span>
+        <span class="token-chip tc-en">development<span class="token-id">#8421</span></span>
+        <span class="token-chip tc-punct">!<span class="token-id">#0</span></span>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub-title">中英文 Token 化差异</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:30%">对比项</th><th>英文文本</th><th>中文文本</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>平均 Token 效率</strong></td>
+          <td>约 1 个 Token ≈ 4 个字符（英文单词粒度）</td>
+          <td>约 1 个 Token ≈ 1~2 个汉字（子词粒度）</td>
+        </tr>
+        <tr>
+          <td><strong>同样语义内容的 Token 数</strong></td>
+          <td>较少（英文 Tokenizer 优化更好）</td>
+          <td>较多（中文字符需要更多 Token 表示）</td>
+        </tr>
+        <tr>
+          <td><strong>API 成本影响</strong></td>
+          <td>相对较低</td>
+          <td>相对较高（同语义下中文约贵 1.5~2x）</td>
+        </tr>
+        <tr>
+          <td><strong>常用 Tokenizer</strong></td>
+          <td colspan="2" style="text-align:center;"><code>cl100k_base</code>（GPT系列） / <code>tiktoken</code> 库</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128176;</div>
+    <div class="hb-body">
+      <strong>Token 与计费的关系：</strong>LLM API 按 Token 数收费（输入 + 输出分别计价）。以 GPT-4o 为例：输入 $2.5 / 1M tokens，输出 $10 / 1M tokens。<strong>优化 Prompt 长度 = 直接节省成本</strong>。这也是为什么 LangChain 的 OutputParser 和精简 Prompt 设计如此重要。
+    </div>
+  </div>
+</article>
+
+<!-- S7: Limitations -->
+<article class="section" id="s7">
+  <h2 class="section-title"><span class="num">7</span> LLM 的局限性</h2>
+
+  <p>尽管 LLM 能力强大，但它绝非万能。了解这些局限性，才能在实际应用中合理设计系统架构：</p>
+
+  <ul class="limit-list">
+    <li>
+      <div class="limit-icon" style="background:oklch(0.55 0.20 25 / 0.10);">&#9888;&#65039;</div>
+      <div class="limit-body">
+        <div class="limit-title"><code>Hallucination</code> 幻觉（一本正经地胡说八道）</div>
+        <div class="limit-desc">模型可能生成听起来非常自信但事实完全错误的内容。因为它是在做「概率预测」而非「事实检索」——它不知道自己不知道什么。</div>
+        <div class="limit-solution">&#10024; 解决方案：RAG（检索增强生成）+ 引用来源标注 + 事实核查层</div>
+      </div>
+    </li>
+    <li>
+      <div class="limit-icon" style="background:oklch(0.70 0.18 85 / 0.10);">&#128337;</div>
+      <div class="limit-body">
+        <div class="limit-title"><code>Knowledge Cutoff</code> 知识截止日期</div>
+        <div class="limit-desc">模型的知识来源于训练数据，存在明确的时间截止点。例如 GPT-4o 的训练数据截止到 2024 年 4 月，之后的事件它一无所知。</div>
+        <div class="limit-solution">&#10024; 解决方案：搜索工具集成（Search Tools）+ RAG 实时知识库</div>
+      </div>
+    </li>
+    <li>
+      <div class="limit-icon" style="background:oklch(0.55 0.22 250 / 0.10);">&#128274;</div>
+      <div class="limit-body">
+        <div class="limit-title"><code>No Real-time Access</code> 无法获取实时信息</div>
+        <div class="limit-desc">纯 LLM 无法查询天气、股票价格、新闻动态等实时数据。它的世界是静态的训练数据快照。</div>
+        <div class="limit-solution">&#10024; 解决方案：Function Calling / Tool Use — 让 LLM 调用外部 API 获取实时数据</div>
+      </div>
+    </li>
+    <li>
+      <div class="limit-icon" style="background:oklch(0.55 0.16 155 / 0.10);">&#128295;</div>
+      <div class="limit-body">
+        <div class="limit-title"><code>No Action Execution</code> 无法执行操作（需要 Agent）</div>
+        <div class="limit-desc">LLM 只能生成文本，不能直接操作数据库、发送邮件、调用 API、读写文件。它是一个「思考者」而非「行动者」。</div>
+        <div class="limit-solution">&#10024; 解决方案：<strong>Agent 架构</strong>（本课程核心！）— 通过 LangChain/LangGraph 将 LLM 与工具链连接，使其具备执行能力</div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>本节总结 &rarr; LangChain 的价值定位：</strong>LLM 的上述四大局限，恰好对应了 LangChain 框架的四大核心模块——<br>
+      &#x2022; 幻觉 &rarr; <code>Retrieval（检索模块）</code> 提供真实知识来源<br>
+      &#x2022; 知识截止 &rarr; <code>Tools（搜索工具）</code> 接入实时信息<br>
+      &#x2022; 无实时访问 &rarr; <code>Tool Integration</code> 连接外部 API<br>
+      &#x2022; 无法执行操作 &rarr; <code>Agents（智能体）</code> 自主规划与执行<br><br>
+      这就是为什么你需要学习 LangChain——它不是 LLM 的替代品，而是<strong>让 LLM 从「聊天玩具」进化为「生产力工具」的关键桥梁</strong>。
+    </div>
+  </div>
+</article>
+
+</main>
+
+<!-- Footer Nav -->
+<nav class="footer-nav">
+  <a href="02-神经网络原理.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 02 集 - 神经网络原理</div>
+    </div>
+  </a>
+  <a href="04-大模型应用.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 04 集 - 大模型应用</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="footer-ref">
+  参考来源：<a href="https://www.langchain.com.cn/docs/" target="_blank">LangChain 官方文档</a> &middot;
+  视频来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">B站 黑马程序员 BV178w1z7EHQ</a>
+</div>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+  <button class="tweaks-toggle" onclick="toggleTweaks()" title="调节面板">&#9881;</button>
+  <div class="tweaks-body" id="tweaksBody">
+    <div class="tweaks-title">
+      Tweaks
+      <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">字体大小</label>
+      <input type="range" class="tweaks-slider" min="0.85" max="1.25" step="0.05" value="1" oninput="setFontSize(this.value)">
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">行距</label>
+      <input type="range" class="tweaks-slider" min="0.9" max="1.4" step="0.05" value="1" oninput="setLineHeight(this.value)">
+    </div>
+  </div>
+</div>
+
+<script>
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => { hdr.classList.toggle('scrolled', window.scrollY > 20); });
+
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) setTimeout(() => entry.target.classList.add('visible'), i * 80);
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = '已复制!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function toggleTweaks() { document.getElementById('tweaksBody').classList.toggle('open'); }
+function setFontSize(val) { document.documentElement.style.setProperty('--font-scale', val); }
+function setLineHeight(val) { document.documentElement.style.setProperty('--line-height-scale', val); }
+</script>
+</body>
+</html>

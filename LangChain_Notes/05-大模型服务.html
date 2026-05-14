@@ -1,0 +1,956 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第05集 - 大模型服务 | LangChain学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f8f9fc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f8;
+    --bg-code: #1a1d26;
+    --text-primary: #1a1d26;
+    --text-secondary: #5a6072;
+    --text-muted: #949aad;
+    --primary: oklch(0.55 0.22 250);
+    --primary-light: oklch(0.75 0.15 250);
+    --accent: oklch(0.70 0.18 85);
+    --success: oklch(0.55 0.16 155);
+    --danger: oklch(0.55 0.20 25);
+    --info: oklch(0.55 0.15 230);
+    --border: #e2e4ea;
+    --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+    --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 6px rgba(26,29,38,0.04);
+    --shadow-lg: 0 8px 30px rgba(26,29,38,0.10), 0 4px 12px rgba(26,29,38,0.06);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --font-scale: 1;
+    --line-height-scale: 1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.7 * var(--line-height-scale);
+    font-size: 16px * var(--font-scale);
+    -webkit-font-smoothing: antialiased;
+    transition: font-size .3s ease, line-height .3s ease;
+  }
+
+  .header {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: rgba(248,249,252,0.78);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    transition: box-shadow .3s ease;
+  }
+  .header.scrolled { box-shadow: var(--shadow-sm); }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; padding: 0 24px;
+  }
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px;
+    color: var(--primary); text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+  .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .header-nav { display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 720px; }
+  .header-nav a {
+    text-decoration: none; color: var(--text-secondary);
+    font-size: 11px; font-weight: 500; padding: 4px 9px;
+    border-radius: 20px; transition: all .2s;
+    white-space: nowrap;
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .header-nav a:hover, .header-nav a.active {
+    background: var(--primary-light); color: var(--primary);
+  }
+
+  .hero {
+    padding: 120px 24px 56px;
+    max-width: 900px; margin: 0 auto;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--bg-subtle));
+    border: 1px solid oklch(0.85 0.05 250);
+    padding: 6px 16px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; color: var(--primary);
+    margin-bottom: 24px;
+  }
+  .hero-badge::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success); animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700; line-height: 1.15;
+    letter-spacing: -0.03em; margin-bottom: 16px;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero-desc {
+    font-size: 17px; color: var(--text-secondary);
+    max-width: 720px; margin: 0 auto 28px; line-height: 1.65;
+  }
+  .hero-meta {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
+  }
+  .meta-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: var(--radius-xs);
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .meta-tag svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+  .content { max-width: 900px; margin: 0 auto; padding: 0 24px 80px; }
+
+  .section {
+    background: var(--bg-surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 36px 40px; margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .section::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary);
+    border-radius: 4px 0 0 4px;
+  }
+  .section.accent::before { background: var(--accent); }
+  .section.success::before { background: var(--success); }
+  .section.info::before { background: var(--info); }
+  .section.danger::before { background: var(--danger); }
+  .section.visible {
+    opacity: 1; transform: translateY(0);
+  }
+  .section:hover { box-shadow: var(--shadow-md); }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--primary); color: #fff;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .section p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  .highlight-box {
+    display: flex; gap: 16px;
+    background: linear-gradient(135deg, oklch(0.97 0.01 250), var(--bg-surface));
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 20px 22px; margin: 20px 0;
+  }
+  .highlight-box.accent {
+    background: linear-gradient(135deg, oklch(0.98 0.015 85), var(--bg-surface));
+    border-left-color: var(--accent);
+  }
+  .highlight-box.success {
+    background: linear-gradient(135deg, oklch(0.97 0.01 155), var(--bg-surface));
+    border-left-color: var(--success);
+  }
+  .highlight-box.danger {
+    background: linear-gradient(135deg, oklch(0.98 0.015 25), var(--bg-surface));
+    border-left-color: var(--danger);
+  }
+  .highlight-box.info {
+    background: linear-gradient(135deg, oklch(0.97 0.01 230), var(--bg-surface));
+    border-left-color: var(--info);
+  }
+  .hb-icon {
+    flex-shrink: 0; width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-top: 2px;
+  }
+  .hb-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.7; }
+  .hb-body strong { color: var(--text-primary); }
+  .hb-body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-subtle); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: var(--primary);
+  }
+
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--primary); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 13px; text-align: left;
+    padding: 12px 16px; color: #fff;
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  tbody td {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text-secondary); vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--bg-subtle); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.97 0.005 250); }
+  table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; background: var(--bg-subtle);
+    padding: 1px 6px; border-radius: 4px; color: var(--primary);
+  }
+
+  .code-block {
+    position: relative; margin: 20px 0; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border);
+    background: var(--bg-code);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: oklch(0.75 0.08 250);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .code-copy-btn {
+    cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+    color: oklch(0.7 0.03 250); font-family: 'Outfit', sans-serif;
+    font-size: 12px; padding: 4px 12px; border-radius: 6px;
+    transition: all .2s;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); }
+  .code-copy-btn.copied { color: var(--success); border-color: oklch(0.55 0.16 155); }
+  pre {
+    margin: 0; padding: 20px 20px 20px 0;
+    overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; line-height: 1.7; color: #e0e2e8;
+    tab-size: 2;
+  }
+  pre .kw { color: #c792ea; }
+  pre .fn { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .cmt { color: rgba(255,255,255,0.35); font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .op { color: #89ddff; }
+
+  /* Service Type Cards */
+  .service-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin: 24px 0;
+  }
+  @media (max-width: 768px) { .service-grid { grid-template-columns: 1fr; } }
+  .service-card {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 24px 20px;
+    transition: all .25s ease; position: relative;
+    overflow: hidden;
+  }
+  .service-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); border-color: var(--primary-light); }
+  .service-card .sc-icon { font-size: 32px; margin-bottom: 12px; }
+  .service-card .sc-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px; color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .service-card .sc-sub {
+    font-size: 11.5px; font-weight: 600; color: var(--primary);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+  .service-card .sc-rep {
+    display: inline-block; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; background: var(--bg-subtle);
+    padding: 3px 10px; border-radius: 4px; color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .service-card .sc-features {
+    list-style: none; font-size: 13px; color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .service-card .sc-features li {
+    padding: 3px 0; padding-left: 18px;
+    position: relative;
+  }
+  .service-card .sc-features li::before {
+    content: ''; position: absolute; left: 4px; top: 11px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--primary); opacity: 0.5;
+  }
+
+  /* Flow Steps */
+  .flow-steps {
+    display: flex; flex-direction: column; gap: 0; margin: 24px 0;
+    position: relative;
+    padding-left: 40px;
+  }
+  .flow-steps::before {
+    content: ''; position: absolute; left: 17px; top: 28px; bottom: 28px;
+    width: 2px; background: linear-gradient(to bottom, var(--primary), var(--accent));
+    border-radius: 1px;
+  }
+  .flow-step {
+    display: flex; align-items: flex-start; gap: 16px;
+    position: relative; margin-bottom: 20px;
+  }
+  .flow-step:last-child { margin-bottom: 0; }
+  .flow-step .fs-num {
+    position: absolute; left: -40px; top: 0;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 14px; flex-shrink: 0;
+    z-index: 1;
+  }
+  .fs-body { flex: 1; }
+  .fs-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 15px; color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .fs-desc { font-size: 13.5px; color: var(--text-secondary); line-height: 1.65; }
+
+  /* Param Grid */
+  .param-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 14px; margin: 20px 0;
+  }
+  @media (max-width: 600px) { .param-grid { grid-template-columns: 1fr; } }
+  .param-item {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-xs); padding: 16px 18px;
+    transition: all .2s;
+  }
+  .param-item:hover { border-color: var(--primary-light); }
+  .param-item .pi-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px; font-weight: 600; color: var(--primary);
+    margin-bottom: 6px;
+  }
+  .param-item .pi-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .param-item .pi-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .param-item .pi-range {
+    font-size: 11.5px; color: var(--info); font-weight: 500;
+    margin-top: 6px; font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Decision Tree */
+  .decision-tree {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 24px; margin: 20px 0;
+  }
+  .dt-root {
+    text-align: center; margin-bottom: 20px;
+  }
+  .dt-root .dt-q {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 16px; color: var(--text-primary);
+  }
+  .dt-branches {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 768px) { .dt-branches { grid-template-columns: 1fr; } }
+  .dt-branch {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius-xs); padding: 18px 16px;
+    text-align: center; transition: all .2s;
+  }
+  .dt-branch:hover { box-shadow: var(--shadow-sm); border-color: var(--primary-light); }
+  .dt-branch .db-cond {
+    font-size: 12px; font-weight: 600; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+  .dt-branch .db-result {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 15px; color: var(--primary);
+    margin-bottom: 6px;
+  }
+  .dt-branch .db-detail { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+
+  /* Footer */
+  .footer-nav {
+    max-width: 900px; margin: 0 auto; padding: 0 24px 60px;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link-card {
+    flex: 1; display: flex; align-items: center; gap: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit;
+    transition: all .25s ease;
+  }
+  .nav-link-card:hover {
+    border-color: var(--primary); box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .nav-link-card.disabled { opacity: .45; pointer-events: none; }
+  .nl-dir { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .nl-label { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .nl-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; }
+
+  .footer-ref {
+    max-width: 900px; margin: 0 auto; padding: 0 24px 40px;
+    text-align: center; font-size: 12.5px; color: var(--text-muted);
+  }
+  .footer-ref a { color: var(--primary); text-decoration: none; }
+
+  .tweaks-panel {
+    position: fixed; right: 20px; bottom: 20px; z-index: 999;
+  }
+  .tweaks-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-md);
+    transition: all .25s ease;
+  }
+  .tweaks-toggle:hover { transform: scale(1.08); box-shadow: var(--shadow-lg); }
+  .tweaks-body {
+    position: absolute; bottom: 54px; right: 0;
+    width: 280px; background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 20px; display: none;
+    animation: tweaksIn .2s ease;
+  }
+  .tweaks-body.open { display: block; }
+  @keyframes tweaksIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .tweaks-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tweaks-close { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 2px; }
+  .tweaks-group { margin-bottom: 14px; }
+  .tweaks-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tweaks-slider {
+    width: 100%; height: 4px; border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--bg-subtle); outline: none;
+  }
+  .tweaks-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--primary);
+    cursor: pointer; border: 2px solid #fff;
+    box-shadow: var(--shadow-sm);
+  }
+
+  @media (max-width: 768px) {
+    .section { padding: 24px 20px; }
+    .hero { padding: 100px 16px 40px; }
+    .header-inner { padding: 0 16px; }
+    .content { padding: 0 16px 60px; }
+    .table-wrap { margin: 16px -20px; border-radius: 0; border-left: none; border-right: none; }
+    .header-nav { display: none; }
+    .flow-steps { padding-left: 32px; }
+    .flow-steps::before { left: 13px; }
+    .flow-step .fs-num { width: 28px; height: 28px; font-size: 12px; left: -32px; }
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header class="header" id="hdr">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">LC Notes <span>LangChain</span></a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 大模型服务的三种形态</a>
+      <a href="#s2" class="nav-anchor">&sect;2 API 调用的基本流程</a>
+      <a href="#s3" class="nav-anchor">&sect;3 关键参数一览</a>
+      <a href="#s4" class="nav-anchor">&sect;4 计费模式说明</a>
+      <a href="#s5" class="nav-anchor">&sect;5 服务选型决策树</a>
+
+      <a href="#">P00</a><a href="#">P01</a><a href="#">P02</a><a href="#">P03</a>
+      <a href="04-大模型应用.html">P04</a><a href="05-大模型服务.html" class="active">P05</a><a href="06-注册DeepSeek.html">P06</a><a href="07-注册阿里云百炼.html">P07</a>
+      <a href="#">P08</a><a href="#">P09</a><a href="#">P10</a><a href="#">P11</a><a href="#">P12</a>
+      <a href="13-认识LangChain.html">P13</a><a href="14-快速入门和Agent原理.html">P14</a><a href="15-初始化模型.html">P15</a><a href="16-调用模型.html">P16</a><a href="17-消息Message.html">P17</a>
+      <a href="18-提示词工程.html">P18</a><a href="19-工具Tools.html">P19</a><a href="20-预定义工具Tavily.html">P20</a><a href="21-短期记忆.html">P21</a><a href="22-短期记忆-持久存储.html">P22</a>
+      <a href="23-记忆管理策略.html">P23</a><a href="24-需求分析与功能验证.html">P24</a><a href="25-对接LangSmith.html">P25</a><a href="26-搭建服务端并对接OSS.html">P26</a><a href="27-AI私厨完成Agent开发.html">P27</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-badge">第 05 集 &middot; 基础入门 &middot; 1.5 大模型服务</div>
+  <h1>大模型<span class="highlight">服务</span>形态</h1>
+  <p class="hero-desc">全面了解大模型的三种主流服务形态（云端 API / 开源部署 / 平台托管），掌握 API 调用的完整流程、关键参数与计费模式，学会根据场景做出正确的技术选型决策。</p>
+  <div class="hero-meta">
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 时长 05:53</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 基础篇</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> 服务选型</span>
+  </div>
+</section>
+
+<main class="content">
+
+<!-- S1: Three Service Types -->
+<article class="section" id="s1">
+  <h2 class="section-title"><span class="num">1</span> 大模型服务的三种形态</h2>
+
+  <p>在开始调用 LLM API 之前，你需要先理解当前市场上<strong>三种主流的大模型服务形态</strong>。每种形态都有其独特的适用场景和权衡取舍：</p>
+
+  <div class="service-grid">
+
+    <div class="service-card">
+      <div class="sc-icon">&#9729;&#65039;</div>
+      <div class="sc-title">云端 API</div>
+      <div class="sc-sub">Cloud API</div>
+      <div class="sc-rep">OpenAI / 百炼 / DeepSeek API</div>
+      <ul class="sc-features">
+        <li>即开即用，无需部署基础设施</li>
+        <li>按量付费，灵活控制成本</li>
+        <li>自动获得最新模型版本</li>
+        <li>全球 CDN 加速，低延迟访问</li>
+        <li>数据传输至第三方服务器</li>
+      </ul>
+    </div>
+
+    <div class="service-card">
+      <div class="sc-icon">&#128187;</div>
+      <div class="sc-title">开源部署</div>
+      <div class="sc-sub">Self-Hosted / Local</div>
+      <div class="sc-rep">Ollama / vLLM / TGI</div>
+      <ul class="sc-features">
+        <li>数据完全本地化，隐私安全</li>
+        <li>无网络依赖，可离线运行</li>
+        <li>一次部署，无限调用</li>
+        <li>可自定义微调和优化</li>
+        <li>需要 GPU 硬件投入与运维</li>
+      </ul>
+    </div>
+
+    <div class="service-card">
+      <div class="sc-icon">&#127760;</div>
+      <div class="sc-title">平台托管</div>
+      <div class="sc-sub">Managed Platform</div>
+      <div class="sc-rep">AWS Bedrock / Azure OpenAI / Vertex AI</div>
+      <ul class="sc-features">
+        <li>企业级 SLA 与合规保障</li>
+        <li>混合云部署，支持 VPC 私有网络</li>
+        <li>统一账单，与企业云资源整合</li>
+        <li>内置监控、日志、权限管理</li>
+        <li>价格通常高于直接 API</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:16%">对比维度</th><th style="width:28%">云端 API</th><th style="width:28%">开源部署</th><th>平台托管</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>启动成本</strong></td><td>极低（注册即用）</td><td>高（GPU 硬件）</td><td>中（企业订阅）</td></tr>
+        <tr><td><strong>数据隐私</strong></td><td>依赖服务商政策</td><td>完全可控</td><td>较高（VPC 隔离）</td></tr>
+        <tr><td><strong>运维负担</strong></td><td>零运维</td><td>全自主运维</td><td>低（平台管理）</td></tr>
+        <tr><td><strong>定制灵活性</strong></td><td>受限（仅参数层面）</td><td>极高（可微调/量化）</td><td>中等（部分支持微调）</td></tr>
+        <tr><td><strong>适用规模</strong></td><td>原型 / 中小规模</td><td>私有化 / 大规模</td><td>大型企业</td></tr>
+        <tr><td><strong>典型代表</strong></td><td><code>OpenAI API</code> / DeepSeek</td><td><code>Ollama</code> / vLLM</td><td>Azure OpenAI / Bedrock</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>本课程的选择：</strong>我们将以<strong>云端 API</strong>为主要学习载体（DeepSeek + 百炼），原因有三——<strong>门槛最低</strong>（无需 GPU）、<strong>成本可控</strong>（新用户免费额度充足）、<strong>与 LangChain 集成最顺滑</strong>。后续课程也会介绍 Ollama 本地部署方案。
+    </div>
+  </div>
+</article>
+
+<!-- S2: API Call Flow -->
+<article class="section accent" id="s2">
+  <h2 class="section-title"><span class="num">2</span> API 调用的基本流程</h2>
+
+  <p>无论选择哪家服务商，调用 LLM API 的基本流程都是一致的。理解这个流程是后续所有实践操作的基础：</p>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="fs-num">1</div>
+      <div class="fs-body">
+        <div class="fs-title">注册账号 &amp; 获取 API Key</div>
+        <div class="fs-desc">在目标平台（如 DeepSeek、百炼、OpenAI）注册开发者账号，进入控制台创建 API Key。这是你调用服务的「身份凭证」，<strong>务必妥善保管</strong>。</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-num">2</div>
+      <div class="fs-body">
+        <div class="fs-title">选择模型端点（Endpoint）</div>
+        <div class="fs-desc">确定要调用的模型名称（如 <code>deepseek-chat</code>、<code>gpt-4o-mini</code>、<code>qwen-plus</code>）以及对应的 API 地址（Base URL）。不同模型的端点和能力各不相同。</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-num">3</div>
+      <div class="fs-body">
+        <div class="fs-title">构建请求（Messages + Parameters）</div>
+        <div class="fs-desc">组装请求体：包含对话消息列表（system/user/assistant 角色）以及可选参数（temperature、max_tokens 等）。消息格式遵循 OpenAI 兼容标准。</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-num">4</div>
+      <div class="fs-body">
+        <div class="fs-title">发送 HTTP 请求</div>
+        <div class="fs-desc">通过 POST 方法将请求发送到指定端点，Header 中携带 <code>Authorization: Bearer YOUR_API_KEY</code> 进行身份认证。</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-num">5</div>
+      <div class="fs-body">
+        <div class="fs-title">解析响应结果</div>
+        <div class="fs-desc">从 JSON 响应中提取模型生成的文本内容（<code>choices[0].message.content</code>），同时可获取 token 用量统计信息用于成本追踪。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python (requests)</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">import</span> requests
+<span class="kw">import</span> json
+
+<span class="cmt"># === 核心请求结构 ===</span>
+response = requests.<span class="fn">post</span>(
+    <span class="str">"https://api.deepseek.com/chat/completions"</span>,  <span class="cmt"># Endpoint</span>
+    headers={
+        <span class="str">"Authorization"</span>: <span class="str">f"Bearer <span class="op">{</span>API_KEY<span class="op">}</span>"</span>,     <span class="cmt"># 身份认证</span>
+        <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span>,            <span class="cmt"># 内容类型</span>
+    },
+    json={
+        <span class="str">"model"</span>: <span class="str">"deepseek-chat"</span>,                    <span class="cmt"># 模型名称</span>
+        <span class="str">"messages"</span>: [                                   <span class="cmt"># 对话消息列表</span>
+            {<span class="str">"role"</span>: <span class="str">"system"</span>, <span class="str">"content"</span>: <span class="str">"你是一个有帮助的助手。"</span>},
+            {<span class="str">"role"</span>: <span class="str">"user"</span>,   <span class="str">"content"</span>: <span class="str">"你好！请介绍一下自己。"</span>},
+        ],
+        <span class="str">"temperature"</span>: <span class="num">0.7</span>,                            <span class="cmt"># 创造性参数</span>
+        <span class="str">"max_tokens"</span>: <span class="num">1024</span>,                           <span class="cmt"># 最大输出长度</span>
+    },
+)
+
+result = response.<span class="fn">json</span>()
+<span class="fn">print</span>(result[<span class="str">"choices"</span>][<span class="num">0</span>][<span class="str">"message"</span>][<span class="str">"content"</span>])   <span class="cmt"># 提取回答</span></code></pre>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>关键认知：</strong>目前业界已形成事实上的 <strong>OpenAI API 兼容标准</strong>。DeepSeek、百炼、Ollama 等绝大多数服务商都兼容这一格式，这意味着你写好的代码只需更换 <code>base_url</code> 和 <code>api_key</code> 即可在不同平台间切换。<strong>LangChain 的价值之一就是进一步抽象了这层差异。</strong>
+    </div>
+  </div>
+</article>
+
+<!-- S3: Key Parameters -->
+<article class="section info" id="s3">
+  <h2 class="section-title"><span class="num">3</span> 关键参数一览</h2>
+
+  <p>API 调用中的参数直接影响模型的输出质量和行为特征。以下是四个最核心的参数详解：</p>
+
+  <div class="param-grid">
+
+    <div class="param-item">
+      <div class="pi-name">model</div>
+      <div class="pi-label">模型标识符</div>
+      <div class="pi-desc">指定要调用的具体模型。不同模型在能力、速度、价格上差异巨大。选择时需权衡任务复杂度与成本预算。</div>
+      <div class="pi-range">示例: "deepseek-chat" | "gpt-4o-mini" | "qwen-plus"</div>
+    </div>
+
+    <div class="param-item">
+      <div class="pi-name">messages</div>
+      <div class="pi-label">对话消息列表</div>
+      <div class="pi-desc">核心输入参数，由一组消息对象组成。每个消息包含 role（system/user/assistant）和 content（文本内容）。多轮对话通过拼接历史消息实现。</div>
+      <div class="pi-range">结构: [{role:"system",content:"..."}, ...]</div>
+    </div>
+
+    <div class="param-item">
+      <div class="pi-name">temperature</div>
+      <div class="pi-label">温度参数（创造性 vs 确定性）</div>
+      <div class="pi-desc">控制输出随机性的核心参数。值越低输出越确定性/一致；值越高输出越创造性/多样。范围 [0, 2]，默认 1.0。</div>
+      <div class="pi-range">0.0 = 精确回答 | 0.7 = 平衡 | 1.5+ = 高创意</div>
+    </div>
+
+    <div class="param-item">
+      <div class="pi-name">max_tokens</div>
+      <div class="pi-label">最大输出 Token 数</div>
+      <div class="pi-desc">限制模型单次响应的最大长度（以 Token 为单位）。设置过短可能截断回答，过长则浪费 Token 和增加延迟。</div>
+      <div class="pi-range">建议: 简答 256-512 | 详答 1024-4096</div>
+    </div>
+
+    <div class="param-item">
+      <div class="pi-name">top_p</div>
+      <div class="pi-label">核采样（Nucleus Sampling）</div>
+      <div class="pi-desc">另一种控制随机性的方式。只从累积概率达到 top_p 的最小 token 集合中采样。常与 temperature 二选一使用，不建议同时调整。</div>
+      <div class="pi-range">范围 (0, 1] | 默认 1.0 | 推荐 0.9-0.95</div>
+    </div>
+
+    <div class="param-item">
+      <div class="pi-name">stream</div>
+      <div class="pi-label">流式输出开关</div>
+      <div class="pi-desc">设为 true 时，模型会逐 token 返回结果（Server-Sent Events），而非等待完整生成后一次性返回。对聊天体验至关重要。</div>
+      <div class="pi-range">false = 一次性返回 | true = 流式逐字返回</div>
+    </div>
+
+  </div>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#9888;&#65039;</div>
+    <div class="hb-body">
+      <strong>Temperature 使用建议：</strong><br>
+      &#x2022 <strong>事实性问答 / 数据提取 / 代码生成</strong> → temperature 设为 <code>0.0 ~ 0.3</code>（追求准确一致）<br>
+      &#x2022 <strong>日常对话 / 通用助手</strong> → temperature 设为 <code>0.5 ~ 0.7</code>（平衡自然与准确）<br>
+      &#x2022 <strong>创意写作 / 头脑风暴</strong> → temperature 设为 <code>0.8 ~ 1.2</code>（鼓励多样性输出）
+    </div>
+  </div>
+</article>
+
+<!-- S4: Billing -->
+<article class="section success" id="s4">
+  <h2 class="section-title"><span class="num">4</span> 计费模式说明</h2>
+
+  <p>理解计费机制对于控制项目成本至关重要。几乎所有 LLM API 都采用<strong>基于 Token 的计量付费模式</strong>：</p>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">Token 计费基础</h3>
+
+  <div class="highlight-box">
+    <div class="hb-icon">&#128176;</div>
+    <div class="hb-body">
+      <strong>什么是 Token？</strong>Token 是 LLM 处理文本的最小单位。大致上：<br>
+      &#x2022 <strong>英文</strong>：约 4 个字符 ≈ 1 个 Token（约 0.75 词 ≈ 1 Token）<br>
+      &#x2022 <strong>中文</strong>：约 1~2 个汉字 ≈ 1 个 Token<br>
+      &#x2022 <strong>费用公式</strong>：<code>总费用 = 输入Token数 x 输入单价 + 输出Token数 x 输出单价</code><br>
+      &#x2022 注意：<strong>输出 Token 通常比输入 Token 贵 2~4 倍</strong>（因为涉及生成计算）
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:18%">模型</th><th style="width:15%">输入单价</th><th style="width:15%">输出单价</th><th>定位</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>GPT-4o</strong></td><td>$2.5 / 1M tokens</td><td>$10 / 1M tokens</td><td>旗舰级通用模型</td></tr>
+        <tr><td><strong>GPT-4o-mini</strong></td><td>$0.15 / 1M tokens</td><td>$0.6 / 1M tokens</td><td>高性价比轻量模型</td></tr>
+        <tr><td><strong>DeepSeek-V3</strong></td><td>&yen;0.5 / 1M tokens</td><td>&yen;2.0 / 1M tokens</td><td>国产高性价比（约 GPT-4 级）</td></tr>
+        <tr><td><strong>DeepSeek-R1</strong></td><td>&yen;4.0 / 1M tokens</td><td>&yen;16.0 / 1M tokens</td><td>推理增强模型</td></tr>
+        <tr><td><strong>Qwen-Turbo</strong></td><td>&yen;0.3 / 1M tokens</td><td>&yen;0.6 / 1M tokens</td><td>通义千问极速版</td></tr>
+        <tr><td><strong>Qwen-Plus</strong></td><td>&yen;0.8 / 1M tokens</td><td>&yen;2.0 / 1M tokens</td><td>通义千问增强版</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">成本控制策略</h3>
+
+  <div class="scenario-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+
+    <div class="scenario-item">
+      <div class="si-icon">&#128268;</div>
+      <div class="si-text">
+        <strong>Prompt 缓存</strong>
+        对重复出现的 System Prompt 和长上下文使用缓存，避免重复计费输入 Token
+      </div>
+    </div>
+
+    <div class="scenario-item">
+      <div class="si-icon">&#128228;</div>
+      <div class="si-text">
+        <strong>上下文压缩</strong>
+        在送入 LLM 前对长文档进行摘要压缩，减少实际输入 Token 数量
+      </div>
+    </div>
+
+    <div class="scenario-item">
+      <div class="si-icon">&#128200;</div>
+      <div class="si-text">
+        <strong>模型分层路由</strong>
+        简单任务用便宜模型（mini/turbo），复杂任务才升级到旗舰模型
+      </div>
+    </div>
+
+    <div class="scenario-item">
+      <div class="si-icon">&#128196;</div>
+      <div class="si-text">
+        <strong>用量监控告警</strong>
+        设置月度预算上限和超额预警，避免意外产生高额账单
+      </div>
+    </div>
+
+  </div>
+</article>
+
+<!-- S5: Decision Tree -->
+<article class="section danger" id="s5">
+  <h2 class="section-title"><span class="num">5</span> 服务选型决策树</h2>
+
+  <p>面对众多的服务选项，如何为自己的项目做出最优选择？以下是一个简化的决策框架：</p>
+
+  <div class="decision-tree">
+    <div class="dt-root">
+      <div class="dt-q">&#127919; 你的项目最看重什么？</div>
+    </div>
+    <div class="dt-branches">
+      <div class="dt-branch">
+        <div class="db-cond">最快上手</div>
+        <div class="db-result">云端 API</div>
+        <div class="db-detail">推荐 DeepSeek 或 百炼<br>注册即用，几分钟跑通第一个 Demo<br>适合：学习、原型、中小项目</div>
+      </div>
+      <div class="dt-branch">
+        <div class="db-cond">数据隐私优先</div>
+        <div class="db-result">开源本地部署</div>
+        <div class="db-detail">推荐 Ollama + Qwen2.5<br>数据不出内网，完全自主可控<br>适合：金融/医疗/政府/涉密项目</div>
+      </div>
+      <div class="dt-branch">
+        <div class="db-cond">企业级需求</div>
+        <div class="db-result">平台托管</div>
+        <div class="db-detail">推荐 Azure OpenAI / AWS Bedrock<br>SLA 保障 + 合规审计 + 统一管控<br>适合：大型企业生产环境</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#128170;</div>
+    <div class="hb-body">
+      <strong>课程路线图：</strong>接下来的两集将手把手带你完成 <strong>DeepSeek</strong> 和 <strong>阿里云百炼</strong> 的注册与首次 API 调用。这两个平台都提供新用户免费额度，足够完成整个 LangChain 课程的所有实验。<strong>请准备好你的手机号哦~</strong>
+    </div>
+  </div>
+</article>
+
+</main>
+
+<nav class="footer-nav">
+  <a href="04-大模型应用.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 04 集 - 大模型应用</div>
+    </div>
+  </a>
+  <a href="06-注册DeepSeek.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 06 集 - 注册DeepSeek</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="footer-ref">
+  参考来源：<a href="https://platform.deepseek.com/api-docs/" target="_blank">DeepSeek API 文档</a> &middot;
+  视频来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">B站 黑马程序员 BV178w1z7EHQ</a>
+</div>
+
+<div class="tweaks-panel">
+  <button class="tweaks-toggle" onclick="toggleTweaks()" title="调节面板">&#9881;</button>
+  <div class="tweaks-body" id="tweaksBody">
+    <div class="tweaks-title">
+      Tweaks
+      <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">字体大小</label>
+      <input type="range" class="tweaks-slider" min="0.85" max="1.25" step="0.05" value="1" oninput="setFontSize(this.value)">
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">行距</label>
+      <input type="range" class="tweaks-slider" min="0.9" max="1.4" step="0.05" value="1" oninput="setLineHeight(this.value)">
+    </div>
+  </div>
+</div>
+
+<script>
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => {
+  hdr.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '已复制!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function toggleTweaks() {
+  document.getElementById('tweaksBody').classList.toggle('open');
+}
+
+function setFontSize(val) {
+  document.documentElement.style.setProperty('--font-scale', val);
+}
+
+function setLineHeight(val) {
+  document.documentElement.style.setProperty('--line-height-scale', val);
+}
+</script>
+</body>
+</html>

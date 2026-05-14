@@ -1,0 +1,1249 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第26集 - 搭建服务端并对接 OSS | LangChain 学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ========== Design Tokens ========== */
+:root {
+  --bg-page: #f8f9fc;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f3f8;
+  --bg-accent: #eef2ff;
+  --text-primary: #1a1d26;
+  --text-secondary: #5a6072;
+  --text-muted: #949aad;
+  --primary: oklch(0.55 0.22 250);
+  --primary-light: oklch(0.72 0.15 250);
+  --primary-bg: oklch(0.95 0.05 250);
+  --accent: oklch(0.70 0.18 85);
+  --accent-light: oklch(0.85 0.12 85);
+  --accent-bg: oklch(0.97 0.04 85);
+  --success: oklch(0.55 0.16 155);
+  --danger: oklch(0.55 0.20 25);
+  --info: oklch(0.55 0.15 230);
+  --border: rgba(26,29,38,0.08);
+  --border-strong: rgba(26,29,38,0.14);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-glow: 0 0 30px rgba(79,110,247,0.10);
+
+  /* Tweaks overrides (defaults) */
+  --font-scale: 1;
+  --content-width: 900px;
+}
+
+/* ========== Reset & Base ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Outfit', -apple-system, sans-serif;
+  font-size: calc(16px * var(--font-scale));
+  line-height: 1.75;
+  color: var(--text-primary);
+  background: var(--bg-page);
+}
+h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; line-height: 1.3; }
+a { color: var(--primary); text-decoration: none; transition: opacity .2s; }
+a:hover { opacity: .75; }
+
+/* ========== Header (Glassmorphism) ========== */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(248,249,252,0.78);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-inner {
+  max-width: var(--content-width);
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-logo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--primary);
+  display: flex; align-items: center; gap: 8px;
+}
+.header-logo svg { width: 22px; height: 22px; }
+.header-nav { display: flex; align-items: center; gap: 16px; }
+.header-nav a {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary);
+  transition: color .2s;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+.header-nav a:hover { color: var(--primary); opacity: 1; background: var(--primary-bg); }
+.ep-badge {
+  background: var(--primary); color: #fff;
+  padding: 3px 10px; border-radius: 100px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .03em;
+}
+
+/* ========== Main Content ========== */
+main {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 90px 24px 64px;
+}
+
+/* ========== Hero Section ========== */
+.hero {
+  text-align: center;
+  padding: 48px 0 40px;
+  animation: fadeUp .6s ease-out both;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--primary-bg), var(--bg-accent));
+  border: 1px solid rgba(79,110,247,.18);
+  padding: 6px 16px; border-radius: 100px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, var(--text-primary) 40%, var(--primary));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: 17px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 28px;
+  line-height: 1.65;
+}
+.hero-meta {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+}
+.meta-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12.5px; font-weight: 500;
+  color: var(--text-secondary);
+}
+.meta-chip strong { color: var(--text-primary); }
+
+/* ========== Section Card ========== */
+.section-card {
+  background: var(--bg-surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 24px;
+  animation: fadeUp .5s ease-out both;
+  transition: box-shadow .25s ease, transform .25s ease;
+}
+.section-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.card-bar {
+  width: 4px;
+  flex-shrink: 0;
+}
+.card-bar.primary { background: var(--primary); }
+.card-bar.accent { background: var(--accent); }
+.card-bar.success { background: var(--success); }
+.card-bar.info { background: var(--info); }
+.card-body {
+  padding: 28px 28px 24px;
+}
+.section-card .card-header {
+  display: flex; align-items: flex-start; gap: 0;
+}
+.section-card h2 {
+  font-size: clamp(19px, 2.3vw, 24px);
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-card h2 .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 8px;
+  font-size: 14px; font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.num.pri { background: var(--primary); }
+.num.acc { background: var(--accent); }
+.num.suc { background: var(--success); }
+.num.inf { background: var(--info); }
+.section-card p { color: var(--text-secondary); margin-bottom: 12px; }
+.section-card p:last-child { margin-bottom: 0; }
+
+/* ========== Feature Grid ========== */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.feature-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px;
+  background: var(--bg-subtle);
+  border-radius: 12px;
+  transition: background .2s;
+}
+.feature-item:hover { background: var(--bg-accent); }
+.feature-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+}
+.feature-icon.blue { background: var(--primary-bg); }
+.feature-icon.orange { background: var(--accent-bg); }
+.feature-icon.green { background: oklch(0.95 0.06 155); }
+.feature-icon.cyan { background: oklch(0.94 0.06 230); }
+.feature-text h4 {
+  font-size: 14px; font-weight: 600;
+  margin-bottom: 3px;
+}
+.feature-text p {
+  font-size: 13px; color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ========== Tech Table ========== */
+.tech-table {
+  width: 100%; border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.tech-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--primary);
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+}
+.tech-table th:first-child { border-radius: 10px 0 0 0; }
+.tech-table th:last-child { border-radius: 0 10px 0 0; }
+.tech-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.tech-table tr:nth-child(even) td { background: var(--bg-subtle); }
+.tech-table tr:hover td { background: var(--primary-bg); }
+.tech-table code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  background: var(--bg-subtle);
+  padding: 2px 7px; border-radius: 5px;
+  color: var(--primary);
+}
+
+/* ========== Code Block ========== */
+.code-block {
+  position: relative;
+  margin: 18px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+}
+.code-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg-subtle);
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.code-lang {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11.5px; font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.copy-btn {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11.5px; font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none; border: none;
+  padding: 3px 8px; border-radius: 5px;
+  transition: all .2s;
+}
+.copy-btn:hover { color: var(--primary); background: var(--bg-accent); }
+.code-block pre {
+  margin: 0;
+  padding: 20px 20px;
+  background: var(--bg-subtle);
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+.code-block pre .kw { color: var(--primary); font-weight: 600; }
+.code-block pre .fn { color: var(--accent); }
+.code-block pre .str { color: var(--success); }
+.code-block pre .cmt { color: var(--text-muted); font-style: italic; }
+.code-block pre .builtin { color: var(--info); }
+.code-block pre .dec { color: var(--danger); }
+
+/* ========== Callout ========== */
+.callout {
+  display: flex; gap: 14px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  margin: 18px 0;
+  border-left: 4px solid;
+}
+.callout.tip { background: var(--primary-bg); border-color: var(--primary); }
+.callout.warn { background: var(--accent-bg); border-color: var(--accent); }
+.callout.ok { background: oklch(0.95 0.06 155); border-color: var(--success); }
+.callout-icon { font-size: 20px; flex-shrink: 0; line-height: 1.5; }
+.callout-content h4 {
+  font-size: 14px; font-weight: 600; margin-bottom: 4px;
+}
+.callout-content p {
+  font-size: 14px; color: var(--text-secondary); margin: 0;
+  line-height: 1.6;
+}
+
+/* ========== Steps List ========== */
+.steps-list {
+  counter-reset: step;
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+.steps-list li {
+  counter-increment: step;
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.steps-list li:last-child { border-bottom: none; }
+.steps-list li::before {
+  content: counter(step);
+  display: flex; align-items: center; justify-content: center;
+  min-width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+}
+.step-content h4 {
+  font-size: 15px; font-weight: 600; margin-bottom: 4px;
+}
+.step-content p {
+  font-size: 14px; color: var(--text-secondary); margin: 0;
+}
+
+/* ========== Architecture Diagram ========== */
+.arch-diagram {
+  background: var(--bg-subtle);
+  border-radius: 14px;
+  padding: 28px 24px;
+  margin: 20px 0;
+  text-align: center;
+}
+.arch-diagram .arch-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.arch-flow {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 10px;
+}
+.arch-node {
+  background: var(--bg-surface);
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--text-primary);
+  min-width: 120px;
+  transition: all .25s;
+  box-shadow: var(--shadow-sm);
+}
+.arch-node:hover { border-color: var(--primary); box-shadow: var(--shadow-glow); transform: translateY(-2px); }
+.arch-node.highlight { border-color: var(--primary); background: var(--primary-bg); color: var(--primary); }
+.arch-arrow {
+  color: var(--text-muted);
+  font-size: 20px;
+  font-weight: 300;
+}
+
+/* ========== API Endpoint Card ========== */
+.api-endpoint {
+  background: var(--bg-subtle);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 12px 0;
+  border-left: 4px solid var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all .2s;
+}
+.api-endpoint:hover {
+  border-left-color: var(--accent);
+  transform: translateX(4px);
+}
+.api-method {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  flex-shrink: 0;
+  min-width: 64px;
+  text-align: center;
+}
+.api-method.post { background: oklch(0.55 0.16 155 / 0.15); color: var(--success); }
+.api-method.get { background: oklch(0.55 0.15 230 / 0.15); color: var(--info); }
+.api-method.put { background: oklch(0.70 0.18 85 / 0.15); color: var(--accent); }
+.api-path {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.api-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* ========== Footer Navigation ========== */
+.footer-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+.nav-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px; font-weight: 600;
+  transition: all .25s;
+  text-decoration: none;
+}
+.nav-btn.prev {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.nav-btn.next {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(79,110,247,.25);
+}
+.nav-btn.prev:hover { border-color: var(--primary); color: var(--primary); }
+.nav-btn.next:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,110,247,.35); }
+.nav-label { font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 2px; }
+.ref-source {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+/* ========== Tweaks Panel ========== */
+.tweaks-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(79,110,247,.35);
+  transition: all .25s ease;
+  font-size: 20px;
+}
+.tweaks-toggle:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(79,110,247,.45);
+}
+.tweaks-panel {
+  position: fixed;
+  bottom: 84px;
+  right: 24px;
+  z-index: 199;
+  width: 300px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 20px;
+  transform-origin: bottom right;
+  transition: transform .3s cubic-bezier(.16,1,.3,1), opacity .25s ease;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.tweaks-panel.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+.tweaks-panel.hidden {
+  transform: translateY(12px) scale(.96);
+}
+.tweaks-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.tweaks-header h3 {
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.tweaks-close {
+  background: none; border: none;
+  cursor: pointer; font-size: 18px;
+  color: var(--text-muted);
+  padding: 4px; border-radius: 6px;
+  transition: all .2s;
+}
+.tweaks-close:hover { color: var(--text-primary); background: var(--bg-subtle); }
+.tweaks-group { margin-bottom: 16px; }
+.tweaks-group:last-child { margin-bottom: 0; }
+.tweaks-label {
+  font-size: 12px; font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: block;
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.tweaks-slider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--bg-subtle);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+.tweaks-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(79,110,247,.3);
+  transition: transform .15s ease;
+}
+.tweaks-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+.tweaks-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--primary);
+  float: right;
+  margin-top: -22px;
+  font-weight: 600;
+}
+
+/* ========== Animations ========== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.section-card:nth-child(1) { animation-delay: 0s; }
+.section-card:nth-child(2) { animation-delay: .08s; }
+.section-card:nth-child(3) { animation-delay: .16s; }
+.section-card:nth-child(4) { animation-delay: .24s; }
+.section-card:nth-child(5) { animation-delay: .32s; }
+.section-card:nth-child(6) { animation-delay: .40s; }
+
+/* ========== Responsive ========== */
+@media (max-width: 640px) {
+  main { padding: 80px 16px 48px; }
+  .hero { padding: 32px 0 28px; }
+  .card-body { padding: 22px 18px 18px; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .footer-nav { flex-direction: column; }
+  .nav-btn { width: 100%; justify-content: center; }
+  .arch-flow { flex-direction: column; }
+  .arch-arrow { transform: rotate(90deg); }
+  .api-endpoint { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .api-desc { margin-left: 0; }
+  .tweaks-panel { width: calc(100vw - 48px); right: 16px; bottom: 80px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      LangChain Notes
+    </a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 FastAPI 后端项目...</a>
+      <a href="#s2" class="nav-anchor">&sect;2 RESTful API ...</a>
+      <a href="#s3" class="nav-anchor">&sect;3 阿里云 OSS 对象存储...</a>
+      <a href="#s4" class="nav-anchor">&sect;4 前后端联调与 SSE 流...</a>
+      <a href="#s5" class="nav-anchor">&sect;5 Docker 容器化部署</a>
+      <a href="#s6" class="nav-anchor">&sect;6 本集小结</a>
+
+      <a href="25-对接LangSmith.html">Prev</a>
+      <span class="ep-badge">EP.26 / 28</span>
+      <a href="27-AI私厨完成Agent开发.html">Next</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    工程化部署
+  </div>
+  <h1>搭建服务端并对接 OSS</h1>
+  <p class="hero-sub">从 Jupyter Notebook 到生产级 Web 服务 —— FastAPI 后端架构、跨域配置、对象存储集成与容器化部署全链路</p>
+  <div class="hero-meta">
+    <span class="meta-chip">P.27 <strong>/ 第26集</strong></span>
+    <span class="meta-chip"><strong>22:15</strong> 时长</span>
+    <span class="meta-chip">后端 · DevOps</span>
+    <span class="meta-chip">FastAPI + OSS + Docker</span>
+  </div>
+</section>
+
+<!-- SECTION 1: FastAPI 项目初始化 -->
+<div class="section-card" id="s1">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar primary"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num pri">1</span> FastAPI 后端项目初始化</h2>
+      <p>FastAPI 是 Python 生态中最现代化的异步 Web 框架，原生支持 OpenAPI 文档自动生成、类型校验、异步请求处理。我们用它来包装 AI 私厨 Agent：</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python — app/main.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="cmt"># ============================================</span>
+<span class="cmt"># AI 私厨 — FastAPI 主入口</span>
+<span class="cmt"># ============================================</span>
+
+<span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI
+<span class="kw">from</span> fastapi.middleware.cors <span class="kw">import</span> CORSMiddleware
+<span class="kw">from</span> contextlib <span class="kw">import</span> asynccontextmanager
+
+<span class="cmt"># === 生命周期管理 ===</span>
+<span class="fn">@asynccontextmanager</span>
+<span class="kw">async def</span> <span class="fn">lifespan</span>(app: FastAPI):
+    <span class="str">"""应用启动/关闭时的生命周期钩子"""</span>
+    <span class="cmt"># 启动时：加载 Agent、预热模型、连接数据库</span>
+    <span class="builtin">print</span>(<span class="str">"&#9889; AI Personal Chef starting up..."</span>)
+    <span class="kw">yield</span>
+    <span class="cmt"># 关闭时：释放资源、保存状态</span>
+    <span class="builtin">print</span>(<span class="str">"&#128686; AI Personal Chef shutting down..."</span>)
+
+<span class="cmt"># === 创建 FastAPI 实例 ===</span>
+app = FastAPI(
+    title=<span class="str">"AI Personal Chef"</span>,
+    description=<span class="str">"基于 LangChain 的智能菜谱推荐助手 API"</span>,
+    version=<span class="str">"1.0.0"</span>,
+    lifespan=lifespan,
+)
+
+<span class="cmt"># === CORS 跨域配置 ===</span>
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[<span class="str">"http://localhost:3000"</span>, <span class="str">"http://127.0.0.1:5173"</span>],
+    allow_credentials=<span class="kw">True</span>,
+    allow_methods=[<span class="str">"*"</span>],
+    allow_headers=[<span class="str">"*"</span>],
+)
+
+<span class="cmt"># === 健康检查端点 ===</span>
+<span class="fn">@app.get</span>(<span class="str">"/health"</span>)
+<span class="kw">async def</span> <span class="fn">health_check</span>():
+    <span class="kw">return</span> {<span class="str">"status"</span>: <span class="str">"healthy"</span>, <span class="str">"service"</span>: <span class="str">"ai-personal-chef"</span>}
+
+<span class="cmt"># === 注册路由 ===</span>
+<span class="kw">from</span> app.api.v1 <span class="kw">import</span> chat, oss
+app.include_router(chat.router, prefix=<span class="str">"/api/v1"</span>)
+app.include_router(oss.router, prefix=<span class="str">"/api/v1"</span>)</pre>
+      </div>
+
+      <div class="callout tip" style="margin-top:18px;">
+        <div class="callout-icon">&#128161;</div>
+        <div class="callout-content">
+          <h4>为什么选择 FastAPI？</h4>
+          <p><strong>性能</strong>：基于 Starlette + Pydantic，异步性能接近 Go/Nginx。<br><strong>开发效率</strong>：自动生成 Swagger UI（/docs），前端联调零成本。<br><strong>类型安全</strong>：Pydantic v2 自动请求验证，减少 80% 的参数校验代码。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: API 接口设计 -->
+<div class="section-card" id="s2">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar accent"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num acc">2</span> RESTful API 接口设计</h2>
+      <p>AI 私厨的核心 API 设计遵循 RESTful 规范。以下是完整的端点清单：</p>
+
+      <!-- API Endpoints -->
+      <div class="api-endpoint">
+        <span class="api-method post">POST</span>
+        <span class="api-path">/api/v1/chat</span>
+        <span class="api-desc">发送消息给 Agent，获取流式响应</span>
+      </div>
+      <div class="api-endpoint">
+        <span class="api-method post">POST</span>
+        <span class="api-path">/api/v1/upload</span>
+        <span class="api-desc">上传食材图片到 OSS，返回 URL</span>
+      </div>
+      <div class="api-endpoint">
+        <span class="api-method get">GET</span>
+        <span class="api-path">/api/v1/history/{session_id}</span>
+        <span class="api-desc">获取指定会话的历史记录</span>
+      </div>
+      <div class="api-endpoint">
+        <span class="api-method get">GET</span>
+        <span class="api-path">/api/v1/recipes/{query}</span>
+        <span class="api-desc">直接搜索菜谱（无需 Agent）</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python — app/api/v1/chat.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="cmt"># ============================================</span>
+<span class="cmt"># Chat 接口 — Agent 核心交互入口</span>
+<span class="cmt"># ============================================</span>
+
+<span class="kw">from</span> fastapi <span class="kw">import</span> APIRouter, HTTPException
+<span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel
+<span class="kw">from</span> typing <span class="kw">import</span> Optional
+<span class="kw">import</span> uuid
+
+router = APIRouter()
+
+<span class="cmt"># === 请求数据模型 ===</span>
+<span class="kw">class</span> <span class="fn">ChatRequest</span>(BaseModel):
+    message: str                              <span class="cmt"># 用户文本消息</span>
+    image_url: Optional[str] = None           <span class="cmt"># 已上传的图片 URL</span>
+    session_id: Optional[str] = None          <span class="cmt">// 会话 ID（用于记忆续接）
+
+<span class="cmt"># === 响应数据模型 ===</span>
+<span class="kw">class</span> <span class="fn">ChatResponse</span>(BaseModel):
+    reply: str                                 <span class="cmt"># Agent 回复内容</span>
+    session_id: str                            <span class="cmt">// 会话 ID
+    recipes: Optional[list] = None             <span class="cmt"># 推荐菜谱列表（如有）
+    tokens_used: int                           <span class="cmt"># 本次消耗 Token 数
+
+<span class="cmt"># === 核心 Chat 端点 ===</span>
+<span class="fn">@router.post</span>(<span class="str">"/chat"</span>, response_model=ChatResponse)
+<span class="kw">async def</span> <span class="fn">chat</span>(req: ChatRequest):
+    <span class="str">"""
+    与 AI 私厨 Agent 对话的主入口。
+    
+    支持多模态输入（文本 + 图片），自动维护会话记忆，
+    返回结构化的推荐结果。
+    """</span>
+    <span class="kw">try</span>:
+        <span class="cmt># 生成或复用 session_id</span>
+        session_id = req.session_id <span class="kw">or</span> str(uuid.uuid4())[:8]
+        
+        <span class="cmt"># 构造 Agent 输入消息</span>
+        messages = []
+        <span class="kw">if</span> req.image_url:
+            messages.append({
+                <span class="str">"type"</span>: <span class="str">"image_url"</span>,
+                <span class="str">"image_url"</span>: {<span class="str">"url"</span>: req.image_url}
+            })
+        messages.append({
+            <span class="str">"role"</span>: <span class="str">"user"</span>,
+            <span class="str">"content"</span>: req.message
+        })
+        
+        <span class="cmt"># 调用 Agent（核心逻辑在 agents/personal_chef.py）</span>
+        result = <span class="kw">await</span> agent_invoke(messages, session_id)
+        
+        <span class="kw">return</span> ChatResponse(
+            reply=result[<span class="str">"reply"</span>],
+            session_id=session_id,
+            recipes=result.get(<span class="str">"recipes"</span>),
+            tokens_used=result.get(<span class="str">"tokens_used"</span>, 0),
+        )
+        
+    <span class="kw">except</span> Exception as e:
+        <span class="kw">raise</span> HTTPException(status_code=500, detail=str(e))</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: OSS 对接 -->
+<div class="section-card" id="s3">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar info"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num inf">3</span> 阿里云 OSS 对象存储对接</h2>
+      <p>用户上传的食材图片需要持久化存储。<strong>OSS（Object Storage Service）</strong>是阿里云提供的海量、安全、低成本的对象存储方案：</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python — app/api/v1/oss.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="cmt"># ============================================</span>
+<span class="cmt"># OSS 图片上传服务</span>
+<span class="cmt"># ============================================</span>
+
+<span class="kw">import</span> os
+<span class="kw">import</span> uuid
+<span class="kw">import</span> base64
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime
+<span class="kw">from</span> fastapi <span class="kw">import</span> APIRouter, UploadFile, File, HTTPException
+<span class="kw">import</span> oss2
+
+router = APIRouter()
+
+<span class="cmt"># === OSS 配置（从环境变量读取）===</span>
+OSS_CONFIG = {
+    <span class="str">'endpoint'</span>: os.getenv(<span class="str">'OSS_ENDPOINT'</span>),
+    <span class="str">'access_key_id'</span>: os.getenv(<span class="str">'OSS_ACCESS_KEY_ID'</span>),
+    <span class="str">'access_key_secret'</span>: os.getenv(<span class="str">'OSS_ACCESS_KEY_SECRET'</span>),
+    <span class="str">'bucket_name'</span>: os.getenv(<span class="str">'OSS_BUCKET_NAME'</span>, <span class="str">'ai-chef-images'</span>),
+}
+
+<span class="kw">def</span> <span class="fn">get_oss_client</span>() -> oss2.Bucket:
+    <span class="str">"""获取 OSS Bucket 客户端实例"""</span>
+    auth = oss2.Auth(OSS_CONFIG[<span class="str">'access_key_id'</span>], 
+                       OSS_CONFIG[<span class="str">'access_key_secret'</span>])
+    <span class="kw">return</span> oss2.Bucket(auth, OSS_CONFIG[<span class="str">'endpoint'</span>], 
+                       OSS_CONFIG[<span class="str">'bucket_name'</span>])
+
+<span class="cmt"># === 允许的文件类型 ===</span>
+ALLOWED_EXTENSIONS = {<span class="str">'.jpg'</span>, <span class="str">'.jpeg'</span>, <span class="str">'.png'</span>, <span class="str">'.webp'</span>}
+MAX_FILE_SIZE = 10 * 1024 * 1024  <span class="cmt"># 10MB</span>
+
+<span class="fn">@router.post</span>(<span class="str">"/upload"</span>)
+<span class="kw">async def</span> <span class="fn">upload_image</span>(file: UploadFile = File(...)):
+    <span class="str">"""
+    上传食材图片到 OSS。
+    
+    流程：校验格式 -> 读取文件 -> 生成唯一路径 -> 上传 OSS -> 返回公开访问 URL
+    """</span>
+    <span class="cmt"># 1. 校验文件扩展名</span>
+    ext = os.path.splitext(file.filename)[1].lower()
+    <span class="kw">if</span> ext <span class="kw">not in</span> ALLOWED_EXTENSIONS:
+        <span class="kw">raise</span> HTTPException(
+            status_code=400,
+            detail=f<span class="str">"不支持的文件格式: {ext}。仅支持 jpg/png/webp"</span>
+        )
+    
+    <span class="cmt"># 2. 校验文件大小</span>
+    content = <span class="kw">await</span> file.read()
+    <span class="kw">if</span> len(content) > MAX_FILE_SIZE:
+        <span class="kw">raise</span> HTTPException(
+            status_code=400,
+            detail=f<span class="str">"文件过大: {len(content)/1024/1024:.1f}MB，上限 10MB"</span>
+        )
+    
+    <span class="cmt"># 3. 生成唯一文件路径</span>
+    date_path = datetime.now().strftime(<span class="str">"%Y/%m/%d"</span>)
+    file_name = f<span class="str">"{uuid.uuid4().hex[:12]}{ext}"</span>
+    object_key = f<span class="str">"uploads/{date_path}/{file_name}"</span>
+    
+    <span class="cmt"># 4. 上传到 OSS</span>
+    bucket = get_oss_client()
+    bucket.put_object(object_key, content)
+    
+    <span class="cmt"># 5. 构建公开访问 URL</span>
+    url = f<span class="str">"https://{OSS_CONFIG['bucket_name']}.{OSS_CONFIG['endpoint'].replace('https://','')}/{object_key}"</span>
+    
+    <span class="kw">return</span> {
+        <span class="str">"url"</span>: url,
+        <span class="str">"key"</span>: object_key,
+        <span class="str">"size"</span>: f<span class="str">"{len(content)/1024:.1f}KB"</span>,
+        <span class="str">"filename"</span>: file_name,
+    }</pre>
+      </div>
+
+      <div class="arch-diagram" style="margin-top:20px;">
+        <div class="arch-title">图片上传数据流</div>
+        <div class="arch-flow">
+          <div class="arch-node highlight">用户选择图片</div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node">前端 FormData<br><small>(multipart)</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node">FastAPI UploadFile<br><small>(校验+读取)</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node accent" style="border-color:var(--accent);background:var(--accent-bg);color:var(--accent);">阿里云 OSS<br><small>(持久存储)</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node highlight">返回公网 URL<br><small>(供 Agent 使用)</small></div>
+        </div>
+      </div>
+
+      <div class="callout warn" style="margin-top:18px;">
+        <div class="callout-icon">&#9888;&#65039;</div>
+        <div class="callout-content">
+          <h4>安全注意事项</h4>
+          <p>1. <strong>AccessKey 绝对不能硬编码</strong> —— 必须通过环境变量或 KMS 管理<br>2. 开启 <strong>Bucket 策略限制</strong> —— 仅允许特定来源上传<br>3. 生产环境建议使用 <strong>STS 临时凭证</strong> 而非长期 AccessKey<br>4. 设置合理的 <strong>文件大小和类型白名单</strong>防止恶意上传</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: 前后端联调 -->
+<div class="section-card" id="s4">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar success"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num suc">4</span> 前后端联调与 SSE 流式输出</h2>
+      <p>AI Agent 的推理过程可能耗时较长（2~5秒）。为了提升用户体验，我们采用 <strong>SSE（Server-Sent Events）</strong> 实现流式输出，让用户能实时看到 Agent 的思考过程：</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python — SSE 流式响应实现</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="cmt"># ============================================</span>
+<span class="cmt"># SSE 流式输出 — 让用户实时看到 Agent 思考过程</span>
+<span class="cmt"># ============================================</span>
+
+<span class="kw">from</span> fastapi.responses <span class="kw">import</span> StreamingResponse
+<span class="kw">import</span> json
+
+<span class="fn">@router.post</span>(<span class="str">"/chat/stream"</span>)
+<span class="kw">async def</span> <span class="fn">chat_stream</span>(req: ChatRequest):
+    <span class="str">"""
+    SSE 流式聊天接口。
+    返回 text/event-stream 格式的数据，
+    前端可逐块接收并渲染。
+    """</span>
+    
+    <span class="kw">async def</span> <span class="fn">generate</span>():
+        <span class="cmt"># 发送连接建立事件</span>
+        <span class="kw">yield</span> f<span class="str">"data: {json.dumps({'type': 'connected'})}\n\n"</span>
+        
+        <span class="cmt"># 模拟 Agent 的逐步输出（实际替换为真实 Agent 调用）</span>
+        steps = [
+            {<span class="str">"type"</span>: <span class="str">"thinking"</span>, <span class="str">"content"</span>: <span class="str">"正在识别食材..."</span>},
+            {<span class="str">"type"</span>: <span class="str">"tool_call"</span>, <span class="str">"content"</span>: <span class="str">"调用 Tavily 搜索菜谱..."</span>},
+            {<span class="str">"type"</span>: <span class="str">"thinking"</span>, <span class="str">"content"</span>: <span class="str">"分析营养价值和难度..."</span>},
+            {<span class="str">"type"</span>: <span class="str">"result"</span>, <span class="str">"content"</span>: <span class="str">"推荐：番茄炒蛋 &#127869;"</span>},
+        ]
+        
+        <span class="kw">for</span> step <span class="kw">in</span> steps:
+            <span class="kw">import</span> asyncio
+            <span class="kw">await</span> asyncio.sleep(0.8)  <span class="cmt"># 模拟延迟</span>
+            <span class="kw">yield</span> f<span class="str">"data: {json.dumps(step)}\n\n"</span>
+        
+        <span class="cmt"># 发送结束事件</span>
+        <span class="kw">yield</span> f<span class="str">"data: {json.dumps({'type': 'done'})}\n\n"</span>
+    
+    <span class="kw">return</span> StreamingResponse(
+        generate(),
+        media_type=<span class="str">"text/event-stream"</span>,
+        headers={
+            <span class="str">"Cache-Control"</span>: <span class="str">"no-cache"</span>,
+            <span class="str">"Connection"</span>: <span class="str">"keep-alive"</span>,
+            <span class="str">"X-Accel-Buffering"</span>: <span class="str">"no"</span>,
+        },
+    )</pre>
+      </div>
+
+      <table class="tech-table" style="margin-top:18px;">
+        <thead>
+          <tr>
+            <th>事件类型</th>
+            <th>触发时机</th>
+            <th>前端行为</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>connected</code></td>
+            <td>SSE 连接建立时</td>
+            <td>显示加载动画</td>
+          </tr>
+          <tr>
+            <td><code>thinking</code></td>
+            <td>Agent 推理过程中</td>
+            <td>展示「正在思考...」提示</td>
+          </tr>
+          <tr>
+            <td><code>tool_call</code></td>
+            <td>调用外部工具时</td>
+            <td>展示工具名称和进度</td>
+          </tr>
+          <tr>
+            <td><code>result</code></td>
+            <td>最终结果返回</td>
+            <td>渲染回复内容和推荐卡片</td>
+          </tr>
+          <tr>
+            <td><code>done</code></td>
+            <td>全部输出完毕</td>
+            <td>隐藏加载状态，启用输入框</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5: Docker 容器化 -->
+<div class="section-card" id="s5">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar primary"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num pri">5</span> Docker 容器化部署</h2>
+      <p>将 FastAPI 应用打包为 Docker 镜像，实现<strong>「一次构建，到处运行」</strong>的一致性部署体验：</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Dockerfile</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="cmt"># ============================================</span>
+<span class="cmt"># AI Personal Chef — Docker 多阶段构建</span>
+<span class="cmt"># ============================================</span>
+
+<span class="cmt"># Stage 1: 构建阶段 — 安装依赖</span>
+<span class="kw">FROM</span> python:3.11-slim <span class="kw">AS</span> builder
+
+WORKDIR /app
+COPY pyproject.toml .
+RUN pip install --no-cache-dir -e .
+
+<span class="cmt"># Stage 2: 运行阶段 — 最小化镜像</span>
+<span class="kw">FROM</span> python:3.11-slim
+
+WORKDIR /app
+
+<span class="cmt"># 从构建阶段复制已安装的包</span>
+COPY --from=builder /usr/local/lib/python3.11/site-packages \
+     /usr/local/lib/python3.11/site-packages
+
+<span class="cmt"># 复制应用代码</span>
+COPY app/ ./app/
+COPY .env.example .env
+
+<span class="cmt"># 创建非 root 用户运行（安全最佳实践）</span>
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+<span class="cmt"># 暴露端口</span>
+EXPOSE 8000
+
+<span class="cmt"># 健康检查</span>
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD python -c <span class="str">"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"</span> || exit 1
+
+<span class="cmt"># 启动命令（uvicorn ASGI 服务器）</span>
+CMD [<span class="str">"uvicorn"</span>, <span class="str">"app.main:app"</span>, <span class="str">"--host"</span>, <span class="str">"0.0.0.0"</span>, <span class="str">"--port"</span>, <span class="str">"8000"</span>, <span class="str">"--workers"</span>, <span class="str">"2"</span>]</pre>
+      </div>
+
+      <ol class="steps-list">
+        <li>
+          <div class="step-content">
+            <h4>构建镜像</h4>
+            <p><code>docker build -t ai-personal-chef:v1.0 .</code></p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h4>本地测试运行</h4>
+            <p><code>docker run -p 8000:8000 --env-file .env ai-personal-chef:v1.0</code></p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h4>访问文档</h4>
+            <p>浏览器打开 http://localhost:8000/docs 查看 Swagger UI</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h4>推送到仓库</h4>
+            <p><code>docker tag &amp;&amp; docker push registry.cn-hangzhou.aliyuncs.com/xxx/chef:v1.0</code></p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="callout ok" style="margin-top:18px;">
+        <div class="callout-icon">&#9989;</div>
+        <div class="callout-content">
+          <h4>Docker 最佳实践总结</h4>
+          <p><strong>多阶段构建</strong>：最终镜像不包含 pip/build 工具，体积缩小约 60%。<br><strong>非 root 用户</strong>：避免容器逃逸带来的宿主机权限风险。<br><strong>Healthcheck</strong>：让编排系统（K8s/Docker Compose）能自动重启异常容器。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: 本集总结 -->
+<div class="section-card" id="s6">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar accent"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num acc">6</span> 本集小结</h2>
+      
+      <div class="callout warn">
+        <div class="callout-icon">&#9888;&#65039;</div>
+        <div class="callout-content">
+          <h4>工程化里程碑</h4>
+          <p>本集完成了从「Jupyter Notebook 里的 Agent」到「可对外提供服务的 Web API」的关键跨越。核心成果：<br><br>&bull; <strong>FastAPI 后端框架</strong>搭建完成，含 CORS、生命周期管理<br>&bull; <strong>4 个 RESTful API 端点</strong>设计并实现（chat/upload/history/recipes）<br>&bull; <strong>阿里云 OSS 对接</strong>完成，支持图片上传与公网 URL 返回<br>&bull; <strong>SSE 流式输出</strong>实现，大幅提升用户体验感知<br>&bull; <strong>Docker 容器化</strong>就绪，随时可以部署到任何服务器<br><br>下一集是终极回合并完成整个 Agent 的开发闭环！</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER NAV -->
+<nav class="footer-nav">
+  <a href="25-对接LangSmith.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 25 集 - 对接LangSmith</div>
+    </div>
+  </a>
+  <a href="27-AI私厨完成Agent开发.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 27 集 - AI私厨完成Agent开发</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="ref-source">
+  参考来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ?p=27" target="_blank">黑马程序员 B站课程 BV178w1z7EHQ P27</a> | 
+  <a href="https://fastapi.tiangolo.com/" target="_blank">FastAPI 官方文档</a>
+</div>
+
+</main>
+
+<!-- ===== TWEAKS PANEL ===== -->
+<button class="tweaks-toggle" onclick="toggleTweaks()" title="Design Tweaks">&#9881;</button>
+<div class="tweaks-panel hidden" id="tweaksPanel">
+  <div class="tweaks-header">
+    <h3>&#9881; Tweaks</h3>
+    <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+  </div>
+  <div class="tweaks-group">
+    <label class="tweaks-label">Font Scale</label>
+    <input type="range" class="tweaks-slider" id="fontScaleSlider" min="0.8" max="1.3" step="0.05" value="1" oninput="updateFontScale(this.value)">
+    <span class="tweaks-value" id="fontScaleValue">1.0x</span>
+  </div>
+  <div class="tweaks-group">
+    <label class="tweaks-label">Content Width</label>
+    <input type="range" class="tweaks-slider" id="widthSlider" min="700" max="1200" step="50" value="900" oninput="updateWidth(this.value)">
+    <span class="tweaks-value" id="widthValue">900px</span>
+  </div>
+</div>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--success)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+  });
+}
+
+function toggleTweaks() {
+  const panel = document.getElementById('tweaksPanel');
+  if (panel.classList.contains('open')) {
+    panel.classList.remove('open');
+    setTimeout(() => panel.classList.add('hidden'), 280);
+  } else {
+    panel.classList.remove('hidden');
+    requestAnimationFrame(() => panel.classList.add('open'));
+  }
+}
+
+function updateFontScale(val) {
+  document.documentElement.style.setProperty('--font-scale', val);
+  document.getElementById('fontScaleValue').textContent = parseFloat(val).toFixed(1) + 'x';
+}
+
+function updateWidth(val) {
+  document.documentElement.style.setProperty('--content-width', val + 'px');
+  document.getElementById('widthValue').textContent = val + 'px';
+}
+</script>
+</body>
+</html>

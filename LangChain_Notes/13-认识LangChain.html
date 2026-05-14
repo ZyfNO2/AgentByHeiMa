@@ -1,0 +1,861 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第13集 - 认识LangChain | LangChain学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f8f9fc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f8;
+    --bg-code: #1a1d26;
+    --text-primary: #1a1d26;
+    --text-secondary: #5a6072;
+    --text-muted: #949aad;
+    --primary: oklch(0.55 0.22 250);
+    --primary-light: oklch(0.75 0.15 250);
+    --accent: oklch(0.70 0.18 85);
+    --success: oklch(0.55 0.16 155);
+    --danger: oklch(0.55 0.20 25);
+    --info: oklch(0.55 0.15 230);
+    --border: #e2e4ea;
+    --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+    --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 6px rgba(26,29,38,0.04);
+    --shadow-lg: 0 8px 30px rgba(26,29,38,0.10), 0 4px 12px rgba(26,29,38,0.06);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --font-scale: 1;
+    --line-height-scale: 1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.7 * var(--line-height-scale);
+    font-size: 16px * var(--font-scale);
+    -webkit-font-smoothing: antialiased;
+    transition: font-size .3s ease, line-height .3s ease;
+  }
+
+  /* ===== Header / Navigation ===== */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: rgba(248,249,252,0.78);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    transition: box-shadow .3s ease;
+  }
+  .header.scrolled { box-shadow: var(--shadow-sm); }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; padding: 0 24px;
+  }
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px;
+    color: var(--primary); text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+  .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .header-nav { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 600px; }
+  .header-nav a {
+    text-decoration: none; color: var(--text-secondary);
+    font-size: 12px; font-weight: 500; padding: 5px 10px;
+    border-radius: 20px; transition: all .2s;
+    white-space: nowrap;
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .header-nav a:hover, .header-nav a.active {
+    background: var(--primary-light); color: var(--primary);
+  }
+
+  /* ===== Hero Section ===== */
+  .hero {
+    padding: 120px 24px 56px;
+    max-width: 1200px; margin: 0 auto;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--bg-subtle));
+    border: 1px solid oklch(0.85 0.05 250);
+    padding: 6px 16px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; color: var(--primary);
+    margin-bottom: 24px;
+  }
+  .hero-badge::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success); animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700; line-height: 1.15;
+    letter-spacing: -0.03em; margin-bottom: 16px;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero-desc {
+    font-size: 17px; color: var(--text-secondary);
+    max-width: 720px; margin: 0 auto 28px; line-height: 1.65;
+  }
+  .hero-meta {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
+  }
+  .meta-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: var(--radius-xs);
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .meta-tag svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+  /* ===== Content Sections ===== */
+  .content { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+
+  .section {
+    background: var(--bg-surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 36px 40px; margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .section::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary);
+    border-radius: 4px 0 0 4px;
+  }
+  .section.accent::before { background: var(--accent); }
+  .section.success::before { background: var(--success); }
+  .section.info::before { background: var(--info); }
+  .section.danger::before { background: var(--danger); }
+  .section.visible {
+    opacity: 1; transform: translateY(0);
+  }
+  .section:hover { box-shadow: var(--shadow-md); }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--primary); color: #fff;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .section p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* ===== Highlight Box (Key Points) ===== */
+  .highlight-box {
+    display: flex; gap: 16px;
+    background: linear-gradient(135deg, oklch(0.97 0.01 250), var(--bg-surface));
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 20px 22px; margin: 20px 0;
+  }
+  .highlight-box.accent {
+    background: linear-gradient(135deg, oklch(0.98 0.015 85), var(--bg-surface));
+    border-left-color: var(--accent);
+  }
+  .highlight-box.success {
+    background: linear-gradient(135deg, oklch(0.97 0.01 155), var(--bg-surface));
+    border-left-color: var(--success);
+  }
+  .highlight-box.danger {
+    background: linear-gradient(135deg, oklch(0.98 0.015 25), var(--bg-surface));
+    border-left-color: var(--danger);
+  }
+  .highlight-box.info {
+    background: linear-gradient(135deg, oklch(0.97 0.01 230), var(--bg-surface));
+    border-left-color: var(--info);
+  }
+  .hb-icon {
+    flex-shrink: 0; width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-top: 2px;
+  }
+  .hb-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.7; }
+  .hb-body strong { color: var(--text-primary); }
+  .hb-body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-subtle); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: var(--primary);
+  }
+
+  /* ===== Tables ===== */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--primary); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 13px; text-align: left;
+    padding: 12px 16px; color: #fff;
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  tbody td {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text-secondary); vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--bg-subtle); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.97 0.005 250); }
+  table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; background: var(--bg-subtle);
+    padding: 1px 6px; border-radius: 4px; color: var(--primary);
+  }
+
+  /* ===== Code Blocks ===== */
+  .code-block {
+    position: relative; margin: 20px 0; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border);
+    background: var(--bg-code);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: oklch(0.75 0.08 250);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .code-copy-btn {
+    cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+    color: oklch(0.7 0.03 250); font-family: 'Outfit', sans-serif;
+    font-size: 12px; padding: 4px 12px; border-radius: 6px;
+    transition: all .2s;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); }
+  .code-copy-btn.copied { color: var(--success); border-color: oklch(0.55 0.16 155); }
+  pre {
+    margin: 0; padding: 20px 20px 20px 0;
+    overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; line-height: 1.7; color: #e0e2e8;
+    tab-size: 2;
+  }
+  /* Syntax highlighting */
+  pre .kw { color: #c792ea; }
+  pre .fn { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .cmt { color: rgba(255,255,255,0.35); font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .op { color: #89ddff; }
+
+  /* ===== Architecture Diagram (CSS-only) ===== */
+  .arch-diagram {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 14px; margin: 24px 0;
+  }
+  @media (max-width: 768px) {
+    .arch-diagram { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .arch-diagram { grid-template-columns: 1fr; }
+  }
+  .arch-layer {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px 18px;
+    text-align: center; transition: all .25s ease;
+    cursor: default;
+  }
+  .arch-layer:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+  .arch-layer .layer-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 14px; color: var(--primary);
+    margin-bottom: 6px; letter-spacing: -0.01em;
+  }
+  .arch-layer .layer-pkg {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px; color: var(--text-muted);
+    background: var(--bg-subtle); padding: 3px 10px;
+    border-radius: 4px; display: inline-block; margin-bottom: 8px;
+  }
+  .arch-layer .layer-desc {
+    font-size: 12.5px; color: var(--text-secondary); line-height: 1.55;
+  }
+
+  /* ===== Module Grid ===== */
+  .module-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 14px; margin: 20px 0;
+  }
+  @media (max-width: 768px) { .module-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .module-grid { grid-template-columns: 1fr; } }
+  .module-card {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px 18px;
+    transition: all .25s ease;
+  }
+  .module-card:hover { background: var(--bg-surface); box-shadow: var(--shadow-sm); border-color: var(--primary-light); transform: translateY(-2px); }
+  .module-card .mc-icon {
+    font-size: 26px; margin-bottom: 10px;
+  }
+  .module-card .mc-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 15px; color: var(--text-primary);
+    margin-bottom: 5px;
+  }
+  .module-card .mc-desc {
+    font-size: 13px; color: var(--text-muted); line-height: 1.55;
+  }
+
+  /* ===== Footer / Nav Links ===== */
+  .footer-nav {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 60px;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link-card {
+    flex: 1; display: flex; align-items: center; gap: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit;
+    transition: all .25s ease;
+  }
+  .nav-link-card:hover {
+    border-color: var(--primary); box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .nav-link-card.disabled { opacity: .45; pointer-events: none; }
+  .nl-dir { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .nl-label { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .nl-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; }
+
+  .footer-ref {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 40px;
+    text-align: center; font-size: 12.5px; color: var(--text-muted);
+  }
+  .footer-ref a { color: var(--primary); text-decoration: none; }
+
+  /* ===== Tweaks Panel ===== */
+  .tweaks-panel {
+    position: fixed; right: 20px; bottom: 20px;
+    z-index: 999;
+  }
+  .tweaks-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-md);
+    transition: all .25s ease;
+  }
+  .tweaks-toggle:hover { transform: scale(1.08); box-shadow: var(--shadow-lg); }
+  .tweaks-body {
+    position: absolute; bottom: 54px; right: 0;
+    width: 280px; background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 20px;
+    display: none;
+    animation: tweaksIn .2s ease;
+  }
+  .tweaks-body.open { display: block; }
+  @keyframes tweaksIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .tweaks-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tweaks-close {
+    background: none; border: none; cursor: pointer;
+    font-size: 16px; color: var(--text-muted);
+    padding: 2px;
+  }
+  .tweaks-group { margin-bottom: 14px; }
+  .tweaks-label {
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    margin-bottom: 6px; display: block;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .tweaks-slider {
+    width: 100%; height: 4px; border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--bg-subtle); outline: none;
+  }
+  .tweaks-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--primary);
+    cursor: pointer; border: 2px solid #fff;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .section { padding: 24px 20px; }
+    .hero { padding: 100px 16px 40px; }
+    .header-inner { padding: 0 16px; }
+    .content { padding: 0 16px 60px; }
+    .table-wrap { margin: 16px -20px; border-radius: 0; border-left: none; border-right: none; }
+    .header-nav { display: none; }
+  }
+
+  /* ===== Animations ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="hdr">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">LC Notes <span>LangChain</span></a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 什么是 LangChai...</a>
+      <a href="#s2" class="nav-anchor">&sect;2 四层架构体系</a>
+      <a href="#s3" class="nav-anchor">&sect;3 核心模块一览</a>
+      <a href="#s4" class="nav-anchor">&sect;4 快速体验：第一个 Age...</a>
+      <a href="#s5" class="nav-anchor">&sect;5 版本注意事项与常见坑点</a>
+
+      <a href="13-认识LangChain.html" class="active">P13</a>
+      <a href="14-快速入门和Agent原理.html">P14</a>
+      <a href="15-初始化模型.html">P15</a>
+      <a href="16-调用模型.html">P16</a>
+      <a href="17-消息Message.html">P17</a>
+      <a href="21-短期记忆.html">P21</a>
+      <a href="24-需求分析与功能验证.html">P24</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">第 13 集 &middot; 基础入门</div>
+  <h1>认识 <span class="highlight">LangChain</span></h1>
+  <p class="hero-desc">从零理解 LangChain 框架的定义、设计理念与四层架构体系，掌握核心模块全貌，完成第一次 Agent 快速体验。</p>
+  <div class="hero-meta">
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 时长 12:52</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 基础篇</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg> 架构总览</span>
+  </div>
+</section>
+
+<!-- Content -->
+<main class="content">
+
+<!-- S1: What is LangChain -->
+<article class="section" id="s1">
+  <h2 class="section-title"><span class="num">1</span> 什么是 LangChain？</h2>
+
+  <p><strong>LangChain</strong> 是一个开源的 LLM（大语言模型）应用开发框架，由 <strong>Harrison Chase</strong> 于 <strong>2022 年 10 月</strong>创建。它通过<strong>组件化、可组合</strong>的架构，让开发者能够高效构建端到端的 LLM 驱动应用。</p>
+
+  <div class="highlight-box">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>官方定义：</strong>LangChain 是一个用于开发由语言模型驱动的应用程序的框架。它使应用程序具备两大核心能力：<br>
+      &#x2022; <strong>上下文感知（Context Awareness）</strong>：将语言模型连接到外部数据源<br>
+      &#x2022; <strong>推理能力（Reasoning）</strong>：允许语言模型与其环境交互
+    </div>
+  </div>
+
+  <p>简单来说，传统 LLM 应用像是「孤立的专家」——只能基于已有知识回答问题；而 LangChain 应用则是「连接的团队」——能够调用各种工具和资源来解决实际问题。你可以把它想象成一套<strong>智能积木系统</strong>，每个组件都是一块标准化的积木，可以自由拼接组合来构建复杂的 AI 应用。</p>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">为什么需要 LangChain？</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:42%">直接调 API 的痛点</th><th>LangChain 的解决方案</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>模型碎片化，各厂商 API 格式不统一</td><td><strong>统一抽象层</strong>：一套代码兼容 OpenAI / Anthropic / Ollama / DeepSeek 等</td></tr>
+        <tr><td>多轮对话需要手动管理上下文历史</td><td><strong>Memory 组件</strong>：自动管理会话记忆与上下文窗口</td></tr>
+        <tr><td>LLM 无法获取实时信息或私有数据</td><td><strong>RAG + Retrieval</strong>：检索增强生成，连接向量数据库与企业知识库</td></tr>
+        <tr><td>复杂任务需要硬编码流程逻辑</td><td><strong>Chains + Agents</strong>：声明式链式调用 + 自主决策的 Agent 循环</td></tr>
+        <tr><td>无法让 LLM 调用工具/执行操作</td><td><strong>Tools 集成</strong>：搜索引擎、数据库、API、文件系统等 100+ 工具</td></tr>
+        <tr><td>调试困难，难以追踪每一步执行过程</td><td><strong>LangSmith</strong>：可视化调试、测试评估、监控追踪平台</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>核心价值：</strong>LangChain 的价值不在于功能数量，而在于为 LLM 应用开发提供了一套<strong>系统化的框架</strong>——<code>组件化</code>拆解复杂应用为可复用模块，<code>可组合</code>灵活拼装不同组件构建工作流，<code>可扩展</code>随业务需求变化自由调整架构。
+    </div>
+  </div>
+</article>
+
+<!-- S2: Four-Layer Architecture -->
+<article class="section accent" id="s2">
+  <h2 class="section-title"><span class="num">2</span> 四层架构体系</h2>
+
+  <p>LangChain 采用清晰的分层架构，各层职责明确且可独立使用。这是理解整个框架的关键：</p>
+
+  <!-- Architecture Diagram -->
+  <div class="arch-diagram">
+    <div class="arch-layer">
+      <div class="layer-name">应用层</div>
+      <div class="layer-pkg">langgraph</div>
+      <div class="layer-desc">Agent 编排、状态管理、有状态工作流、人机协作</div>
+    </div>
+    <div class="arch-layer">
+      <div class="layer-name">组件层</div>
+      <div class="layer-pkg">langchain</div>
+      <div class="layer-desc">Chains、Agents、Retrieval 等通用认知架构策略</div>
+    </div>
+    <div class="arch-layer">
+      <div class="layer-name">集成层</div>
+      <div class="layer-pkg">langchain-community</div>
+      <div class="layer-desc">第三方模型、工具、向量库、文档加载器</div>
+    </div>
+    <div class="arch-layer">
+      <div class="layer-name">核心层</div>
+      <div class="layer-pkg">langchain-core</div>
+      <div class="layer-desc">基础抽象、Runnable 接口、LCEL、Message 类型</div>
+    </div>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">逐层详解</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:22%">包名</th><th style="width:15%">定位</th><th>核心内容</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>langchain-core</code></td>
+          <td>框架基石</td>
+          <td>定义 Runnable 统一接口、LCEL 表达式语言、Base 抽象类（LLM/Embeddings/Retriever/Tool）、Message 类型体系、序列化协议。<strong>无任何第三方依赖</strong>，保持极致轻量。</td>
+        </tr>
+        <tr>
+          <td><code>langchain</code></td>
+          <td>认知架构</td>
+          <td>包含 Chains（链式调用）、Agents（智能体）、Retrieval Strategies（检索策略）等通用模式。不绑定任何特定集成，适用于所有模型提供商。</td>
+        </tr>
+        <tr>
+          <td><code>langchain-community</code></td>
+          <td>生态扩展</td>
+          <td>社区维护的第三方集成：20+ LLM（OpenAI/Anthropic/Gemini/Ollama）、100+ 工具、30+ 向量库（Pinecone/FAISS/Milvus）、50+ 文档加载器。所有依赖均为可选。</td>
+        </tr>
+        <tr>
+          <td><code>langgraph</code></td>
+          <td>图编排引擎</td>
+          <td>LangChain 的扩展包，通过<strong>有向图结构</strong>建模步骤（边和节点），实现有状态的多角色 LLM 应用。支持循环、分支、并行、持久化断点续跑、Human-in-the-Loop。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#9989;</div>
+    <div class="hb-body">
+      <strong>关键结论：</strong>LangChain 是构建 AI 应用的「骨架」，LangGraph 是赋予其复杂行为的「肌肉」，LangSmith 则是提供洞察的「神经系统」。在 1.0 架构中，<strong>LangGraph 已成为 Agent 的默认运行时</strong>，实现了从「链」到「图」的底层升级。
+    </div>
+  </div>
+</article>
+
+<!-- S3: Core Modules -->
+<article class="section info" id="s3">
+  <h2 class="section-title"><span class="num">3</span> 核心模块一览</h2>
+
+  <p>LangChain 将 LLM 应用开发拆分为六大核心模块，每个模块解决一类特定问题：</p>
+
+  <div class="module-grid">
+    <div class="module-card">
+      <div class="mc-icon">&#129302;</div>
+      <div class="mc-title">Models（模型）</div>
+      <div class="mc-desc">统一接口调用各类 LLM（ChatOpenAI / ChatAnthropic / ChatOllama），支持同步/异步/流式/批量多种调用方式</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-icon">&#128221;</div>
+      <div class="mc-title">Prompts（提示词）</div>
+      <div class="mc-desc">提示词模板（ChatPromptTemplate / StringPromptTemplate）、示例选择器、输出解析器（Output Parser）</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-icon">&#128451;</div>
+      <div class="mc-title">Memory（记忆）</div>
+      <div class="mc-desc">会话记忆管理，支持 BufferWindow / TokenWindow / ConversationSummary 等多种策略，解决多轮对话上下文问题</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-icon">&#128279;</div>
+      <div class="mc-title">Chains（链）</div>
+      <div class="mc-desc">用 LCEL 将多个组件串联成处理管道，支持顺序执行、分支、并行、动态路由等复杂逻辑</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-icon">&#128295;</div>
+      <div class="mc-title">Tools（工具）</div>
+      <div class="mc-desc">赋予 LLM 调用外部能力：搜索 API、数据库查询、代码执行、文件读写等 100+ 内置/自定义工具</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-icon">&#129363;</div>
+      <div class="mc-title">Agents（智能体）</div>
+      <div class="mc-desc">自主决策的 AI Agent，通过 ReAct 循环（Thought->Action->Observation）自主规划并执行多步任务</div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>额外模块（进阶）：</strong>除上述六大模块外，LangChain 还包含 <strong>Retrieval（检索）</strong>——文档加载、文本分割、向量化、检索匹配，是 RAG 系统的核心基础设施；以及 <strong>Callbacks（回调）</strong>——用于日志记录、追踪、流式事件监听等。
+    </div>
+  </div>
+</article>
+
+<!-- S4: Quick Start -->
+<article class="section" id="s4">
+  <h2 class="section-title"><span class="num">4</span> 快速体验：第一个 Agent</h2>
+
+  <p>让我们通过一个最简示例，感受 LangChain 的魅力。以下代码展示如何用不到 10 行核心逻辑创建一个具有搜索能力的 AI Agent：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt"># === 安装依赖 ===</span>
+<span class="cmt"># pip install langchain langchain-openai langchain-community</span>
+
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain.agents <span class="kw">import</span> create_react_agent, AgentExecutor
+<span class="kw">from</span> langchain_community.tools <span class="kw">import</span> DuckDuckGoSearchRun
+
+<span class="cmt"># 1. 初始化模型</span>
+llm = <span class="fn">ChatOpenAI</span>(
+    model=<span class="str">"gpt-4o-mini"</span>,
+    temperature=<span class="num">0.7</span>,
+)
+
+<span class="cmt"># 2. 准备工具（搜索能力）</span>
+tools = [<span class="fn">DuckDuckGoSearchRun</span>()]
+
+<span class="cmt"># 3. 创建 ReAct Agent</span>
+agent = <span class="fn">create_react_agent</span>(llm, tools)
+agent_executor = <span class="fn">AgentExecutor</span>(
+    agent=agent,
+    tools=tools,
+    verbose=<span class="kw">True</span>,   <span class="cmt"># 打印思考过程</span>
+    handle_parsing_errors=<span class="kw">True</span>,  <span class="cmt"># 容错处理</span>
+)
+
+<span class="cmt"># 4. 运行！</span>
+response = agent_executor.<span class="fn">invoke</span>({
+    <span class="str">"input"</span>: <span class="str">"今天是几号？现在的天气怎么样？"</span>
+})
+
+<span class="fn">print</span>(response[<span class="str">"output"</span>])</code></pre>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#128640;</div>
+    <div class="hb-body">
+      <strong>运行后你会看到类似这样的思考链路：</strong><br>
+      <code>&gt; Entering new AgentExecutor chain...</code><br>
+      <code>Thought: 我需要搜索今天的日期和天气信息...</code><br>
+      <code>Action: duckduckgo_search</code><br>
+      <code>Action Input: "today date weather Beijing"</code><br>
+      <code>Observation: [搜索结果...]</code><br>
+      <code>Thought: 根据搜索结果，我可以回答了...</code><br>
+      <code>Final Answer: 今天是xxx，北京天气xxx</code>
+    </div>
+  </div>
+
+  <p>这就是 Agent 的核心魅力——<strong>它不是简单地生成文字，而是能够自主思考、选择工具、获取信息、最终给出答案</strong>。整个过程对用户完全透明（verbose=True 时可看到完整推理链路）。</p>
+</article>
+
+<!-- S5: Version & Pitfalls -->
+<article class="section danger" id="s5">
+  <h2 class="section-title"><span class="num">5</span> 版本注意事项与常见坑点</h2>
+
+  <p>在正式投入开发之前，有几个关键的版本和配置问题需要特别注意：</p>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:20px 0 12px;color:var(--text-primary);">版本演进路线</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:18%">版本</th><th style="width:28%">时间节点</th><th>主要变化</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>v0.0.x ~ v0.1.x</code></td><td>2022.10 - 2023 初</td><td>早期版本，Chain 子类为主（LLMChain / ConversationalRetrievalChain 等）</td></tr>
+        <tr><td><code>v0.2.x</code></td><td>2024 初</td><td>LCEL 成为首选方式，废弃旧 Chain 子类，推荐 Runnable 接口</td></tr>
+        <tr><td><code>v0.3.x</code></td><td>2024 中</td><td>架构重构：拆分为 core/community/main/graph 四包，引入 Pydantic v2</td></tr>
+        <tr><td><code>v1.0</code></td><td>2025</td><td>稳定版发布，LangGraph 成 Agent 默认运行时，全面推荐 LCEL</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 12px;color:var(--text-primary);">新手必踩坑清单</h3>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#9888;&#65039;</div>
+    <div class="hb-body">
+      <strong>坑点 1 — 用错了导入路径：</strong>v0.3+ 后大量类被迁移到独立包中。例如 <code>ChatOpenAI</code> 不再从 <code>langchain.chat_models</code> 导入，而是从 <code>langchain_openai</code> 导入。安装时需 <code>pip install langchain-openai</code>。
+    </div>
+  </div>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#9888;&#65039;</div>
+    <div class="hb-body">
+      <strong>坑点 2 — API Key 泄露风险：</strong>绝对不要将 API Key 硬编码在源码中。应使用 <code>.env</code> 文件配合 <code>python-dotenv</code> 或系统环境变量加载。Git 提交前务必检查 <code>.gitignore</code> 是否排除了 <code>.env</code> 文件。
+    </div>
+  </div>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#9888;&#65039;</div>
+    <div class="hb-body">
+      <strong>坑点 3 — 依赖冲突：</strong>LangChain 生态涉及大量可选依赖。建议使用虚拟环境（venv / conda），按需安装：<code>pip install langchain-openai langchain-community</code>，避免一次性装全部依赖导致版本冲突。
+    </div>
+  </div>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#9888;&#65039;</div>
+    <div class="hb-body">
+      <strong>坑点 4 — 过时的教程代码：</strong>网上大量 2023 年的教程仍在使用 <code>LLMChain</code>、<code>ConversationChain</code> 等已废弃的 API。请以<a href="https://www.langchain.com.cn/docs/" style="color:var(--primary)">官方最新文档</a>为准，优先使用 LCEL + Runnable 方式编写代码。
+    </div>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#128170;</div>
+    <div class="hb-body">
+      <strong>推荐安装命令（精简版）：</strong><br>
+      <code>pip install langchain langchain-core langchain-openai langchain-community python-dotenv</code>
+    </div>
+  </div>
+</article>
+
+</main>
+
+<!-- Footer Nav -->
+<nav class="footer-nav">
+  <a href="12-编程调用大模型.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 12 集 - 编程调用大模型</div>
+    </div>
+  </a>
+  <a href="14-快速入门和Agent原理.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 14 集 - 快速入门和Agent原理</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="footer-ref">
+  参考来源：<a href="https://www.langchain.com.cn/docs/concepts/" target="_blank">LangChain 官方概念指南</a> &middot;
+  视频来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">B站 黑马程序员 BV178w1z7EHQ</a>
+</div>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+  <button class="tweaks-toggle" onclick="toggleTweaks()" title="调节面板">&#9881;</button>
+  <div class="tweaks-body" id="tweaksBody">
+    <div class="tweaks-title">
+      Tweaks
+      <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">字体大小</label>
+      <input type="range" class="tweaks-slider" min="0.85" max="1.25" step="0.05" value="1" oninput="setFontSize(this.value)">
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">行距</label>
+      <input type="range" class="tweaks-slider" min="0.9" max="1.4" step="0.05" value="1" oninput="setLineHeight(this.value)">
+    </div>
+  </div>
+</div>
+
+<script>
+// Scroll header effect
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => {
+  hdr.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// Intersection Observer for fade-up animations
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+
+// Copy code button
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '已复制!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// Tweaks Panel
+function toggleTweaks() {
+  document.getElementById('tweaksBody').classList.toggle('open');
+}
+
+function setFontSize(val) {
+  document.documentElement.style.setProperty('--font-scale', val);
+}
+
+function setLineHeight(val) {
+  document.documentElement.style.setProperty('--line-height-scale', val);
+}
+</script>
+</body>
+</html>

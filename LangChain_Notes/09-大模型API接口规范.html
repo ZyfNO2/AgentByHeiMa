@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 09 集 - 大模型 API 接口规范 | LangChain 学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f8f9fc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f8;
+    --bg-code: #1a1d26;
+    --text-primary: #1a1d26;
+    --text-secondary: #5a6072;
+    --text-muted: #949aad;
+    --primary: oklch(0.55 0.22 250);
+    --primary-light: oklch(0.75 0.15 250);
+    --accent: oklch(0.70 0.18 85);
+    --success: oklch(0.55 0.16 155);
+    --danger: oklch(0.55 0.20 25);
+    --info: oklch(0.55 0.15 230);
+    --border: #e2e4ea;
+    --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+    --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 6px rgba(26,29,38,0.04);
+    --shadow-lg: 0 8px 30px rgba(26,29,38,0.10), 0 4px 12px rgba(26,29,38,0.06);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --font-scale: 1;
+    --line-height-scale: 1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page); color: var(--text-primary);
+    line-height: 1.7; font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    transition: font-size .3s ease, line-height .3s ease;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(248,249,252,0.78);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--border); transition: box-shadow .3s ease;
+  }
+  .header.scrolled { box-shadow: var(--shadow-sm); }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; padding: 0 24px;
+  }
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px;
+    color: var(--primary); text-decoration: none; letter-spacing: -0.02em;
+  }
+  .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .header-nav { display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 720px; }
+  .header-nav a {
+    text-decoration: none; color: var(--text-secondary);
+    font-size: 11.5px; font-weight: 500; padding: 5px 9px;
+    border-radius: 20px; transition: all .2s; white-space: nowrap;
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .header-nav a:hover, .header-nav a.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+
+  /* ===== Hero ===== */
+  .hero { padding: 120px 24px 56px; max-width: 1200px; margin: 0 auto; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--bg-subtle));
+    border: 1px solid oklch(0.85 0.05 250);
+    padding: 6px 16px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 24px;
+  }
+  .hero-badge::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--info); animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 16px;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero-desc { font-size: 17px; color: var(--text-secondary); max-width: 720px; margin: 0 auto 28px; line-height: 1.65; }
+  .hero-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+  .meta-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: var(--radius-xs);
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .meta-tag svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+  /* ===== Content Sections ===== */
+  .content { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+  .section {
+    background: var(--bg-surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 36px 40px; margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .section::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary); border-radius: 4px 0 0 4px;
+  }
+  .section.accent::before { background: var(--accent); }
+  .section.success::before { background: var(--success); }
+  .section.info::before { background: var(--info); }
+  .section.danger::before { background: var(--danger); }
+  .section.visible { opacity: 1; transform: translateY(0); }
+  .section:hover { box-shadow: var(--shadow-md); }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--primary); color: #fff;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .section p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* ===== Highlight Box ===== */
+  .highlight-box {
+    display: flex; gap: 16px;
+    background: linear-gradient(135deg, oklch(0.97 0.01 250), var(--bg-surface));
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 20px 22px; margin: 20px 0;
+  }
+  .highlight-box.accent { background: linear-gradient(135deg, oklch(0.98 0.015 85), var(--bg-surface)); border-left-color: var(--accent); }
+  .highlight-box.success { background: linear-gradient(135deg, oklch(0.97 0.01 155), var(--bg-surface)); border-left-color: var(--success); }
+  .highlight-box.danger { background: linear-gradient(135deg, oklch(0.98 0.015 25), var(--bg-surface)); border-left-color: var(--danger); }
+  .highlight-box.info { background: linear-gradient(135deg, oklch(0.97 0.01 230), var(--bg-surface)); border-left-color: var(--info); }
+  .hb-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-top: 2px; }
+  .hb-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.7; }
+  .hb-body strong { color: var(--text-primary); }
+  .hb-body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-subtle); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: var(--primary);
+  }
+
+  /* ===== Tables ===== */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--primary); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 13px; text-align: left;
+    padding: 12px 16px; color: #fff;
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  tbody td {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text-secondary); vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--bg-subtle); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.97 0.005 250); }
+  table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; background: var(--bg-subtle);
+    padding: 1px 6px; border-radius: 4px; color: var(--primary);
+  }
+
+  /* ===== Code Blocks ===== */
+  .code-block {
+    position: relative; margin: 20px 0; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border); background: var(--bg-code);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: oklch(0.75 0.08 250);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .code-copy-btn {
+    cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+    color: oklch(0.7 0.03 250); font-family: 'Outfit', sans-serif;
+    font-size: 12px; padding: 4px 12px; border-radius: 6px; transition: all .2s;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); }
+  .code-copy-btn.copied { color: var(--success); border-color: oklch(0.55 0.16 155); }
+  pre {
+    margin: 0; padding: 20px 20px 20px 0;
+    overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; line-height: 1.7; color: #e0e2e8; tab-size: 2;
+  }
+  pre .kw { color: #c792ea; }
+  pre .fn { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .cmt { color: rgba(255,255,255,0.35); font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .op { color: #89ddff; }
+  pre .key { color: #ffcb6b; }
+  pre .val { color: #c3e88d; }
+
+  /* ===== JSON Visual Block ===== */
+  .json-visual {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px 24px; margin: 20px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.8;
+  }
+  .json-visual .j-key { color: var(--primary); font-weight: 600; }
+  .json-visual .j-str { color: var(--success); }
+  .json-visual .j-num { color: var(--accent); }
+  .json-visual .j-bool { color: var(--danger); }
+  .json-visual .j-null { color: var(--text-muted); font-style: italic; }
+  .json-visual .j-bracket { color: var(--text-muted); }
+  .json-visual .j-comment { color: var(--text-muted); font-style: italic; font-size: 12px; }
+
+  /* ===== API Flow Diagram ===== */
+  .api-flow {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; margin: 24px 0; flex-wrap: wrap;
+  }
+  .api-flow-node {
+    background: var(--bg-surface); border: 2px solid var(--border);
+    border-radius: var(--radius-xs); padding: 10px 18px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    font-weight: 600; color: var(--text-primary);
+    transition: all .25s ease;
+  }
+  .api-flow-node.client { border-color: var(--primary); color: var(--primary); background: oklch(0.97 0.02 250); }
+  .api-flow-node.server { border-color: var(--success); color: #0d8a5e; background: oklch(0.97 0.02 155); }
+  .api-flow-arrow {
+    color: var(--text-muted); font-size: 18px; font-weight: 700;
+  }
+
+  /* ===== Error Badge ===== */
+  .err-badge {
+    display: inline-block; font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600; padding: 3px 10px;
+    border-radius: 6px;
+  }
+  .err-badge.e401 { background: oklch(0.95 0.03 25); color: #d94a3a; }
+  .err-badge.e429 { background: oklch(0.96 0.04 85); color: #c47a00; }
+  .err-badge.e500 { background: oklch(0.95 0.03 230); color: #2563eb; }
+  .err-badge.ectx { background: oklch(0.95 0.05 280); color: #7c3aed; }
+
+  /* ===== Footer Nav ===== */
+  .footer-nav {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 60px;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link-card {
+    flex: 1; display: flex; align-items: center; gap: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit; transition: all .25s ease;
+  }
+  .nav-link-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .nav-link-card.disabled { opacity: .45; pointer-events: none; }
+  .nl-dir { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .nl-label { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .nl-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; }
+
+  .footer-ref {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 40px;
+    text-align: center; font-size: 12.5px; color: var(--text-muted);
+  }
+  .footer-ref a { color: var(--primary); text-decoration: none; }
+
+  /* ===== Tweaks Panel ===== */
+  .tweaks-panel { position: fixed; right: 20px; bottom: 20px; z-index: 999; }
+  .tweaks-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-md); transition: all .25s ease;
+  }
+  .tweaks-toggle:hover { transform: scale(1.08); box-shadow: var(--shadow-lg); }
+  .tweaks-body {
+    position: absolute; bottom: 54px; right: 0;
+    width: 280px; background: var(--bg-surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 20px; display: none;
+    animation: tweaksIn .2s ease;
+  }
+  .tweaks-body.open { display: block; }
+  @keyframes tweaksIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .tweaks-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tweaks-close { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 2px; }
+  .tweaks-group { margin-bottom: 14px; }
+  .tweaks-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tweaks-slider {
+    width: 100%; height: 4px; border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--bg-subtle); outline: none;
+  }
+  .tweaks-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--primary); cursor: pointer;
+    border: 2px solid #fff; box-shadow: var(--shadow-sm);
+  }
+
+  @media (max-width: 768px) {
+    .section { padding: 24px 20px; }
+    .hero { padding: 100px 16px 40px; }
+    .header-inner { padding: 0 16px; }
+    .content { padding: 0 16px 60px; }
+    .table-wrap { margin: 16px -20px; border-radius: 0; border-left: none; border-right: none; }
+    .header-nav { display: none; }
+    .api-flow { flex-direction: column; }
+    .api-flow-arrow { transform: rotate(90deg); }
+  }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="hdr">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">LC Notes <span>LangChain</span></a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 OpenAI API 成...</a>
+      <a href="#s2" class="nav-anchor">&sect;2 核心端点：请求体结构</a>
+      <a href="#s3" class="nav-anchor">&sect;3 响应体结构详解</a>
+      <a href="#s4" class="nav-anchor">&sect;4 流式响应（SSE）</a>
+      <a href="#s5" class="nav-anchor">&sect;5 错误码与异常处理</a>
+
+      <a href="#">P00</a><a href="#">P01</a><a href="#">P02</a><a href="#">P03</a><a href="#">P04</a><a href="#">P05</a><a href="#">P06</a><a href="#">P07</a>
+      <a href="08-Ollama本地部署.html">P08</a>
+      <a href="09-大模型API接口规范.html" class="active">P09</a>
+      <a href="10-会话记忆.html">P10</a><a href="11-开发环境搭建.html">P11</a><a href="#">P12</a>
+      <a href="13-认识LangChain.html">P13</a><a href="14-快速入门和Agent原理.html">P14</a><a href="15-初始化模型.html">P15</a><a href="16-调用模型.html">P16</a>
+      <a href="17-消息Message.html">P17</a><a href="18-提示词工程.html">P18</a><a href="19-工具Tools.html">P19</a><a href="20-预定义工具Tavily.html">P20</a>
+      <a href="21-短期记忆.html">P21</a><a href="22-短期记忆-持久存储.html">P22</a><a href="23-记忆管理策略.html">P23</a><a href="24-需求分析与功能验证.html">P24</a>
+      <a href="25-对接LangSmith.html">P25</a><a href="26-搭建服务端并对接OSS.html">P26</a><a href="27-AI私厨完成Agent开发.html">P27</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">第 09 集 &middot; 接口规范</div>
+  <h1>大模型 <span class="highlight">API 接口规范</span></h1>
+  <p class="hero-desc">深入理解 OpenAI API 格式如何成为行业标准，掌握 POST /v1/chat/completions 的请求与响应结构、流式 SSE 机制、错误码处理，以及用 Python 原生 requests 库实现完整调用。</p>
+  <div class="hero-meta">
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 时长 18:23</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 1.9 大模型API接口规范</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 21"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> RESTful / SSE</span>
+  </div>
+</section>
+
+<!-- Content -->
+<main class="content">
+
+<!-- S1: OpenAI as Standard -->
+<article class="section" id="s1">
+  <h2 class="section-title"><span class="num">1</span> OpenAI API 成为事实标准</h2>
+
+  <p>在 LLM 应用开发领域，<strong>OpenAI API 格式已经成为了事实上的工业标准</strong>。这意味着什么？意味着几乎所有主流大模型厂商都选择兼容 OpenAI 的接口设计，让开发者可以用同一套代码切换不同的模型后端。</p>
+
+  <div class="api-flow">
+    <div class="api-flow-node client">你的代码 (统一接口)</div>
+    <div class="api-flow-arrow">&rarr;</div>
+    <div class="api-flow-node server">OpenAI</div>
+    <div class="api-flow-node server">DeepSeek</div>
+    <div class="api-flow-node server">Anthropic*</div>
+    <div class="api-flow-node server">Ollama</div>
+    <div class="api-flow-node server">vLLM</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th style="width:20%">厂商/服务</th><th style="width:25%">Base URL 示例</th><th style="width:15%">兼容程度</th><th>备注</th></tr></thead>
+      <tbody>
+        <tr><td><strong>OpenAI</strong></td><td><code>https://api.openai.com/v1</code></td><td><span style="color:var(--success);font-weight:600;">原生</span></td><td>标准制定者</td></tr>
+        <tr><td><strong>DeepSeek</strong></td><td><code>https://api.deepseek.com/v1</code></td><td><span style="color:var(--success);font-weight:600;">完全兼容</span></td><td>直接用 OpenAI SDK</td></tr>
+        <tr><td><strong>Ollama</strong></td><td><code>http://localhost:11434/v1</code></td><td><span style="color:var(--success);font-weight:600;">完全兼容</span></td><td>本地模型运行</td></tr>
+        <tr><td><strong>vLLM</strong></td><td><code>http://localhost:8000/v1</code></td><td><span style="color:var(--success);font-weight:600;">完全兼容</span></td><td>高性能推理引擎</td></tr>
+        <tr><td><strong>Groq</strong></td><td><code>https://api.groq.com/openai/v1</code></td><td><span style="color:var(--success);font-weight:600;">完全兼容</span></td><td>超低延迟推理</td></tr>
+        <tr><td><strong>Together AI</strong></td><td><code>https://api.together.xyz/v1</code></td><td><span style="color:var(--success);font-weight:600;">完全兼容</span></td><td>开源模型托管</td></tr>
+        <tr><td><strong>Anthropic</strong></td><td><code>https://api.anthropic.com</code></td><td><span style="color:var(--accent);font-weight:600;">部分兼容</span></td><td>有独立 SDK，但可用适配层</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>统一接口的核心价值：</strong>切换模型只需修改两个参数 —— <code>base_url</code>（API 地址）和 <code>api_key</code>（密钥）。业务逻辑代码无需任何改动。这让 A/B 测试不同模型、成本优化（日常用小模型、复杂任务切大模型）、多云容灾变得异常简单。
+    </div>
+  </div>
+</article>
+
+<!-- S2: Request Structure -->
+<article class="section accent" id="s2">
+  <h2 class="section-title"><span class="num">2</span> 核心端点：请求体结构</h2>
+
+  <p>所有兼容 OpenAI 格式的 API 都使用同一个核心端点：<code>POST /v1/chat/completions</code>。以下是完整的请求体结构及每个字段的详细说明：</p>
+
+  <div class="json-visual">
+<span class="j-comment">// === HTTP 请求头 ===</span>
+<span class="j-key">POST</span> <span class="j-str">/v1/chat/completions</span> <span class="j-key">HTTP/1.1</span>
+<span class="j-key">Host:</span> api.openai.com
+<span class="j-key">Authorization:</span> Bearer $API_KEY
+<span class="j-key">Content-Type:</span> application/json
+
+<span class="j-comment">// === 请求体 (JSON) ===</span>
+{
+  <span class="j-key">"model"</span>: <span class="j-str">"deepseek-chat"</span>,
+  <span class="j-key">"messages"</span>: [
+    {<span class="j-key">"role"</span>: <span class="j-str">"system"</span>,  <span class="j-key">"content"</span>: <span class="j-str">"你是一个有用的助手。"</span>},
+    {<span class="j-key">"role"</span>: <span class="j-str">"user"</span>,    <span class="j-key">"content"</span>: <span class="j-str">"你好！请介绍一下你自己。"</span>}
+  ],
+  <span class="j-key">"temperature"</span>: <span class="j-num">0.7</span>,
+  <span class="j-key">"max_tokens"</span>: <span class="j-num">1024</span>,
+  <span class="j-key">"stream"</span>: <span class="j-bool">false</span>
+}
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th style="width:16%">字段名</th><th style="width:10%">类型</th><th style="width:12%">默认值</th><th style="width:12%">必填</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>model</code></td>
+          <td><code>string</code></td>
+          <td>-</td>
+          <td><strong>是</strong></td>
+          <td>要使用的模型名称。如 <code>"gpt-4o"</code>、<code>"deepseek-chat"</code>、<code>"qwen2.5:7b"</code></td>
+        </tr>
+        <tr>
+          <td><code>messages</code></td>
+          <td><code>array</code></td>
+          <td>-</td>
+          <td><strong>是</strong></td>
+          <td>对话消息列表，按时间顺序排列。每条消息包含 <code>role</code>(system/user/assistant) 和 <code>content</code></td>
+        </tr>
+        <tr>
+          <td><code>temperature</code></td>
+          <td><code>float</code></td>
+          <td><code>1.0</code></td>
+          <td>否</td>
+          <td>控制随机性。<strong>0 = 确定性输出</strong>，<strong>2.0 = 极高创造性</strong>。推荐范围 0~1</td>
+        </tr>
+        <tr>
+          <td><code>max_tokens</code></td>
+          <td><code>integer</code></td>
+          <td>模型默认</td>
+          <td>否</td>
+          <td>限制响应的最大 token 数。用于控制成本和防止过长输出</td>
+        </tr>
+        <tr>
+          <td><code>stream</code></td>
+          <td><code>boolean</code></td>
+          <td><code>false</code></td>
+          <td>否</td>
+          <td>是否启用流式输出。<code>true</code> 时返回 SSE 事件流而非完整 JSON</td>
+        </tr>
+        <tr>
+          <td><code>top_p</code></td>
+          <td><code>float</code></td>
+          <td><code>1.0</code></td>
+          <td>否</td>
+          <td>核采样参数。与 temperature 二选一使用即可，通常设为 0.9~1.0</td>
+        </tr>
+        <tr>
+          <td><code>stop</code></td>
+          <td><code>string/array</code></td>
+          <td><code>null</code></td>
+          <td>否</td>
+          <td>停止序列。当模型生成到这些 token 时立即停止。如 <code>["\n\nHuman:"]</code></td>
+        </tr>
+        <tr>
+          <td><code>presence_penalty</code></td>
+          <td><code>float</code></td>
+          <td><code>0</code></td>
+          <td>否</td>
+          <td>存在惩罚 (-2.0 ~ 2.0)。正值鼓励讨论新话题</td>
+        </tr>
+        <tr>
+          <td><code>frequency_penalty</code></td>
+          <td><code>float</code></td>
+          <td><code>0</code></td>
+          <td>否</td>
+          <td>频率惩罚 (-2.0 ~ 2.0)。正值降低重复内容</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>messages 数组规则：</strong><br>
+      &#x2022; <strong>第一条通常是 system 消息</strong> —— 设定角色和行为约束<br>
+      &#x2022; <strong>必须保持 user/assistant 交替</strong> —— 不能连续两条相同 role<br>
+      &#x2022; <strong>最后一条必须是 user</strong> —— 表示这是用户当前要问的问题
+    </div>
+  </div>
+</article>
+
+<!-- S3: Response Structure -->
+<article class="section info" id="s3">
+  <h2 class="section-title"><span class="num">3</span> 响应体结构详解</h2>
+
+  <p>当 <code>stream: false</code>（非流式模式）时，API 返回一个完整的 JSON 对象。理解响应结构对于正确解析结果至关重要：</p>
+
+  <div class="json-visual">
+{
+  <span class="j-key">"id"</span>: <span class="j-str">"chatcmpl-a1b2c3d4e5f6"</span>,           <span class="j-comment">// 唯一请求标识符</span>
+  <span class="j-key">"object"</span>: <span class="j-str">"chat.completion"</span>,         <span class="j-comment">// 响应对象类型</span>
+  <span class="j-key">"created"</span>: <span class="j-num">1704067200</span>,                <span class="j-comment">// Unix 时间戳</span>
+  <span class="j-key">"model"</span>: <span class="j-str">"deepseek-chat"</span>,            <span class="j-comment">// 实际使用的模型</span>
+  <span class="j-key">"choices"</span>: [
+    {
+      <span class="j-key">"index"</span>: <span class="j-num">0</span>,
+      <span class="j-key">"message"</span>: {
+        <span class="j-key">"role"</span>: <span class="j-str">"assistant"</span>,             <span class="j-comment">// 消息角色</span>
+        <span class="j-key">"content"</span>: <span class="j-str">"你好！我是AI助手..."</span>   <span class="j-comment">// &lt;== 核心内容在这里</span>
+      },
+      <span class="j-key">"finish_reason"</span>: <span class="j-str">"stop"</span>           <span class="j-comment">// 结束原因</span>
+    }
+  ],
+  <span class="j-key">"usage"</span>: {
+    <span class="j-key">"prompt_tokens"</span>: <span class="j-num">25</span>,              <span class="j-comment">// 输入 token 数</span>
+    <span class="j-key">"completion_tokens"</span>: <span class="j-num">128</span>,         <span class="j-comment">// 输出 token 数</span>
+    <span class="j-key">"total_tokens"</span>: <span class="j-num">153</span>               <span class="j-comment">// 总计 token 数</span>
+  }
+}
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">finish_reason 取值说明</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th style="width:22%">取值</th><th style="width:35%">含义</th><th>处理建议</th></tr></thead>
+      <tbody>
+        <tr><td><code class="err-badge e401" style="padding:2px 8px;">stop</code></td><td>正常结束 —— 模型完成了生成或遇到 stop 序列</td><td>直接使用返回的 content</td></tr>
+        <tr><td><code class="err-badge e429" style="padding:2px 8px;">length</code></td><td>达到 max_tokens 上限 —— 输出被截断</td><td>考虑增大 max_tokens 或分段处理</td></tr>
+        <tr><td><code class="err-badge ectx" style="padding:2px 8px;">tool_calls</code></td><td>模型请求调用工具（Function Calling）</td><td>解析 tool_calls 字段并执行工具</td></tr>
+        <tr><td><code class="err-badge e500" style="padding:2px 8px;">content_filter</code></td><td>内容被安全策略过滤</td><td>检查输入是否有敏感内容</td></tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+
+<!-- S4: Streaming SSE -->
+<article class="section success" id="s4">
+  <h2 class="section-title"><span class="num">4</span> 流式响应（SSE）</h2>
+
+  <p>当设置 <code>stream: true</code> 时，API 不再返回一个完整 JSON，而是通过 <strong>Server-Sent Events (SSE)</strong> 协议持续推送数据块（chunk）。每个 chunk 包含增量生成的文本片段。</p>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#128228;</div>
+    <div class="hb-body">
+      <strong>SSE 数据格式示例：</strong><br>
+      <code>data: {"choices":[{"delta":{"content":"你"},"index":0}]}</code><br>
+      <code>data: {"choices":[{"delta":{"content":"好"},"index":0}]}</code><br>
+      <code>data: {"choices":[{"delta":{"content":"！"},"index":0}]}</code><br>
+      <code>data: [DONE]</code> <span style="color:var(--text-muted)">&lt;-- 流结束标记</span>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python - 流式调用 (requests)</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">import</span> requests
+<span class="kw">import</span> json
+
+<span class="kw">def</span> <span class="fn">stream_chat</span>(message: <span class="str">str</span>, model: <span class="str">str</span> = <span class="str">"deepseek-chat"</span>):
+    <span class="str">"""使用 SSE 流式读取 API 响应"""</span>
+    url = <span class="str">"https://api.deepseek.com/v1/chat/completions"</span>
+    headers = {
+        <span class="str">"Authorization"</span>: <span class="str">f"Bearer {os.getenv('DEEPSEEK_API_KEY')}"</span>,
+        <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span>,
+    }
+    payload = {
+        <span class="str">"model"</span>: model,
+        <span class="str">"messages"</span>: [{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: message}],
+        <span class="str">"stream"</span>: <span class="kw">True</span>,     <span class="cmt">// 关键：开启流式</span>
+        <span class="str">"temperature"</span>: <span class="num">0.7</span>,
+    }
+
+    response = <span class="fn">requests</span>.post(url, headers=headers, json=payload, stream=<span class="kw">True</span>)
+    response.<span class="fn">raise_for_status</span>()
+
+    full_content = <span class="str">""</span>
+    <span class="kw">for</span> line <span class="kw">in</span> response.iter_lines():
+        <span class="kw">if</span> line:
+            decoded = line.decode(<span class="str">"utf-8"</span>)
+            <span class="kw">if</span> decoded.startswith(<span class="str">"data: "</span>):
+                data_str = decoded[<span class="num">6</span>:]  <span class="cmt">// 去掉 "data: " 前缀</span>
+                <span class="kw">if</span> data_str == <span class="str">"[DONE]"</span>:
+                    <span class="kw">break</span>       <span class="cmt">// 流结束</span>
+                data = json.<span class="fn">loads</span>(data_str)
+                delta = data[<span class="str">"choices"</span>][<span class="num">0</span>].<span class="fn">get</span>(<span class="str">"delta"</span>, {})
+                content = delta.<span class="fn">get</span>(<span class="str">"content"</span>, <span class="str">""</span>)
+                <span class="kw">if</span> content:
+                    <span class="fn">print</span>(content, end=<span class="str">""</span>, flush=<span class="kw">True</span>)  <span class="cmt">// 逐字符打印</span>
+                    full_content += content
+
+    <span class="kw">return</span> full_content
+
+
+<span class="cmt"># 使用示例</span>
+result = <span class="fn">stream_chat</span>(<span class="str">"用生动的语言描述一下春天的公园"</span>)</code></pre>
+  </div>
+</article>
+
+<!-- S5: Error Codes -->
+<article class="section danger" id="s5">
+  <h2 class="section-title"><span class="num">5</span> 错误码与异常处理</h2>
+
+  <p>在实际生产环境中，完善的错误处理是必不可少的。以下是大模型 API 最常见的错误码及其应对策略：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th style="width:14%">HTTP 状态码</th><th style="width:18%">错误码</th><th style="width:30%">含义</th><th>解决方案</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="err-badge e401">401</span></td>
+          <td><code>invalid_api_key</code><br><code>authentication_error</code></td>
+          <td>未授权 —— API Key 无效、过期或缺失</td>
+          <td>检查 <code>.env</code> 中 Key 是否正确，确认账户余额充足</td>
+        </tr>
+        <tr>
+          <td><span class="err-badge e429">429</span></td>
+          <td><code>rate_limit_exceeded</code></td>
+          <td>请求频率超出限额（RPM/TPM/TPD）</td>
+          <td>添加指数退避重试机制；升级套餐提高限额</td>
+        </tr>
+        <tr>
+          <td><span class="err-badge e429">429</span></td>
+          <td><code>insufficient_quota</code></td>
+          <td>账户额度耗尽</td>
+          <td>充值或检查用量统计页面</td>
+        </tr>
+        <tr>
+          <td><span class="err-badge e500">500</span></td>
+          <td><code>internal_server_error</code></td>
+          <td>服务器内部错误（厂商侧问题）</td>
+          <td>等待几秒后自动重试（建议最多 3 次）</td>
+        </tr>
+        <tr>
+          <td><span class="err-badge e500">503</span></td>
+          <td><code>service_unavailable</code></td>
+          <td>服务暂时不可用（维护/过载）</td>
+          <td>启用降级策略，切换备用模型或缓存历史回复</td>
+        </tr>
+        <tr>
+          <td><span class="err-badge ectx">400</span></td>
+          <td><code>context_length_exceeded</code></td>
+          <td>输入 + 预估输出超过模型的上下文窗口上限</td>
+          <td>减少 messages 长度或降低 max_tokens；考虑摘要压缩</td>
+        </tr>
+        <tr>
+          <td><span class="err-badge ectx">400</span></td>
+          <td><code>invalid_request_error</code></td>
+          <td>请求参数格式错误（如 messages 结构不合法）</td>
+          <td>检查 messages 是否 user/assistant 交替且以 user 结尾</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python - 带重试的封装函数</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">import</span> requests
+<span class="kw">import</span> time
+<span class="kw">from</span> typing <span class="kw">import</span> Optional
+
+<span class="kw">def</span> <span class="fn">call_llm_api</span>(
+    messages: list[dict],
+    model: <span class="str">str</span> = <span class="str">"deepseek-chat"</span>,
+    base_url: <span class="str">str</span> = <span class="str">"https://api.deepseek.com/v1"</span>,
+    api_key: Optional[<span class="str">str</span>] = <span class="kw">None</span>,
+    max_retries: <span class="int</span> = <span class="num">3</span>,
+    stream: <span class="bool</span> = <span class="kw">False</span>,
+) -> dict | str:
+    <span class="str">"""
+    可复用的 LLM API 调用函数（带自动重试）
+
+    Args:
+        messages: 消息列表 [{"role": "user", "content": "..."}]
+        model: 模型名称
+        base_url: API 地址（支持切换不同厂商）
+        api_key: API 密钥（不传则从环境变量读取）
+        max_retries: 最大重试次数
+        stream: 是否流式输出
+    Returns:
+        非流式时返回完整 JSON dict；流式时返回拼接后的字符串
+    """</span>
+    url = <span class="str">f"{base_url.rstrip('/')}/chat/completions"</span>
+    headers = {
+        <span class="str">"Authorization"</span>: <span class="str">f"Bearer {api_key or os.getenv('DEEPSEEK_API_KEY')}"</span>,
+        <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span>,
+    }
+    payload = {
+        <span class="str">"model"</span>: model,
+        <span class="str">"messages"</span>: messages,
+        <span class="str">"temperature"</span>: <span class="num">0.7</span>,
+        <span class="str">"max_tokens"</span>: <span class="num">2048</span>,
+        <span class="str">"stream"</span>: stream,
+    }
+
+    <span class="kw">for</span> attempt <span class="kw">in</span> <span class="fn">range</span>(max_retries):
+        <span class="kw">try</span>:
+            resp = <span class="fn">requests</span>.post(url, headers=headers, json=payload, timeout=<span class="num">60</span>)
+            <span class="kw">if</span> resp.status_code == <span class="num">200</span>:
+                <span class="kw">return</span> resp.json()
+            <span class="kw">elif</span> resp.status_code == <span class="num">429</span>:
+                wait = <span class="num">2</span> ** attempt  <span class="cmt">// 指数退避: 1s, 2s, 4s</span>
+                <span class="fn">print</span>(<span class="str">f"限流中，等待 {wait}s 后重试... (第{attempt+1}次)"</span>)
+                time.sleep(wait)
+            <span class="kw">elif</span> resp.status_code == <span class="num">401</span>:
+                <span class="kw">raise</span> <span class="fn">PermissionError</span>(<span class="str">"API Key 无效或已过期"</span>)
+            <span class="kw">else</span>:
+                resp.<span class="fn">raise_for_status</span>()
+        <span class="kw">except</span> requests.exceptions.Timeout:
+            <span class="fn">print</span>(<span class="str">f"请求超时，正在重试 ({attempt+1}/{max_retries})..."</span>)
+        <span class="kw">except</span> requests.exceptions.ConnectionError:
+            <span class="fn">print</span>(<span class="str">f"连接失败，正在重试 ({attempt+1}/{max_retries})..."</span>)
+
+    <span class="kw">raise</span> <span class="fn">RuntimeError</span>(<span class="str">f"API 调用失败，已重试 {max_retries} 次"</span>)
+
+
+<span class="cmt"># ========== 使用示例 ==========</span>
+response = <span class="fn">call_llm_api</span>(
+    messages=[
+        {<span class="str">"role"</span>: <span class="str">"system"</span>, <span class="str">"content"</span>: <span class="str">"你是翻译专家"</span>},
+        {<span class="str">"role"</span>: <span class="str">"user"</span>,   <span class="str">"content"</span>: <span class="str">"将以下中文翻译成英文：人工智能正在改变世界"</span>},
+    ],
+    model=<span class="str">"deepseek-chat"</span>,
+)
+
+answer = response[<span class="str">"choices"</span>][<span class="num">0</span>][<span class="str">"message"</span>][<span class="str">"content"</span>]
+tokens_used = response[<span class="str">"usage"</span>][<span class="str">"total_tokens"</span>]
+<span class="fn">print</span>(<span class="str">f"回答: {answer}"</span>)
+<span class="fn">print</span>(<span class="str">f"Token 用量: {tokens_used}"</span>)</code></pre>
+  </div>
+</article>
+
+</main>
+
+<!-- Footer Nav -->
+<nav class="footer-nav">
+  <a href="08-Ollama本地部署.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 08 集 - Ollama本地部署</div>
+    </div>
+  </a>
+  <a href="10-会话记忆.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 10 集 - 会话记忆</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="footer-ref">
+  参考来源：<a href="https://platform.openai.com/docs/api-reference/chat" target="_blank">OpenAI API Reference</a> &middot;
+  视频来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">B站 黑马程序员 BV178w1z7EHQ</a>
+</div>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+  <button class="tweaks-toggle" onclick="toggleTweaks()" title="调节面板">&#9881;</button>
+  <div class="tweaks-body" id="tweaksBody">
+    <div class="tweaks-title">
+      Tweaks
+      <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">字体大小</label>
+      <input type="range" class="tweaks-slider" min="0.85" max="1.25" step="0.05" value="1" oninput="setFontSize(this.value)">
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">行距</label>
+      <input type="range" class="tweaks-slider" min="0.9" max="1.4" step="0.05" value="1" oninput="setLineHeight(this.value)">
+    </div>
+  </div>
+</div>
+
+<script>
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => { hdr.classList.toggle('scrolled', window.scrollY > 20); });
+
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) setTimeout(() => entry.target.classList.add('visible'), i * 80);
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = '已复制!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function toggleTweaks() { document.getElementById('tweaksBody').classList.toggle('open'); }
+function setFontSize(val) { document.documentElement.style.setProperty('--font-scale', val); }
+function setLineHeight(val) { document.documentElement.style.setProperty('--line-height-scale', val); }
+</script>
+</body>
+</html>

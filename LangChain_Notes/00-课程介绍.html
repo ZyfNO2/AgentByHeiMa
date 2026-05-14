@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第00集 - 课程介绍 | LangChain学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f8f9fc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f8;
+    --bg-code: #1a1d26;
+    --text-primary: #1a1d26;
+    --text-secondary: #5a6072;
+    --text-muted: #949aad;
+    --primary: oklch(0.55 0.22 250);
+    --primary-light: oklch(0.75 0.15 250);
+    --accent: oklch(0.70 0.18 85);
+    --success: oklch(0.55 0.16 155);
+    --danger: oklch(0.55 0.20 25);
+    --info: oklch(0.55 0.15 230);
+    --border: #e2e4ea;
+    --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+    --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 6px rgba(26,29,38,0.04);
+    --shadow-lg: 0 8px 30px rgba(26,29,38,0.10), 0 4px 12px rgba(26,29,38,0.06);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --font-scale: 1;
+    --line-height-scale: 1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.7 * var(--line-height-scale);
+    font-size: 16px * var(--font-scale);
+    -webkit-font-smoothing: antialiased;
+    transition: font-size .3s ease, line-height .3s ease;
+  }
+
+  /* ===== Header / Navigation ===== */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: rgba(248,249,252,0.78);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    transition: box-shadow .3s ease;
+  }
+  .header.scrolled { box-shadow: var(--shadow-sm); }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; padding: 0 24px;
+  }
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px;
+    color: var(--primary); text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+  .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .header-nav { display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 720px; }
+  .header-nav a {
+    text-decoration: none; color: var(--text-secondary);
+    font-size: 11.5px; font-weight: 500; padding: 5px 9px;
+    border-radius: 20px; transition: all .2s;
+    white-space: nowrap;
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .header-nav a:hover, .header-nav a.active {
+    background: var(--primary-light); color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* ===== Hero Section ===== */
+  .hero {
+    padding: 120px 24px 56px;
+    max-width: 1200px; margin: 0 auto;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; left: -200px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, oklch(0.55 0.22 250 / 0.06) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -150px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, oklch(0.70 0.18 85 / 0.05) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .hero > * { position: relative; z-index: 1; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--bg-subtle));
+    border: 1px solid oklch(0.85 0.05 250);
+    padding: 6px 20px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; color: var(--primary);
+    margin-bottom: 28px;
+  }
+  .hero-badge::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success); animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5.5vw, 52px);
+    font-weight: 800; line-height: 1.12;
+    letter-spacing: -0.03em; margin-bottom: 20px;
+  }
+  .hero h1 .gradient-text {
+    background: linear-gradient(135deg, var(--primary) 0%, oklch(0.55 0.20 280) 40%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-desc {
+    font-size: 17.5px; color: var(--text-secondary);
+    max-width: 760px; margin: 0 auto 32px; line-height: 1.7;
+  }
+  .hero-meta {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
+  }
+  .meta-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: var(--radius-xs);
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .meta-tag svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+  /* ===== Content Sections ===== */
+  .content { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+
+  .section {
+    background: var(--bg-surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 36px 40px; margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .section::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary);
+    border-radius: 4px 0 0 4px;
+  }
+  .section.accent::before { background: var(--accent); }
+  .section.success::before { background: var(--success); }
+  .section.info::before { background: var(--info); }
+  .section.danger::before { background: var(--danger); }
+  .section.visible {
+    opacity: 1; transform: translateY(0);
+  }
+  .section:hover { box-shadow: var(--shadow-md); }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--primary); color: #fff;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .section p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* ===== Highlight Box (Key Points) ===== */
+  .highlight-box {
+    display: flex; gap: 16px;
+    background: linear-gradient(135deg, oklch(0.97 0.01 250), var(--bg-surface));
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 20px 22px; margin: 20px 0;
+  }
+  .highlight-box.accent {
+    background: linear-gradient(135deg, oklch(0.98 0.015 85), var(--bg-surface));
+    border-left-color: var(--accent);
+  }
+  .highlight-box.success {
+    background: linear-gradient(135deg, oklch(0.97 0.01 155), var(--bg-surface));
+    border-left-color: var(--success);
+  }
+  .highlight-box.danger {
+    background: linear-gradient(135deg, oklch(0.98 0.015 25), var(--bg-surface));
+    border-left-color: var(--danger);
+  }
+  .highlight-box.info {
+    background: linear-gradient(135deg, oklch(0.97 0.01 230), var(--bg-surface));
+    border-left-color: var(--info);
+  }
+  .hb-icon {
+    flex-shrink: 0; width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-top: 2px;
+  }
+  .hb-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.7; }
+  .hb-body strong { color: var(--text-primary); }
+  .hb-body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-subtle); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: var(--primary);
+  }
+
+  /* ===== Tech Stack Grid ===== */
+  .tech-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px; margin: 24px 0;
+  }
+  .tech-card {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 22px 18px;
+    text-align: center; transition: all .25s ease;
+  }
+  .tech-card:hover {
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+    border-color: var(--primary-light);
+  }
+  .tech-card .tc-icon {
+    font-size: 32px; margin-bottom: 10px;
+  }
+  .tech-card .tc-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 15px; color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .tech-card .tc-desc {
+    font-size: 12px; color: var(--text-muted); line-height: 1.5;
+  }
+
+  /* ===== Timeline / Roadmap ===== */
+  .timeline { margin: 24px 0; position: relative; padding-left: 32px; }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 11px; top: 0; bottom: 0;
+    width: 2px; background: linear-gradient(to bottom, var(--primary), var(--accent), var(--success));
+    border-radius: 2px;
+  }
+  .timeline-item {
+    position: relative; margin-bottom: 24px;
+    padding: 18px 22px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all .25s ease;
+  }
+  .timeline-item:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary-light);
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute; left: -27px; top: 22px;
+    width: 12px; height: 12px;
+    border-radius: 50%; background: var(--primary);
+    border: 3px solid var(--bg-page);
+    box-shadow: 0 0 0 2px var(--primary);
+  }
+  .timeline-item:nth-child(2)::before { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .timeline-item:nth-child(3)::before { background: var(--success); box-shadow: 0 0 0 2px var(--success); }
+  .ti-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  }
+  .ti-chapter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 5px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .ti-chapter.c1 { background: oklch(0.55 0.22 250 / 0.10); color: var(--primary); }
+  .ti-chapter.c2 { background: oklch(0.70 0.18 85 / 0.10); color: #c47a00; }
+  .ti-chapter.c3 { background: oklch(0.55 0.16 155 / 0.10); color: #0d8a5e; }
+  .ti-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 15px; color: var(--text-primary);
+  }
+  .ti-range {
+    font-size: 12px; color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .ti-content {
+    font-size: 13.5px; color: var(--text-secondary); line-height: 1.65;
+  }
+
+  /* ===== Feature List ===== */
+  .feature-list {
+    list-style: none; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px; margin: 20px 0;
+  }
+  .feature-list li {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 18px;
+    background: var(--bg-subtle);
+    border-radius: var(--radius-xs);
+    transition: all .2s ease;
+  }
+  .feature-list li:hover {
+    background: oklch(0.97 0.01 250);
+  }
+  .fl-icon {
+    flex-shrink: 0; width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; margin-top: 1px;
+  }
+  .fl-icon.pri { background: oklch(0.55 0.22 250 / 0.10); }
+  .fl-icon.acc { background: oklch(0.70 0.18 85 / 0.10); }
+  .fl-icon.suc { background: oklch(0.55 0.16 155 / 0.10); }
+  .fl-text {
+    font-size: 14px; color: var(--text-secondary); line-height: 1.6;
+  }
+  .fl-text strong {
+    display: block; font-size: 14px; color: var(--text-primary);
+    font-weight: 600; margin-bottom: 2px;
+  }
+
+  /* ===== Tables ===== */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--primary); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 13px; text-align: left;
+    padding: 12px 16px; color: #fff;
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  tbody td {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text-secondary); vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--bg-subtle); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.97 0.005 250); }
+  table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; background: var(--bg-subtle);
+    padding: 1px 6px; border-radius: 4px; color: var(--primary);
+  }
+
+  /* ===== Code Blocks ===== */
+  .code-block {
+    position: relative; margin: 20px 0; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border);
+    background: var(--bg-code);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: oklch(0.75 0.08 250);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .code-copy-btn {
+    cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+    color: oklch(0.7 0.03 250); font-family: 'Outfit', sans-serif;
+    font-size: 12px; padding: 4px 12px; border-radius: 6px;
+    transition: all .2s;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); }
+  .code-copy-btn.copied { color: var(--success); border-color: oklch(0.55 0.16 155); }
+  pre {
+    margin: 0; padding: 20px 20px 20px 0;
+    overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; line-height: 1.7; color: #e0e2e8;
+    tab-size: 2;
+  }
+  pre .kw { color: #c792ea; }
+  pre .fn { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .cmt { color: rgba(255,255,255,0.35); font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .op { color: #89ddff; }
+
+  /* ===== Footer / Nav Links ===== */
+  .footer-nav {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 60px;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link-card {
+    flex: 1; display: flex; align-items: center; gap: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit;
+    transition: all .25s ease;
+  }
+  .nav-link-card:hover {
+    border-color: var(--primary); box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .nav-link-card.disabled { opacity: .45; pointer-events: none; }
+  .nl-dir { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .nl-label { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .nl-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; }
+
+  .footer-ref {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 40px;
+    text-align: center; font-size: 12.5px; color: var(--text-muted);
+  }
+  .footer-ref a { color: var(--primary); text-decoration: none; }
+
+  /* ===== Tweaks Panel ===== */
+  .tweaks-panel {
+    position: fixed; right: 20px; bottom: 20px;
+    z-index: 999;
+  }
+  .tweaks-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-md);
+    transition: all .25s ease;
+  }
+  .tweaks-toggle:hover { transform: scale(1.08); box-shadow: var(--shadow-lg); }
+  .tweaks-body {
+    position: absolute; bottom: 54px; right: 0;
+    width: 280px; background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 20px;
+    display: none;
+    animation: tweaksIn .2s ease;
+  }
+  .tweaks-body.open { display: block; }
+  @keyframes tweaksIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .tweaks-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tweaks-close {
+    background: none; border: none; cursor: pointer;
+    font-size: 16px; color: var(--text-muted);
+    padding: 2px;
+  }
+  .tweaks-group { margin-bottom: 14px; }
+  .tweaks-label {
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    margin-bottom: 6px; display: block;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .tweaks-slider {
+    width: 100%; height: 4px; border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--bg-subtle); outline: none;
+  }
+  .tweaks-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--primary);
+    cursor: pointer; border: 2px solid #fff;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .section { padding: 24px 20px; }
+    .hero { padding: 100px 16px 40px; }
+    .header-inner { padding: 0 16px; }
+    .content { padding: 0 16px 60px; }
+    .table-wrap { margin: 16px -20px; border-radius: 0; border-left: none; border-right: none; }
+    .header-nav { display: none; }
+    .timeline { padding-left: 26px; }
+    .tech-grid { grid-template-columns: repeat(2, 1fr); }
+    .feature-list { grid-template-columns: 1fr; }
+  }
+
+  /* ===== Animations ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="hdr">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">LC Notes <span>LangChain</span></a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 课程定位与目标</a>
+      <a href="#s2" class="nav-anchor">&sect;2 技术栈全景图</a>
+      <a href="#s3" class="nav-anchor">&sect;3 学习路线图</a>
+      <a href="#s4" class="nav-anchor">&sect;4 目标受众与前置要求</a>
+      <a href="#s5" class="nav-anchor">&sect;5 就业方向与课程特色</a>
+
+      <a href="00-课程介绍.html" class="active">P00</a>
+      <a href="01-认识人工智能.html">P01</a>
+      <a href="02-神经网络原理.html">P02</a>
+      <a href="03-大语言模型.html">P03</a>
+      <a href="#">P04</a><a href="#">P05</a><a href="#">P06</a><a href="#">P07</a>
+      <a href="#">P08</a><a href="#">P09</a><a href="#">P10</a><a href="#">P11</a>
+      <a href="#">P12</a>
+      <a href="13-认识LangChain.html">P13</a>
+      <a href="14-快速入门和Agent原理.html">P14</a>
+      <a href="15-初始化模型.html">P15</a>
+      <a href="16-调用模型.html">P16</a>
+      <a href="17-消息Message.html">P17</a>
+      <a href="18-提示词工程.html">P18</a>
+      <a href="19-工具Tools.html">P19</a>
+      <a href="20-预定义工具Tavily.html">P20</a>
+      <a href="21-短期记忆.html">P21</a>
+      <a href="22-短期记忆-持久存储.html">P22</a>
+      <a href="23-记忆管理策略.html">P23</a>
+      <a href="24-需求分析与功能验证.html">P24</a>
+      <a href="25-对接LangSmith.html">P25</a>
+      <a href="26-搭建服务端并对接OSS.html">P26</a>
+      <a href="27-AI私厨完成Agent开发.html">P27</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">第 00 集 &middot; 课程总览</div>
+  <h1><span class="gradient-text">LangChain + LangGraph</span><br>开发实战 2026</h1>
+  <p class="hero-desc">从 AI 基础理论到 LangChain 框架实战，系统掌握 LLM 应用开发的完整技术栈。案例驱动、从入门到项目实战，构建具备搜索、记忆、推理能力的 AI Agent。</p>
+  <div class="hero-meta">
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 时长 07:06</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 第1章 导言</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg> 全 28 集</span>
+  </div>
+</section>
+
+<!-- Content -->
+<main class="content">
+
+<!-- S1: Course Positioning -->
+<article class="section" id="s1">
+  <h2 class="section-title"><span class="num">1</span> 课程定位与目标</h2>
+
+  <p>本课程是<strong>2026 年最新版</strong>的 LangChain + LangGraph 开发实战教程，由黑马程序员出品。它不是一门简单的 API 调用教程，而是一套<strong>从 AI 基础理论到企业级项目落地</strong>的完整学习体系。无论你是刚接触 AI 的初开发者，还是希望系统化掌握 LLM 应用工程化的工程师，这门课程都能为你提供清晰的学习路径和可落地的实战经验。</p>
+
+  <div class="highlight-box">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>一句话定位：</strong>这是一门以<strong>「AI 私厨」完整项目为载体</strong>，从零教你用 Python + LangChain + LangGraph 构建生产级 AI Agent 应用的系统课程。涵盖 AI 通识、框架原理、核心模块、工程实践四大维度。
+    </div>
+  </div>
+
+  <p>在当前 AI 应用爆发式增长的时代背景下，单纯调用 OpenAI API 已经无法满足复杂业务需求。<strong>LangChain</strong> 作为目前最主流的 LLM 应用开发框架，提供了组件化、可组合的架构能力；<strong>LangGraph</strong> 则在此基础上引入有向图编排引擎，让 Agent 具备真正的自主决策和多步推理能力。本课程将带你完整走通这条技术路线。</p>
+</article>
+
+<!-- S2: Tech Stack -->
+<article class="section accent" id="s2">
+  <h2 class="section-title"><span class="num">2</span> 技术栈全景图</h2>
+
+  <p>本课程涉及的技术栈覆盖了从底层模型到上层应用的全链路工具链：</p>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tc-icon">&#129502;</div>
+      <div class="tc-name">Python</div>
+      <div class="tc-desc">核心编程语言，3.10+ 版本</div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-icon">&#129302;</div>
+      <div class="tc-name">LangChain</div>
+      <div class="tc-desc">LLM 应用开发框架 v1.0</div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-icon">&#128272;</div>
+      <div class="tc-name">LangGraph</div>
+      <div class="tc-desc">Agent 图编排运行时</div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-icon">&#128270;</div>
+      <div class="tc-name">LangSmith</div>
+      <div class="tc-desc">调试、测试、监控平台</div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-icon">&#128218;</div>
+      <div class="tc-name">RAG</div>
+      <div class="tc-desc">检索增强生成架构</div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-icon">&#129363;</div>
+      <div class="tc-name">Agent</div>
+      <div class="tc-desc">自主决策智能体</div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-icon">&#128736;</div>
+      <div class="tc-name">FastAPI</div>
+      <div class="tc-desc">高性能异步 Web 框架</div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-icon">&#9729;</div>
+      <div class="tc-name">OSS / Docker</div>
+      <div class="tc-desc">对象存储 & 容器化部署</div>
+    </div>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#9989;</div>
+    <div class="hb-body">
+      <strong>技术选型逻辑：</strong>Python 是 AI/ML 领域事实标准语言 → LangChain 提供 LLM 统一抽象层 → LangGraph 赋予 Agent 复杂行为能力 → RAG 解决知识时效性问题 → FastAPI + Docker 完成生产部署闭环。
+    </div>
+  </div>
+</article>
+
+<!-- S3: Learning Roadmap -->
+<article class="section info" id="s3">
+  <h2 class="section-title"><span class="num">3</span> 学习路线图</h2>
+
+  <p>整个课程按照「<strong>基础铺垫 → 框架入门 → 核心模块 → 项目实战</strong>」的递进式结构设计，共分为三大阶段：</p>
+
+  <div class="timeline">
+    <!-- Phase 1 -->
+    <div class="timeline-item">
+      <div class="ti-header">
+        <span class="ti-chapter c1">第 1 章</span>
+        <span class="ti-title">AI 通识与基础</span>
+        <span class="ti-range">P00 ~ P12</span>
+      </div>
+      <div class="ti-content">
+        从 AI 的定义与发展历程出发，理解人工智能的核心概念、神经网络的运作原理、大语言模型（LLM）的技术演进。这一阶段的目标是建立<strong>扎实的理论基础</strong>，让你不仅知道「怎么用」，更能理解「为什么这样设计」。涵盖内容：AI 三大流派、感知机与反向传播、Transformer 架构、主流 LLM 对比、Prompt Engineering 基础等。
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="timeline-item">
+      <div class="ti-header">
+        <span class="ti-chapter c2">第 2 章</span>
+        <span class="ti-title">LangChain 入门到精通</span>
+        <span class="ti-range">P13 ~ P27</span>
+      </div>
+      <div class="ti-content">
+        进入 LangChain 框架的核心模块体系：Model 初始化与调用、Message 消息类型体系、Prompt 提示词工程、Tools 工具集成、Memory 记忆管理策略。通过<strong>「AI 私厨」</strong>这一贯穿全程的实战项目，将各模块知识点串联成完整的 Agent 应用。最终完成服务端搭建、OSS 对接、LangSmith 集成等生产级能力建设。
+      </div>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="timeline-item">
+      <div class="ti-header">
+        <span class="ti-chapter c3">后续预告</span>
+        <span class="ti-title">进阶专题（规划中）</span>
+        <span class="ti-range">P28+</span>
+      </div>
+      <div class="ti-content">
+        在掌握基础之后，课程计划延伸至以下进阶方向：<strong>Agent 进阶</strong>（Multi-Agent 协作、Tool-use 优化）、<strong>Agentic RAG</strong>（自适应检索策略、查询改写、Hybrid Search）、<strong>LangGraph 深度实践</strong>（状态机设计、Human-in-the-Loop、Checkpoint 持久化）、以及<strong>生产部署最佳实践</strong>（评估体系、成本优化、安全防护）。
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- S4: Target Audience -->
+<article class="section" id="s4">
+  <h2 class="section-title"><span class="num">4</span> 目标受众与前置要求</h2>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:20px 0 14px;color:var(--text-primary);">适合谁学？</h3>
+
+  <ul class="feature-list">
+    <li>
+      <div class="fl-icon pri">&#128187;</div>
+      <div class="fl-text">
+        <strong>Python 后端开发者</strong>
+        希望转型或拓展 AI 应用开发能力的工程师，具备 Python 基础即可快速上手
+      </div>
+    </li>
+    <li>
+      <div class="fl-icon acc">&#129302;</div>
+      <div class="fl-text">
+        <strong>AI/ML 初学者</strong>
+        对大模型应用感兴趣但缺乏系统工程化指导的学生或自学者
+      </div>
+    </li>
+    <li>
+      <div class="fl-icon suc">&#128214;</div>
+      <div class="fl-text">
+        <strong>全栈 / 产品技术人员</strong>
+        需要 AI 能力赋能现有产品的技术负责人或独立开发者
+      </div>
+    </li>
+    <li>
+      <div class="fl-icon pri">&#128640;</div>
+      <div class="fl-text">
+        <strong>求职 / 转行者</strong>
+        目标岗位为 AI 应用开发工程师、Agent 工程师、LLM 应用架构师
+      </div>
+    </li>
+  </ul>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:28px 0 14px;color:var(--text-primary);">前置知识要求</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:30%">知识领域</th><th style="width:25%">要求级别</th><th>具体说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Python 编程</strong></td>
+          <td>基础必备</td>
+          <td>熟悉基本语法、函数、类、装饰器、虚拟环境（venv/conda）。不需要 ML 经验。</td>
+        </tr>
+        <tr>
+          <td><strong>HTTP / API</strong></td>
+          <td>了解即可</td>
+          <td>理解 RESTful API 概念、JSON 数据格式、Request/Response 模型。</td>
+        </tr>
+        <tr>
+          <td><strong>命令行操作</strong></td>
+          <td>基础必备</td>
+          <td>能使用终端执行 pip install、python 运行脚本、基本的文件操作。</td>
+        </tr>
+        <tr>
+          <td><strong>机器学习 / 深度学习</strong></td>
+          <td>非必须</td>
+          <td>第 1 章会从零讲解 AI 基础概念，有 ML 背景者可快速跳过。</td>
+        </tr>
+        <tr>
+          <td><strong>前端开发</strong></td>
+          <td>非必须</td>
+          <td>仅最后部署章节涉及少量前端概念，不影响主体学习。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+
+<!-- S5: Career Directions -->
+<article class="section success" id="s5">
+  <h2 class="section-title"><span class="num">5</span> 就业方向与课程特色</h2>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:20px 0 14px;color:var(--text-primary);">就业方向</h3>
+
+  <p>完成本课程后，你将具备以下岗位的核心竞争力：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:28%">岗位方向</th><th style="width:32%">核心技能要求</th><th>薪资参考（2026）</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>AI 应用开发工程师</strong></td>
+          <td>LangChain/LangGraph、RAG 架构、多模型集成、API 设计</td>
+          <td>15K ~ 35K</td>
+        </tr>
+        <tr>
+          <td><strong>Agent 工程师</strong></td>
+          <td>Agent 编排、Tool 设计、ReAct 循环、状态管理、多 Agent 协作</td>
+          <td>20K ~ 45K</td>
+        </tr>
+        <tr>
+          <td><strong>LLM 应用架构师</strong></td>
+          <td>系统设计、Prompt 工程、评估体系、生产部署、成本优化</td>
+          <td>30K ~ 60K+</td>
+        </tr>
+        <tr>
+          <td><strong>RAG 工程师</strong></td>
+          <td>向量数据库、Embedding、检索策略、文档处理流水线</td>
+          <td>18K ~ 40K</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:28px 0 14px;color:var(--text-primary);">课程五大特色</h3>
+
+  <ul class="feature-list">
+    <li>
+      <div class="fl-icon pri">&#127919;</div>
+      <div class="fl-text">
+        <strong>案例驱动教学</strong>
+        以「AI 私厨」完整项目为主线，每个知识点都对应实际代码演示，拒绝纯理论空谈
+      </div>
+    </li>
+    <li>
+      <div class="fl-icon acc">&#128200;</div>
+      <div class="fl-text">
+        <strong>从入门到项目实战</strong>
+        从 Hello World 级别的第一个 Agent 到生产级服务端部署，完整走通开发全流程
+      </div>
+    </li>
+    <li>
+      <div class="fl-icon suc">&#128218;</div>
+      <div class="fl-text">
+        <strong>理论 + 实践双轨并行</strong>
+        先建立 AI 基础认知（第 1 章），再深入框架工程实践（第 2 章），知其然更知其所以然
+      </div>
+    </li>
+    <li>
+      <div class="fl-icon pri">&#128274;</div>
+      <div class="fl-text">
+        <strong>最新技术栈同步</strong>
+        基于 LangChain v1.0 + LangGraph 最新版本，覆盖 LangSmith 可观测性平台
+      </div>
+    </li>
+    <li>
+      <div class="fl-icon acc">&#128640;</div>
+      <div class="fl-text">
+        <strong>配套资料齐全</strong>
+        提供完整源码、笔记文档、环境配置指南，开箱即用的学习体验
+      </div>
+    </li>
+  </ul>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>配套资料获取方式：</strong>关注黑马程序员官方渠道，课程源码及配套文档将在视频简介中提供下载链接。建议使用 Git 管理代码版本，跟随课程进度逐步提交，形成自己的学习记录。
+    </div>
+  </div>
+</article>
+
+</main>
+
+<!-- Footer Nav -->
+<nav class="footer-nav">
+  <a href="#" class="nav-link-card disabled">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">无（本集为首集）</div>
+    </div>
+  </a>
+  <a href="01-认识人工智能.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 01 集 - 认识人工智能</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="footer-ref">
+  参考来源：<a href="https://www.langchain.com.cn/docs/" target="_blank">LangChain 官方文档</a> &middot;
+  视频来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">B站 黑马程序员 BV178w1z7EHQ</a>
+</div>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+  <button class="tweaks-toggle" onclick="toggleTweaks()" title="调节面板">&#9881;</button>
+  <div class="tweaks-body" id="tweaksBody">
+    <div class="tweaks-title">
+      Tweaks
+      <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">字体大小</label>
+      <input type="range" class="tweaks-slider" min="0.85" max="1.25" step="0.05" value="1" oninput="setFontSize(this.value)">
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">行距</label>
+      <input type="range" class="tweaks-slider" min="0.9" max="1.4" step="0.05" value="1" oninput="setLineHeight(this.value)">
+    </div>
+  </div>
+</div>
+
+<script>
+// Scroll header effect
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => {
+  hdr.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// Intersection Observer for fade-up animations
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+
+// Copy code button
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '已复制!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// Tweaks Panel
+function toggleTweaks() {
+  document.getElementById('tweaksBody').classList.toggle('open');
+}
+
+function setFontSize(val) {
+  document.documentElement.style.setProperty('--font-scale', val);
+}
+
+function setLineHeight(val) {
+  document.documentElement.style.setProperty('--line-height-scale', val);
+}
+</script>
+</body>
+</html>

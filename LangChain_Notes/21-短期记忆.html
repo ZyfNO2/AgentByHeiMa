@@ -1,0 +1,1362 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第21集 - 短期记忆 | LangChain 学习笔记</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8f9fc;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f1f3f8;
+            --text-primary: #1a1d26;
+            --text-secondary: #5a6072;
+            --text-muted: #949aad;
+            --primary: oklch(0.55 0.22 250);
+            --primary-light: oklch(0.75 0.15 250);
+            --primary-dark: oklch(0.40 0.20 250);
+            --accent: oklch(0.70 0.18 85);
+            --accent-light: oklch(0.85 0.12 85);
+            --success: oklch(0.55 0.16 155);
+            --danger: oklch(0.55 0.20 25);
+            --info: oklch(0.55 0.15 230);
+            --border-color: #e2e4ec;
+            --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+            --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 4px rgba(26,29,38,0.04);
+            --shadow-lg: 0 8px 24px rgba(26,29,38,0.10), 0 4px 8px rgba(26,29,38,0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --font-scale: 1;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: calc(16px * var(--font-scale));
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== Header Navigation ===== */
+        .header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            background: rgba(248, 249, 252, 0.78);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 28px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+        }
+
+        .header-logo-icon {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-size: 14px; font-weight: 700;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .header-nav a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+
+        .header-nav a:hover { color: var(--primary); background: var(--bg-subtle); }
+        .header-nav a.active { color: var(--primary); background: oklch(0.55 0.22 250 / 0.10); font-weight: 600; }
+
+        /* ===== Hero Section ===== */
+        .hero {
+            padding-top: 112px;
+            padding-bottom: 48px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, oklch(0.55 0.22 250 / 0.08), oklch(0.70 0.18 85 / 0.08));
+            border: 1px solid oklch(0.55 0.22 250 / 0.15);
+            padding: 6px 18px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 22px;
+        }
+
+        .hero-badge-dot {
+            width: 7px; height: 7px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-desc {
+            font-size: 17px;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin: 0 auto 28px;
+            line-height: 1.65;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .meta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .meta-tag svg { width: 14px; height: 14px; opacity: 0.65; }
+
+        /* ===== Main Content ===== */
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 28px 80px;
+        }
+
+        /* ===== Section Cards with Left Border ===== */
+        .section-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            animation: fadeUp 0.6s ease both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-3px);
+            border-color: oklch(0.55 0.22 250 / 0.25);
+        }
+
+        .section-card.type-orange { border-left-color: var(--accent); }
+        .section-card.type-green { border-left-color: var(--success); }
+        .section-card.type-red { border-left-color: var(--danger); }
+        .section-card.type-purple { border-left-color: #7c3aed; }
+        .section-card.type-info { border-left-color: var(--info); }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-card:nth-child(1) { animation-delay: 0.05s; }
+        .section-card:nth-child(2) { animation-delay: 0.1s; }
+        .section-card:nth-child(3) { animation-delay: 0.15s; }
+        .section-card:nth-child(4) { animation-delay: 0.2s; }
+        .section-card:nth-child(5) { animation-delay: 0.25s; }
+        .section-card:nth-child(6) { animation-delay: 0.3s; }
+        .section-card:nth-child(7) { animation-delay: 0.35s; }
+        .section-card:nth-child(8) { animation-delay: 0.4s; }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .section-icon {
+            width: 46px; height: 46px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 21px;
+            flex-shrink: 0;
+        }
+
+        .section-icon.blue { background: oklch(0.55 0.22 250 / 0.10); color: var(--primary); }
+        .section-icon.orange { background: oklch(0.70 0.18 85 / 0.10); color: #c47a00; }
+        .section-icon.green { background: oklch(0.55 0.16 155 / 0.10); color: #0d8a5e; }
+        .section-icon.red { background: oklch(0.55 0.20 25 / 0.10); color: #d94a3a; }
+        .section-icon.purple { background: oklch(0.50 0.18 300 / 0.10); color: #7c3aed; }
+        .section-icon.info { background: oklch(0.55 0.15 230 / 0.10); color: #2563eb; }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .section-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        /* ===== Text Content ===== */
+        .section-body p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 15px;
+            line-height: 1.75;
+        }
+
+        .section-body p:last-child { margin-bottom: 0; }
+        .section-body strong { color: var(--text-primary); font-weight: 600; }
+
+        .section-body ul, .section-body ol {
+            padding-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        .section-body li {
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-size: 15px;
+            line-height: 1.65;
+        }
+
+        .section-body h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 22px 0 12px;
+            color: var(--text-primary);
+        }
+
+        /* ===== Code Blocks ===== */
+        .code-block {
+            position: relative;
+            margin: 20px 0;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: #1a1d26;
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 18px;
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .code-lang {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .code-dots { display: flex; gap: 6px; }
+        .code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+        .code-dots span:nth-child(1) { background: #ff5f57; }
+        .code-dots span:nth-child(2) { background: #febc2e; }
+        .code-dots span:nth-child(3) { background: #28c840; }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 72px;
+            background: rgba(255,255,255,0.08);
+            border: none;
+            color: rgba(255,255,255,0.5);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .copy-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .copy-btn.copied { color: var(--success); }
+
+        pre {
+            margin: 0;
+            padding: 20px 20px 20px 0;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.68;
+        }
+
+        pre code { color: #e2e4ec; font-family: inherit; }
+
+        /* Syntax Highlighting */
+        .kw { color: #c792ea; }
+        .str { color: #c3e88d; }
+        .cmt { color: #546e7a; font-style: italic; }
+        .fn { color: #82aaff; }
+        .cls { color: #ffcb6b; }
+        .num { color: #f78c6c; }
+        .param { color: #89ddff; }
+        .op { color: #89ddff; }
+
+        /* ===== Tables ===== */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead { background: var(--primary); }
+
+        th {
+            padding: 13px 18px;
+            text-align: left;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 12.5px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        td {
+            padding: 12px 18px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        tbody tr { transition: all 0.2s ease; }
+        tbody tr:nth-child(even) { background: oklch(0.55 0.22 250 / 0.02); }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: oklch(0.55 0.22 250 / 0.05); }
+        tbody tr:hover td { color: var(--text-primary); }
+
+        table code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: var(--bg-subtle);
+            padding: 2px 7px;
+            border-radius: 5px;
+            color: var(--primary-dark);
+        }
+
+        /* ===== Callout Boxes ===== */
+        .callout {
+            display: flex;
+            gap: 14px;
+            padding: 18px 20px;
+            border-radius: var(--radius-md);
+            margin: 20px 0;
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .callout-info {
+            background: oklch(0.55 0.15 230 / 0.07);
+            border: 1px solid oklch(0.55 0.15 230 / 0.15);
+            border-left: 3px solid var(--info);
+        }
+
+        .callout-tip {
+            background: oklch(0.55 0.16 155 / 0.07);
+            border: 1px solid oklch(0.55 0.16 155 / 0.15);
+            border-left: 3px solid var(--success);
+        }
+
+        .callout-warn {
+            background: oklch(0.70 0.18 85 / 0.07);
+            border: 1px solid oklch(0.70 0.18 85 / 0.15);
+            border-left: 3px solid var(--accent);
+        }
+
+        .callout-danger {
+            background: oklch(0.55 0.20 25 / 0.07);
+            border: 1px solid oklch(0.55 0.20 25 / 0.15);
+            border-left: 3px solid var(--danger);
+        }
+
+        .callout-key {
+            background: oklch(0.55 0.22 250 / 0.06);
+            border: 1px solid oklch(0.55 0.22 250 / 0.12);
+            border-left: 3px solid var(--primary);
+        }
+
+        .callout-icon { font-size: 19px; flex-shrink: 0; margin-top: 1px; }
+        .callout-body { flex: 1; }
+        .callout-title { font-weight: 600; color: var(--text-primary); margin-bottom: 4px; font-size: 13.5px; }
+        .callout-text { color: var(--text-secondary); line-height: 1.6; }
+        .callout-text code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: rgba(0,0,0,0.04);
+            padding: 1px 5px;
+            border-radius: 4px;
+            color: var(--primary-dark);
+        }
+
+        /* ===== Flow Diagram ===== */
+        .flow-diagram {
+            margin: 28px 0;
+            padding: 28px;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-lg);
+        }
+
+        .flow-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: wrap;
+        }
+
+        .flow-node {
+            background: var(--bg-surface);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px 20px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            min-width: 130px;
+            transition: all 0.25s ease;
+            cursor: default;
+        }
+
+        .flow-node:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .flow-node.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-color: transparent;
+        }
+
+        .flow-node.accent {
+            background: linear-gradient(135deg, var(--accent), oklch(0.60 0.16 85));
+            color: white;
+            border-color: transparent;
+        }
+
+        .flow-arrow {
+            color: var(--text-muted);
+            font-size: 22px;
+            padding: 0 8px;
+            font-weight: 300;
+        }
+
+        /* ===== Comparison Grid ===== */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .compare-item {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 22px;
+            transition: all 0.25s ease;
+        }
+
+        .compare-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .compare-item-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .compare-item-desc {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.58;
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 28px 48px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 11px 24px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            transition: all 0.25s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-1px);
+        }
+
+        .footer-link.prev::before { content: '\2190'; font-size: 16px; margin-right: 4px; }
+        .footer-link.next::after { content: '\2192'; font-size: 16px; margin-left: 4px; }
+
+        .footer-ref {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .footer-ref a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer-ref a:hover { text-decoration: underline; }
+
+        /* ===== TOC Sidebar ===== */
+        .toc {
+            position: fixed;
+            right: 40px;
+            top: 120px;
+            width: 200px;
+            z-index: 99;
+            display: none;
+        }
+
+        @media (min-width: 1200px) { .toc { display: block; } }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            position: sticky;
+            top: 120px;
+        }
+
+        .toc-list li { margin-bottom: 5px; }
+
+        .toc-list a {
+            display: block;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            padding: 5px 12px;
+            border-left: 2px solid transparent;
+            transition: all 0.2s ease;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .toc-list a:hover,
+        .toc-list a.active {
+            color: var(--primary);
+            border-left-color: var(--primary);
+            background: oklch(0.55 0.22 250 / 0.04);
+        }
+
+        /* ===== Tweaks Panel ===== */
+        .tweaks-panel {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
+        }
+
+        .tweaks-toggle {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+        }
+
+        .tweaks-toggle:hover {
+            transform: scale(1.08) rotate(15deg);
+            box-shadow: 0 8px 30px rgba(79,110,247,0.3);
+        }
+
+        .tweaks-content {
+            position: absolute;
+            bottom: 60px;
+            right: 0;
+            width: 280px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+            display: none;
+            animation: slideUp 0.25s ease;
+        }
+
+        .tweaks-content.open { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tweaks-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tweaks-row {
+            margin-bottom: 14px;
+        }
+
+        .tweaks-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tweaks-label span:last-child {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary);
+            font-size: 11px;
+        }
+
+        .tweaks-slider {
+            width: 100%;
+            height: 5px;
+            border-radius: 3px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--bg-subtle);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(79,110,247,0.3);
+            transition: transform 0.15s ease;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .header-inner { padding: 0 16px; }
+            .header-nav { display: none; }
+            .hero { padding-top: 96px; padding-bottom: 32px; }
+            .main { padding: 0 16px 60px; }
+            .section-card { padding: 24px 20px; border-radius: var(--radius-md); }
+            .section-header { gap: 10px; }
+            .section-icon { width: 40px; height: 40px; font-size: 18px; border-radius: 10px; }
+            .section-title { font-size: 17px; }
+            th, td { padding: 10px 12px; font-size: 13px; }
+            .compare-grid { grid-template-columns: 1fr; }
+            .flow-container { flex-direction: column; }
+            .flow-arrow { transform: rotate(90deg); padding: 4px 0; }
+            .meta-tag { font-size: 11px; padding: 5px 10px; }
+            .tweaks-panel { bottom: 16px; right: 16px; }
+            .tweaks-content { width: 260px; right: -8px; }
+        }
+
+        /* ===== Scrollbar ===== */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <div class="header-inner">
+        <a href="index.html" class="header-logo">
+            <div class="header-logo-icon">LC</div>
+            LangChain Notes
+        </a>
+        <nav class="header-nav">
+      <a href="#why-memory" class="nav-anchor">&sect;1 为什么需要 Memory...</a>
+      <a href="#buffer-memory" class="nav-anchor">&sect;2 Conversation...</a>
+
+            <a href="13-认识LangChain.html">P13</a>
+            <a href="17-消息Message.html">P17</a>
+            <a href="21-短期记忆.html" class="active">P21</a>
+            <a href="22-短期记忆-持久存储.html">P22</a>
+            <a href="23-记忆管理策略.html">P23</a>
+            <a href="24-需求分析与功能验证.html">P24</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        第 21 集 / Memory 模块
+    </div>
+    <h1><span>短期记忆</span> Short-term Memory</h1>
+    <p class="hero-desc">深入理解 LangChain 的 Memory 基类体系，掌握 ConversationBufferMemory 等核心记忆类型的工作原理与使用方式。</p>
+    <div class="hero-meta">
+        <span class="meta-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+            P22 持久存储
+        </span>
+        <span class="meta-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            ~16 min
+        </span>
+        <span class="meta-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>
+            BV178w1z7EHQ
+        </span>
+    </div>
+</section>
+
+<!-- Main Content -->
+<main class="main">
+
+    <!-- Section 1: Why Need Memory -->
+    <article class="section-card" id="why-memory">
+        <div class="section-header">
+            <div class="section-icon blue">?</div>
+            <div>
+                <h2 class="section-title">为什么需要 Memory？</h2>
+                <p class="section-subtitle">大模型的"失忆"困境</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>大语言模型（LLM）本质上是<strong>无状态函数</strong> — 每次 API 调用都是独立的计算过程。模型本身不会记住之前的对话内容，就像每轮对话都是"初次见面"。这导致多轮对话中出现严重的<strong>上下文断裂</strong>问题：</p>
+
+            <div class="callout callout-warn">
+                <span class="callout-icon">!</span>
+                <div class="callout-body">
+                    <div class="callout-title">典型"金鱼记忆"场景</div>
+                    <div class="callout-text">
+                        用户："我想查询订单 12345"<br>
+                        AI："订单 12345 已发货"<br>
+                        用户："什么时候能到？"<br>
+                        AI：<strong>"请问您要查询哪个订单？"</strong>（完全忘了上一句！）
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>Memory 模块的核心价值：</strong></p>
+            <ul>
+                <li><strong>上下文延续</strong> — 让 AI 能引用之前讨论的内容，理解代词指代关系</li>
+                <li><strong>个性化体验</strong> — 记住用户偏好、名字等个性化信息</li>
+                <li><strong>多轮任务完成</strong> — 逐步收集信息，完成复杂任务流程</li>
+                <li><strong>减少重复输入</strong> — 不需要每次重复背景信息</li>
+            </ul>
+
+            <div class="callout callout-key">
+                <span class="callout-icon">*</span>
+                <div class="callout-body">
+                    <div class="callout-title">核心原理</div>
+                    <div class="callout-text">Memory 本质上是一个<strong>上下文管理中间件</strong> — 在每次 LLM 调用前将历史消息注入 Prompt，在调用后将新的交互追加到历史记录中。模型并非真正"记住"，而是我们每次都把"记忆"重新拼在 Prompt 里让它重读一遍。</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 2: BaseMemory Class -->
+    <article class="section-card type-purple" id="basememory">
+        <div class="section-header">
+            <div class="section-icon purple">@</div>
+            <div>
+                <h2 class="section-title">Memory 基类体系</h2>
+                <p class="section-subtitle">BaseMemory 与 BaseChatMessageHistory</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>LangChain 的记忆系统建立在两大抽象基类之上，理解它们是掌握所有 Memory 类型的关键：</p>
+
+            <h3>BaseMemory — 通用记忆逻辑层</h3>
+            <p>定义了所有 Memory 组件必须实现的<strong>四大核心方法</strong>：</p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>方法</th>
+                            <th>作用</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>memory_variables</code></td>
+                            <td>获取变量键名列表</td>
+                            <td>返回该 Memory 会向 Chain 注入哪些键名（如 "history"）</td>
+                        </tr>
+                        <tr>
+                            <td><code>load_memory_variables(inputs)</code></td>
+                            <td>加载记忆数据</td>
+                            <td>根据当前输入，抽取相关记忆并返回字典格式</td>
+                        </tr>
+                        <tr>
+                            <td><code>save_context(inputs, outputs)</code></td>
+                            <td>保存上下文</td>
+                            <td>将本轮的用户输入和模型输出存入记忆</td>
+                        </tr>
+                        <tr>
+                            <td><code>clear()</code></td>
+                            <td>清空记忆</td>
+                            <td>清除所有已存储的记忆数据</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>BaseChatMessageHistory — 消息存储抽象层</h3>
+            <p>专注于对话消息的增删查操作，是所有持久化后端的统一接口：</p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>方法/属性</th>
+                            <th>作用</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>add_messages(messages)</code></td>
+                            <td>添加会话消息（HumanMessage、AIMessage 等）</td>
+                        </tr>
+                        <tr>
+                            <td><code>messages</code> (property)</td>
+                            <td>获取当前所有历史消息列表</td>
+                        </tr>
+                        <tr>
+                            <td><code>clear()</code></td>
+                            <td>清空当前会话的所有消息</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-tip">
+                <span class="callout-icon">+</span>
+                <div class="callout-body">
+                    <div class="callout-title">设计思想</div>
+                    <div class="callout-text">无论消息存储在内存、文件还是数据库，核心操作都是"增、查、清"。通过抽象统一接口，不同存储方式的 Memory 可以<strong>无缝替换</strong> — 这正是 LangChain 组件化设计的核心思想。</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 3: ConversationBufferMemory -->
+    <article class="section-card" id="buffer-memory">
+        <div class="section-header">
+            <div class="section-icon blue">#</div>
+            <div>
+                <h2 class="section-title">ConversationBufferMemory</h2>
+                <p class="section-subtitle">缓冲区记忆 — 最基础的完整存储方案</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p><strong>ConversationBufferMemory</strong> 是最基础也最直观的记忆实现方式。它的核心原理非常简单：<strong>完整保存所有对话历史</strong>，不做任何删减或压缩，并在生成新响应时将全部历史作为上下文传递给 LLM。</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Python</span>
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                </div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain.memory <span class="kw">import</span> ConversationBufferMemory
+<span class="kw">from</span> langchain.chains <span class="kw">import</span> ConversationChain
+
+<span class="cmt"># 初始化 LLM 和 Memory</span>
+llm = ChatOpenAI(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+memory = ConversationBufferMemory(
+    memory_key=<span class="str">"chat_history"</span>,   <span class="cmt"># 自定义键名</span>
+    return_messages=<span class="kw">True</span>          <span class="cmt"># 返回 Message 对象而非字符串</span>
+)
+
+<span class="cmt"># 构建对话链</span>
+chain = ConversationChain(llm=llm, memory=memory, verbose=<span class="kw">True</span>)
+
+<span class="cmt"># 多轮对话测试</span>
+resp1 = chain.invoke({<span class="str">"input"</span>: <span class="str">"我叫小明，今年 25 岁"</span>})
+resp2 = chain.invoke({<span class="str">"input"</span>: <span class="str">"我叫什么名字？"</span>})
+<span class="cmt"># 输出: 你叫小明，今年 25 岁  成功记住！</span></code></pre>
+            </div>
+
+            <h3>关键参数详解</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>参数</th>
+                            <th>类型</th>
+                            <th>默认值</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>memory_key</code></td>
+                            <td>str</td>
+                            <td><code>"history"</code></td>
+                            <td>自定义记忆在 Prompt 中的键名，需与模板中的占位符匹配</td>
+                        </tr>
+                        <tr>
+                            <td><code>return_messages</code></td>
+                            <td>bool</td>
+                            <td><code>False</code></td>
+                            <td>设为 True 时返回 BaseMessage 对象列表；False 返回拼接字符串</td>
+                        </tr>
+                        <tr>
+                            <td><code>input_key</code></td>
+                            <td>str</td>
+                            <td><code>"input"</code></td>
+                            <td>用户输入在 inputs 字典中的键名</td>
+                        </tr>
+                        <tr>
+                            <td><code>output_key</code></td>
+                            <td>str</td>
+                            <td><code>"output"</code></td>
+                            <td>模型输出在 outputs 字典中的键名</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-info">
+                <span class="callout-icon">i</span>
+                <div class="callout-body">
+                    <div class="callout-title">return_messages=True vs False</div>
+                    <div class="callout-text">
+                        当 <code>return_messages=False</code>（默认）：返回格式化字符串如 <code>"Human: 你好\nAI: 你好呀!"</code><br>
+                        当 <code>return_messages=True</code>：返回 <code>[HumanMessage(content='你好'), AIMessage(content='你好呀!')]</code> 对象列表<br>
+                        推荐使用 <code>True</code>，因为与 ChatModel 配合更自然，便于后续处理。
+                    </div>
+                </div>
+            </div>
+
+            <h3>内部存储结构</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Data Structure</span>
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                </div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="cmt"># ConversationBufferMemory 内部存储格式示例</span>{
+    <span class="str">"chat_history"</span>: [
+        {<span class="str">"role"</span>: <span class="str">"human"</span>,     <span class="str">"content"</span>: <span class="str">"你好，介绍一下自己"</span>},
+        {<span class="str">"role"</span>: <span class="str">"ai"</span>,         <span class="str">"content"</span>: <span class="str">"我是一个AI助手..."</span>},
+        {<span class="str">"role"</span>: <span class="str">"human"</span>,     <span class="str">"content"</span>: <span class="str">"那你能告诉我天气吗"</span>},
+        {<span class="str">"role"</span>: <span class="str">"ai"</span>,         <span class="str">"content"</span>: <span class="str">"请问您所在的城市是？"</span>}
+        <span class="cmt"># ... 更多对话按顺序追加</span>
+    ]
+}</code></pre>
+            </div>
+
+            <div class="callout callout-danger">
+                <span class="callout-icon">X</span>
+                <div class="callout-body">
+                    <div class="callout-title">致命缺陷</div>
+                    <div class="callout-text">Token 消耗随对话轮次<strong>线性增长</strong>！聊到 50 轮可能吃掉半个上下文窗口。长对话场景下极易超出模型的 Token 限制导致报错。</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 4: Chain & Agent Usage -->
+    <article class="section-card type-green" id="usage">
+        <div class="section-header">
+            <div class="section-icon green">&gt;</div>
+            <div>
+                <h2 class="section-title">在 Chain 和 Agent 中使用 Memory</h2>
+                <p class="section-subtitle">实际集成方式详解</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <h3>方式一：ConversationChain（经典写法）</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Python</span>
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                </div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain.chains <span class="kw">import</span> ConversationChain
+<span class="kw">from</span> langchain.memory <span class="kw">import</span> ConversationBufferMemory
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+
+llm = ChatOpenAI(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+memory = ConversationBufferMemory(return_messages=<span class="kw">True</span>)
+
+<span class="cmt"># 将 memory 作为参数传入 Chain</span>
+chain = ConversationChain(
+    llm=llm,
+    memory=memory,          <span class="cmt"># 核心：绑定 Memory</span>
+    verbose=<span class="kw">True</span>
+)
+
+<span class="cmt"># 之后每次 invoke 都会自动读写 memory</span>
+result = chain.invoke({<span class="str">"input"</span>: <span class="str">"你好"</span>})</code></pre>
+            </div>
+
+            <h3>方式二：AgentExecutor + Memory（智能体场景）</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Python</span>
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                </div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain.agents <span class="kw">import</span> initialize_agent, AgentType
+<span class="kw">from</span> langchain.tools <span class="kw">import</span> Tool
+<span class="kw">from</span> langchain.memory <span class="kw">import</span> ConversationBufferMemory
+
+<span class="cmt"># 定义工具和 Memory</span>
+tools = [Tool(name=<span class="str">"Calculator"</span>, func=<span class="kw">lambda</span> x: eval(x),
+              description=<span class="str">"用于数学计算"</span>)]
+
+memory = ConversationBufferMemory(
+    memory_key=<span class="str">"chat_history"</span>,
+    return_messages=<span class="kw">True</span>
+)
+
+<span class="cmt"># 创建带记忆的 Agent</span>
+agent = initialize_agent(
+    tools=tools,
+    llm=llm,
+    agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
+    memory=memory,           <span class="cmt"># Agent 也支持 Memory</span>
+    verbose=<span class="kw">True</span>
+)
+
+agent.run(<span class="str">"帮我算一下 123 * 456"</span>)
+agent.run(<span class="str">"刚才的结果加上 100 是多少？"</span>)  <span class="cmt"># 能记住上文！</span></code></pre>
+            </div>
+
+            <div class="callout callout-key">
+                <span class="callout-icon">o</span>
+                <div class="callout-body">
+                    <div class="callout-title">Memory 工作闭环</div>
+                    <div class="callout-text">
+                        <strong>Chain 执行前：</strong>load_memory_variables() 从 Memory 读取历史 注入 Prompt<br>
+                        <strong>Chain 执行中：</strong>LLM 根据完整上下文（含历史）生成响应<br>
+                        <strong>Chain 执行后：</strong>save_context() 将本次 input+output 存入 Memory<br>
+                        如此循环，形成完整的<strong>状态管理闭环</strong>。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 5: Limitations -->
+    <article class="section-card type-red" id="limitations">
+        <div class="section-header">
+            <div class="section-icon red">!</div>
+            <div>
+                <h2 class="section-title">短期记忆的局限性</h2>
+                <p class="section-subtitle">重启即丢失 — 为什么需要持久化</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>默认情况下，所有 Memory 组件都将对话历史存储在<strong>进程内存（RAM）</strong>中。这意味着：</p>
+
+            <div class="compare-grid">
+                <div class="compare-item">
+                    <div class="compare-item-name">程序重启</div>
+                    <div class="compare-item-desc">Python 进程退出后，所有对话记录<strong>永久丢失</strong></div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">服务崩溃</div>
+                    <div class="compare-item-desc">异常宕机导致未保存的记忆全部消失</div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">多实例部署</div>
+                    <div class="compare-item-desc">不同实例之间无法共享记忆状态</div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">Token 爆炸</div>
+                    <div class="compare-item-desc">BufferMemory 随轮次线性增长 Token 消耗</div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <span class="callout-icon">!</span>
+                <div class="callout-body">
+                    <div class="callout-title">解决方案预告</div>
+                    <div class="callout-text">下一集（P22）我们将学习如何通过 <strong>FileChatMessageHistory</strong>、<strong>Redis</strong>、<strong>PostgreSQL</strong> 等后端存储方案解决上述问题，同时引入 <strong>WindowMemory</strong>、<strong>SummaryMemory</strong>、<strong>TokenBufferMemory</strong> 等 Token 控制策略。敬请期待~</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+            <div class="footer-links">
+        <a href="20-预定义工具Tavily.html" class="footer-link prev">上一集：预定义工具Tavily</a>
+        <a href="22-短期记忆-持久存储.html" class="footer-link next">下一集：短期记忆-持久存储</a>
+    </div><div class="footer-ref">
+        参考来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">黑马程序员 LangChain 教程 P21-P23</a> &middot;
+        <a href="https://python.langchain.com/docs/concepts/memory/" target="_blank">LangChain 官方文档</a>
+    </div>
+</footer>
+
+<!-- TOC Sidebar -->
+<nav class="toc">
+    <ul class="toc-list">
+        <li><a href="#why-memory">为什么需要 Memory</a></li>
+        <li><a href="#basememory">Memory 基类体系</a></li>
+        <li><a href="#buffer-memory">ConversationBufferMemory</a></li>
+        <li><a href="#usage">Chain 和 Agent 中使用</a></li>
+        <li><a href="#limitations">局限性分析</a></li>
+    </ul>
+</nav>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+    <button class="tweaks-toggle" onclick="toggleTweaks()" title="Tweaks">&#9881;</button>
+    <div class="tweaks-content" id="tweaksContent">
+        <div class="tweaks-title">
+            Tweaks
+            <small style="color:var(--text-muted);font-weight:400;font-size:11px;">v1.0</small>
+        </div>
+        <div class="tweaks-row">
+            <div class="tweaks-label">
+                <span>字体大小</span>
+                <span id="fontVal">100%</span>
+            </div>
+            <input type="range" class="tweaks-slider" min="0.8" max="1.3" step="0.05" value="1" onchange="changeFont(this.value)">
+        </div>
+        <div class="tweaks-row">
+            <div class="tweaks-label">
+                <span>行高倍数</span>
+                <span id="lineVal">1.7x</span>
+            </div>
+            <input type="range" class="tweaks-slider" min="1.4" max="2.0" step="0.1" value="1.7" onchange="changeLine(this.value)">
+        </div>
+    </div>
+</div>
+
+<script>
+// Copy code button
+function copyCode(btn) {
+    const code = btn.parentElement.querySelector('pre code').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+        }, 2000);
+    });
+}
+
+// Toggle Tweaks panel
+function toggleTweaks() {
+    document.getElementById('tweaksContent').classList.toggle('open');
+}
+
+// Font size adjustment
+function changeFont(val) {
+    document.documentElement.style.setProperty('--font-scale', val);
+    document.getElementById('fontVal').textContent = Math.round(val * 100) + '%';
+}
+
+// Line height adjustment
+function changeLine(val) {
+    document.body.style.lineHeight = val;
+    document.getElementById('lineVal').textContent = val + 'x';
+}
+
+// Close tweaks when clicking outside
+document.addEventListener('click', function(e) {
+    const panel = document.querySelector('.tweaks-panel');
+    if (!panel.contains(e.target)) {
+        document.getElementById('tweaksContent').classList.remove('open');
+    }
+});
+
+// Active TOC highlighting on scroll
+const sections = document.querySelectorAll('.section-card[id]');
+const tocLinks = document.querySelectorAll('.toc-list a');
+
+window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop - 140;
+        if (scrollY >= sectionTop) {
+            current = section.getAttribute('id');
+        }
+    });
+
+    tocLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>
+
+</body>
+</html>

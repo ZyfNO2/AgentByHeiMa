@@ -1,0 +1,995 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第24集 - 实战：需求分析与功能验证 | LangChain 学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ========== Design Tokens ========== */
+:root {
+  --bg-page: #f8f9fc;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f3f8;
+  --bg-accent: #eef2ff;
+  --text-primary: #1a1d26;
+  --text-secondary: #5a6072;
+  --text-muted: #949aad;
+  --primary: oklch(0.55 0.22 250);
+  --primary-light: oklch(0.72 0.15 250);
+  --primary-bg: oklch(0.95 0.05 250);
+  --accent: oklch(0.70 0.18 85);
+  --accent-light: oklch(0.85 0.12 85);
+  --accent-bg: oklch(0.97 0.04 85);
+  --success: oklch(0.55 0.16 155);
+  --danger: oklch(0.55 0.20 25);
+  --info: oklch(0.55 0.15 230);
+  --border: rgba(26,29,38,0.08);
+  --border-strong: rgba(26,29,38,0.14);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-glow: 0 0 30px rgba(79,110,247,0.10);
+
+  /* Tweaks overrides (defaults) */
+  --font-scale: 1;
+  --content-width: 900px;
+}
+
+/* ========== Reset & Base ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Outfit', -apple-system, sans-serif;
+  font-size: calc(16px * var(--font-scale));
+  line-height: 1.75;
+  color: var(--text-primary);
+  background: var(--bg-page);
+}
+h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; line-height: 1.3; }
+a { color: var(--primary); text-decoration: none; transition: opacity .2s; }
+a:hover { opacity: .75; }
+
+/* ========== Header (Glassmorphism) ========== */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(248,249,252,0.78);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-inner {
+  max-width: var(--content-width);
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-logo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--primary);
+  display: flex; align-items: center; gap: 8px;
+}
+.header-logo svg { width: 22px; height: 22px; }
+.header-nav { display: flex; align-items: center; gap: 16px; }
+.header-nav a {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary);
+  transition: color .2s;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+.header-nav a:hover { color: var(--primary); opacity: 1; background: var(--primary-bg); }
+.ep-badge {
+  background: var(--primary); color: #fff;
+  padding: 3px 10px; border-radius: 100px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .03em;
+}
+
+/* ========== Main Content ========== */
+main {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 90px 24px 64px;
+}
+
+/* ========== Hero Section ========== */
+.hero {
+  text-align: center;
+  padding: 48px 0 40px;
+  animation: fadeUp .6s ease-out both;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--primary-bg), var(--bg-accent));
+  border: 1px solid rgba(79,110,247,.18);
+  padding: 6px 16px; border-radius: 100px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, var(--text-primary) 40%, var(--primary));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: 17px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 28px;
+  line-height: 1.65;
+}
+.hero-meta {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+}
+.meta-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12.5px; font-weight: 500;
+  color: var(--text-secondary);
+}
+.meta-chip strong { color: var(--text-primary); }
+
+/* ========== Section Card ========== */
+.section-card {
+  background: var(--bg-surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 24px;
+  animation: fadeUp .5s ease-out both;
+  transition: box-shadow .25s ease, transform .25s ease;
+}
+.section-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.card-bar {
+  width: 4px;
+  flex-shrink: 0;
+}
+.card-bar.primary { background: var(--primary); }
+.card-bar.accent { background: var(--accent); }
+.card-bar.success { background: var(--success); }
+.card-bar.info { background: var(--info); }
+.card-body {
+  padding: 28px 28px 24px;
+}
+.section-card .card-header {
+  display: flex; align-items: flex-start; gap: 0;
+}
+.section-card h2 {
+  font-size: clamp(19px, 2.3vw, 24px);
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-card h2 .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 8px;
+  font-size: 14px; font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.num.pri { background: var(--primary); }
+.num.acc { background: var(--accent); }
+.num.suc { background: var(--success); }
+.num.inf { background: var(--info); }
+.section-card p { color: var(--text-secondary); margin-bottom: 12px; }
+.section-card p:last-child { margin-bottom: 0; }
+
+/* ========== Feature List (with icons) ========== */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.feature-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px;
+  background: var(--bg-subtle);
+  border-radius: 12px;
+  transition: background .2s;
+}
+.feature-item:hover { background: var(--bg-accent); }
+.feature-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+}
+.feature-icon.blue { background: var(--primary-bg); }
+.feature-icon.orange { background: var(--accent-bg); }
+.feature-icon.green { background: oklch(0.95 0.06 155); }
+.feature-icon.cyan { background: oklch(0.94 0.06 230); }
+.feature-text h4 {
+  font-size: 14px; font-weight: 600;
+  margin-bottom: 3px;
+}
+.feature-text p {
+  font-size: 13px; color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ========== Tech Stack Table ========== */
+.tech-table {
+  width: 100%; border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.tech-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--primary);
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+}
+.tech-table th:first-child { border-radius: 10px 0 0 0; }
+.tech-table th:last-child { border-radius: 0 10px 0 0; }
+.tech-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.tech-table tr:nth-child(even) td { background: var(--bg-subtle); }
+.tech-table tr:hover td { background: var(--primary-bg); }
+.tech-table code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  background: var(--bg-subtle);
+  padding: 2px 7px; border-radius: 5px;
+  color: var(--primary);
+}
+
+/* ========== Code Block ========== */
+.code-block {
+  position: relative;
+  margin: 18px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+}
+.code-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg-subtle);
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.code-lang {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11.5px; font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.copy-btn {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11.5px; font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none; border: none;
+  padding: 3px 8px; border-radius: 5px;
+  transition: all .2s;
+}
+.copy-btn:hover { color: var(--primary); background: var(--bg-accent); }
+.code-block pre {
+  margin: 0;
+  padding: 20px 20px;
+  background: var(--bg-subtle);
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+.code-block pre .kw { color: var(--primary); font-weight: 600; }
+.code-block pre .fn { color: var(--accent); }
+.code-block pre .str { color: var(--success); }
+.code-block pre .cmt { color: var(--text-muted); font-style: italic; }
+.code-block pre .builtin { color: var(--info); }
+
+/* ========== Key Point Callout ========== */
+.callout {
+  display: flex; gap: 14px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  margin: 18px 0;
+  border-left: 4px solid;
+}
+.callout.tip { background: var(--primary-bg); border-color: var(--primary); }
+.callout.warn { background: var(--accent-bg); border-color: var(--accent); }
+.callout.ok { background: oklch(0.95 0.06 155); border-color: var(--success); }
+.callout-icon { font-size: 20px; flex-shrink: 0; line-height: 1.5; }
+.callout-content h4 {
+  font-size: 14px; font-weight: 600; margin-bottom: 4px;
+}
+.callout-content p {
+  font-size: 14px; color: var(--text-secondary); margin: 0;
+  line-height: 1.6;
+}
+
+/* ========== Steps List ========== */
+.steps-list {
+  counter-reset: step;
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+.steps-list li {
+  counter-increment: step;
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.steps-list li:last-child { border-bottom: none; }
+.steps-list li::before {
+  content: counter(step);
+  display: flex; align-items: center; justify-content: center;
+  min-width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+}
+.step-content h4 {
+  font-size: 15px; font-weight: 600; margin-bottom: 4px;
+}
+.step-content p {
+  font-size: 14px; color: var(--text-secondary); margin: 0;
+}
+
+/* ========== Architecture Diagram (CSS) ========== */
+.arch-diagram {
+  background: var(--bg-subtle);
+  border-radius: 14px;
+  padding: 28px 24px;
+  margin: 20px 0;
+  text-align: center;
+}
+.arch-diagram .arch-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.arch-flow {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 10px;
+}
+.arch-node {
+  background: var(--bg-surface);
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--text-primary);
+  min-width: 120px;
+  transition: all .25s;
+  box-shadow: var(--shadow-sm);
+}
+.arch-node:hover { border-color: var(--primary); box-shadow: var(--shadow-glow); transform: translateY(-2px); }
+.arch-node.highlight { border-color: var(--primary); background: var(--primary-bg); color: var(--primary); }
+.arch-arrow {
+  color: var(--text-muted);
+  font-size: 20px;
+  font-weight: 300;
+}
+
+/* ========== Footer Navigation ========== */
+.footer-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+.nav-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px; font-weight: 600;
+  transition: all .25s;
+  text-decoration: none;
+}
+.nav-btn.prev {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.nav-btn.next {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(79,110,247,.25);
+}
+.nav-btn.prev:hover { border-color: var(--primary); color: var(--primary); }
+.nav-btn.next:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,110,247,.35); }
+.nav-label { font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 2px; }
+.ref-source {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+/* ========== Tweaks Panel ========== */
+.tweaks-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(79,110,247,.35);
+  transition: all .25s ease;
+  font-size: 20px;
+}
+.tweaks-toggle:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(79,110,247,.45);
+}
+.tweaks-panel {
+  position: fixed;
+  bottom: 84px;
+  right: 24px;
+  z-index: 199;
+  width: 300px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 20px;
+  transform-origin: bottom right;
+  transition: transform .3s cubic-bezier(.16,1,.3,1), opacity .25s ease;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.tweaks-panel.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+.tweaks-panel.hidden {
+  transform: translateY(12px) scale(.96);
+}
+.tweaks-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.tweaks-header h3 {
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.tweaks-close {
+  background: none; border: none;
+  cursor: pointer; font-size: 18px;
+  color: var(--text-muted);
+  padding: 4px; border-radius: 6px;
+  transition: all .2s;
+}
+.tweaks-close:hover { color: var(--text-primary); background: var(--bg-subtle); }
+.tweaks-group { margin-bottom: 16px; }
+.tweaks-group:last-child { margin-bottom: 0; }
+.tweaks-label {
+  font-size: 12px; font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: block;
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.tweaks-slider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--bg-subtle);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+.tweaks-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(79,110,247,.3);
+  transition: transform .15s ease;
+}
+.tweaks-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+.tweaks-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--primary);
+  float: right;
+  margin-top: -22px;
+  font-weight: 600;
+}
+
+/* ========== Animations ========== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.section-card:nth-child(1) { animation-delay: 0s; }
+.section-card:nth-child(2) { animation-delay: .08s; }
+.section-card:nth-child(3) { animation-delay: .16s; }
+.section-card:nth-child(4) { animation-delay: .24s; }
+.section-card:nth-child(5) { animation-delay: .32s; }
+.section-card:nth-child(6) { animation-delay: .40s; }
+
+/* ========== Responsive ========== */
+@media (max-width: 640px) {
+  main { padding: 80px 16px 48px; }
+  .hero { padding: 32px 0 28px; }
+  .card-body { padding: 22px 18px 18px; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .footer-nav { flex-direction: column; }
+  .nav-btn { width: 100%; justify-content: center; }
+  .arch-flow { flex-direction: column; }
+  .arch-arrow { transform: rotate(90deg); }
+  .tweaks-panel { width: calc(100vw - 48px); right: 16px; bottom: 80px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      LangChain Notes
+    </a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 项目概述：AI 私厨是什...</a>
+      <a href="#s2" class="nav-anchor">&sect;2 功能清单梳理</a>
+      <a href="#s3" class="nav-anchor">&sect;3 技术选型确认</a>
+      <a href="#s4" class="nav-anchor">&sect;4 最小可行产品（MVP）验...</a>
+      <a href="#s5" class="nav-anchor">&sect;5 项目目录结构搭建</a>
+      <a href="#s6" class="nav-anchor">&sect;6 系统架构总览</a>
+
+      <a href="23-工具调用进阶.html">Prev</a>
+      <span class="ep-badge">EP.24 / 28</span>
+      <a href="25-对接LangSmith.html">Next</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    实战项目阶段
+  </div>
+  <h1>需求分析与功能验证</h1>
+  <p class="hero-sub">从零构建 AI 私厨 Agent —— 智能菜谱推荐助手的项目规划、技术选型与 MVP 验证全流程</p>
+  <div class="hero-meta">
+    <span class="meta-chip">P.25 <strong>/ 第24集</strong></span>
+    <span class="meta-chip"><strong>14:39</strong> 时长</span>
+    <span class="meta-chip">实战 · Agent 开发</span>
+    <span class="meta-chip">LangChain + OpenAI + Tools</span>
+  </div>
+</section>
+
+<!-- SECTION 1: 项目概述 -->
+<div class="section-card" id="s1">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar primary"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num pri">1</span> 项目概述：AI 私厨是什么？</h2>
+      <p>AI 私厨（AI Personal Chef）是一个基于 <strong>LangChain + 多模态大模型</strong> 的智能食谱推荐应用。用户只需拍摄冰箱或厨房中的食材照片，或用自然语言描述手中的食材与口味偏好，AI 就能自动识别食材、搜索匹配菜谱，并按营养价值和制作难度进行智能排序推荐。</p>
+
+      <div class="callout tip" style="margin-top:18px;">
+        <div class="callout-icon">&#128161;</div>
+        <div class="callout-content">
+          <h4>核心价值主张</h4>
+          <p>解决"打开冰箱不知道做什么吃"的日常痛点。通过多模态输入（图片+文本）+ Web 搜索工具 + Agent 决策循环，实现从「有什么食材」到「今晚吃什么」的全链路智能化。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: 功能清单 -->
+<div class="section-card" id="s2">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar accent"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num acc">2</span> 功能清单梳理</h2>
+      <p>经过需求分析，我们将 AI 私厨拆解为以下核心功能模块：</p>
+
+      <div class="feature-grid">
+        <div class="feature-item">
+          <div class="feature-icon blue">&#128247;</div>
+          <div class="feature-text">
+            <h4>多模态输入</h4>
+            <p>支持图片上传识别食材 + 自然语言描述口味偏好</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon orange">&#128270;</div>
+          <div class="feature-text">
+            <h4>智能菜谱搜索</h4>
+            <p>根据食材自动检索匹配菜谱并排序推荐</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon green">&#129309;</div>
+          <div class="feature-text">
+            <h4>交互式调整</h4>
+            <p>根据用户反馈动态调整推荐结果</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon cyan">&#127869;</div>
+          <div class="feature-text">
+            <h4>营养信息查询</h4>
+            <p>提供每道菜的卡路里、营养成分分析</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: 技术选型 -->
+<div class="section-card" id="s3">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar info"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num inf">3</span> 技术选型确认</h2>
+      <p>基于项目需求和课程所学知识，确定以下技术栈：</p>
+
+      <table class="tech-table">
+        <thead>
+          <tr>
+            <th>技术层</th>
+            <th>选择方案</th>
+            <th>选型理由</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Agent 框架</strong></td>
+            <td><code>LangChain + LangGraph</code></td>
+            <td>Agent 编排 + 状态管理，支持 ReAct 循环</td>
+          </tr>
+          <tr>
+            <td><strong>多模态模型</strong></td>
+            <td><code>qwen-vl-max / qwen3.5-plus</code></td>
+            <td>阿里百炼通义千问，支持图片+文本联合理解</td>
+          </tr>
+          <tr>
+            <td><strong>Web 搜索</strong></td>
+            <td><code>Tavily Search API</code></td>
+            <td>专为 AI Agent 设计的结构化搜索结果</td>
+          </tr>
+          <tr>
+            <td><strong>记忆存储</strong></td>
+            <td><code>SQLite (SqliteSaver)</code></td>
+            <td>轻量级持久化会话记忆，无需额外数据库服务</td>
+          </tr>
+          <tr>
+            <td><strong>后端框架</strong></td>
+            <td><code>FastAPI</code></td>
+            <td>高性能异步框架，原生支持流式输出 SSE</td>
+          </tr>
+          <tr>
+            <td><strong>对象存储</strong></td>
+            <td><code>阿里云 OSS</code></td>
+            <td>存储用户上传的食材图片和菜谱配图</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: MVP 验证 -->
+<div class="section-card" id="s4">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar success"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num suc">4</span> 最小可行产品（MVP）验证</h2>
+      <p>在正式开发完整系统之前，我们先用 Jupyter Notebook 验证核心链路是否跑通。这是敏捷开发中<strong>「先验证再扩展」</strong>的关键步骤。</p>
+
+      <ol class="steps-list">
+        <li>
+          <div class="step-content">
+            <h4>环境变量配置</h4>
+            <p>配置 DASHSCOPE_API_KEY 和 TAVILY_API_KEY，确保模型和搜索工具可用。</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h4>定义搜索工具</h4>
+            <p>使用 TavilySearch 封装 web_search 工具，设置 max_results=5。</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h4>初始化多模态模型</h4>
+            <p>通过 init_chat_model 加载 qwen3.5-plus，设置 base_url 为百炼兼容模式。</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h4>创建 Agent 并测试</h4>
+            <p>组合 Model + Tool + Memory，传入一张冰箱照片测试端到端流程。</p>
+          </div>
+        </li>
+      </ol>
+
+      <!-- PoC Code -->
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python — MVP PoC 核心代码</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="cmt"># === MVP 验证：最小可行产品 PoC ===</span>
+<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
+<span class="kw">from</span> langchain_tavily <span class="kw">import</span> TavilySearch
+<span class="kw">from</span> langchain.chat_models <span class="kw">import</span> init_chat_model
+<span class="kw">import</span> os
+
+<span class="cmt"># 1. 加载环境变量</span>
+load_dotenv()
+
+<span class="cmt"># 2. 定义 Web 搜索工具</span>
+web_search = TavilySearch(
+    max_results=<span class="builtin">5</span>,
+    topic=<span class="str">"general"</span>,
+)
+
+<span class="cmt"># 3. 初始化多模态模型（支持图片输入）</span>
+model = init_chat_model(
+    model=<span class="str">"qwen3.5-plus"</span>,
+    model_provider=<span class="str">"openai"</span>,
+    base_url=os.getenv(<span class="str">"DASHSCOPE_BASE_URL"</span>),
+    api_key=os.getenv(<span class="str">"DASHSCOPE_API_KEY"</span>)
+)
+
+<span class="cmt"># 4. 创建 Agent（Model + Tools 组合）</span>
+agent = create_agent(
+    model=model,
+    tools=[web_search],
+    system_prompt=<span class="str">"""你是一名私人厨师。
+收到用户提供的食材照片后：
+1. 识别所有可见食材，评估新鲜度
+2. 调用 web_search 搜索可行菜谱
+3. 按营养价值和难度排序推荐
+4. 输出结构化建议报告"""</span>
+)
+
+<span class="cmt"># 5. 测试：传入图片 + 文本消息</span>
+result = agent.invoke({
+    <span class="str">"messages"</span>: [
+        {<span class="str">"type"</span>: <span class="str">"image_url"</span>, <span class="str">"image_url"</span>: {<span class="str">"url"</span>: <span class="str">"fridge.jpg"</span>}},
+        {<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"根据这些食材给我推荐一道菜"</span>}
+    ]
+})
+<span class="builtin">print</span>(result[<span class="str">"messages"</span>][<span class="builtin">-1</span>].content)</pre>
+      </div>
+
+      <div class="callout ok" style="margin-top:18px;">
+        <div class="callout-icon">&#9989;</div>
+        <div class="callout-content">
+          <h4>PoC 验证通过标准</h4>
+          <p>当 Agent 能够：(1) 正确识别图片中的食材名称；(2) 自动调用 Tavily 搜索到相关菜谱；(3) 返回结构化的推荐报告 —— 则说明核心技术链路已打通，可以进入正式工程化阶段。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5: 项目目录结构 -->
+<div class="section-card" id="s5">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar primary"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num pri">5</span> 项目目录结构搭建</h2>
+      <p>MVP 验证通过后，按照工程规范搭建项目骨架。采用分层架构，将 Agent 逻辑、API 接口、数据模型分离：</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Project Structure</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="cmt"># AI 私厨项目目录结构</span>
+food-recipe-recommender/
+├── app/
+│   ├── __init__.py
+│   ├── main.py              <span class="cmt"># FastAPI 入口</span>
+│   ├── agents/
+│   │   └── personal_chef.py <span class="cmt"># Agent 核心逻辑</span>
+│   ├── api/
+│   │   └── v1/
+│   │       ├── chat.py      <span class="cmt"># POST /chat 接口</span>
+│   │       └── oss.py       <span class="cmt"># 图片上传接口</span>
+│   ├── models/
+│   │   └── schemas.py       <span class="cmt"># Pydantic 数据模型</span>
+│   └── common/
+│       └── logger.py        <span class="cmt"># 日志配置</span>
+├── db/                      <span class="cmt"># SQLite 数据库（自动创建）</span>
+├── .env                     <span class="cmt"># 环境变量</span>
+├── pyproject.toml           <span class="cmt"># 依赖声明</span>
+└── README.md</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: 架构图 -->
+<div class="section-card" id="s6">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar accent"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num acc">6</span> 系统架构总览</h2>
+      <p>AI 私厨的数据流架构如下 —— 从用户输入到最终推荐的完整链路：</p>
+
+      <div class="arch-diagram">
+        <div class="arch-title">System Architecture — Data Flow</div>
+        <div class="arch-flow">
+          <div class="arch-node highlight">用户输入<br><small>(图片/文本)</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node">FastAPI 后端<br><small>(RESTful API)</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node highlight">LangChain Agent<br><small>(ReAct Loop)</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node">Qwen-VL 多模态<br><small>(食材识别)</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node">Tavily Search<br><small>(菜谱检索)</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node highlight">结构化推荐<br><small>(排序+输出)</small></div>
+        </div>
+      </div>
+
+      <div class="callout warn" style="margin-top:18px;">
+        <div class="callout-icon">&#9888;&#65039;</div>
+        <div class="callout-content">
+          <h4>本集重点回顾</h4>
+          <p>需求分析是项目的基石。在写第一行代码前，明确功能边界、技术选型和 MVP 验证方案，能避免后期大量返工。下一集将学习如何接入 LangSmith 进行 Trace 调试与监控。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER NAV -->
+<nav class="footer-nav">
+  <a href="23-记忆管理策略.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 23 集 - 记忆管理策略</div>
+    </div>
+  </a>
+  <a href="25-对接LangSmith.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 25 集 - 对接LangSmith</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="ref-source">
+  参考来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ?p=25" target="_blank">黑马程序员 B站课程 BV178w1z7EHQ P25</a> | 
+  <a href="https://sgw0219.blog.csdn.net/article/details/160635512" target="_blank">CSDN - 大模型二 Agent入门实战（AI私厨）</a>
+</div>
+
+</main>
+
+<!-- ===== TWEAKS PANEL ===== -->
+<button class="tweaks-toggle" onclick="toggleTweaks()" title="Design Tweaks">&#9881;</button>
+<div class="tweaks-panel hidden" id="tweaksPanel">
+  <div class="tweaks-header">
+    <h3>&#9881; Tweaks</h3>
+    <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+  </div>
+  <div class="tweaks-group">
+    <label class="tweaks-label">Font Scale</label>
+    <input type="range" class="tweaks-slider" id="fontScaleSlider" min="0.8" max="1.3" step="0.05" value="1" oninput="updateFontScale(this.value)">
+    <span class="tweaks-value" id="fontScaleValue">1.0x</span>
+  </div>
+  <div class="tweaks-group">
+    <label class="tweaks-label">Content Width</label>
+    <input type="range" class="tweaks-slider" id="widthSlider" min="700" max="1200" step="50" value="900" oninput="updateWidth(this.value)">
+    <span class="tweaks-value" id="widthValue">900px</span>
+  </div>
+</div>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--success)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+  });
+}
+
+function toggleTweaks() {
+  const panel = document.getElementById('tweaksPanel');
+  if (panel.classList.contains('open')) {
+    panel.classList.remove('open');
+    setTimeout(() => panel.classList.add('hidden'), 280);
+  } else {
+    panel.classList.remove('hidden');
+    requestAnimationFrame(() => panel.classList.add('open'));
+  }
+}
+
+function updateFontScale(val) {
+  document.documentElement.style.setProperty('--font-scale', val);
+  document.getElementById('fontScaleValue').textContent = parseFloat(val).toFixed(1) + 'x';
+}
+
+function updateWidth(val) {
+  document.documentElement.style.setProperty('--content-width', val + 'px');
+  document.getElementById('widthValue').textContent = val + 'px';
+}
+</script>
+</body>
+</html>

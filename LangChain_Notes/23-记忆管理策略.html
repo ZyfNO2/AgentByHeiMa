@@ -1,0 +1,836 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第23集 - 记忆管理策略 | LangChain 学习笔记</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8f9fc; --bg-surface: #ffffff; --bg-subtle: #f1f3f8;
+            --text-primary: #1a1d26; --text-secondary: #5a6072; --text-muted: #949aad;
+            --primary: oklch(0.55 0.22 250); --primary-light: oklch(0.75 0.15 250); --primary-dark: oklch(0.40 0.20 250);
+            --accent: oklch(0.70 0.18 85); --success: oklch(0.55 0.16 155); --danger: oklch(0.55 0.20 25); --info: oklch(0.55 0.15 230);
+            --border-color: #e2e4ec;
+            --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+            --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 4px rgba(26,29,38,0.04);
+            --shadow-lg: 0 8px 24px rgba(26,29,38,0.10), 0 4px 8px rgba(26,29,38,0.06);
+            --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+            --font-scale: 1;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+        body{font-family:'Outfit',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-page);color:var(--text-primary);line-height:1.7;font-size:calc(16px*var(--font-scale));-webkit-font-smoothing:antialiased;}
+
+        .header{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(248,249,252,.78);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--border-color);}
+        .header-inner{max-width:1200px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;}
+        .header-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;}
+        .header-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:9px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;}
+        .header-nav{display:flex;align-items:center;gap:3px;}
+        .header-nav a{text-decoration:none;color:var(--text-secondary);font-size:13px;font-weight:500;padding:6px 12px;border-radius:20px;transition:all .2s ease;white-space:nowrap;}
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+        .header-nav a:hover{color:var(--primary);background:var(--bg-subtle);}
+        .header-nav a.active{color:var(--primary);background:oklch(.55 .22 250/.10);font-weight:600;}
+
+        .hero{padding-top:112px;padding-bottom:48px;text-align:center;}
+        .hero-badge{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,oklch(.55 .22 250/.08),oklch(.70 .18 85/.08));border:1px solid oklch(.55 .22 250/.15);padding:6px 18px;border-radius:24px;font-size:13px;font-weight:500;color:var(--primary);margin-bottom:22px;}
+        .hero-badge-dot{width:7px;height:7px;background:var(--success);border-radius:50%;animation:pulse-dot 2s infinite;}
+        @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+        .hero h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(30px,5vw,46px);font-weight:700;line-height:1.15;margin-bottom:16px;letter-spacing:-.02em;}
+        .hero h1 span{background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+        .hero-desc{font-size:17px;color:var(--text-secondary);max-width:650px;margin:0 auto 28px;line-height:1.65;}
+        .hero-meta{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;}
+        .meta-tag{display:inline-flex;align-items:center;gap:6px;background:var(--bg-surface);border:1px solid var(--border-color);padding:6px 14px;border-radius:20px;font-size:12.5px;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;}
+        .meta-tag svg{width:14px;height:14px;opacity:.65;}
+
+        .main{max-width:900px;margin:0 auto;padding:0 28px 80px;}
+
+        .section-card{background:var(--bg-surface);border:1px solid var(--border-color);border-left:4px solid var(--primary);border-radius:var(--radius-lg);padding:36px;margin-bottom:28px;box-shadow:var(--shadow-sm);transition:all .35s cubic-bezier(.25,.46,.45,.94);animation:fadeUp .6s ease both;position:relative;overflow:hidden;}
+        .section-card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px);border-color:oklch(.55 .22 250/.25);}
+        .section-card.type-orange{border-left-color:var(--accent);}.section-card.type-green{border-left-color:var(--success);}
+        .section-card.type-red{border-left-color:var(--danger);}.section-card.type-purple{border-left-color:#7c3aed;}.section-card.type-info{border-left-color:var(--info);}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+        .section-card:nth-child(1){animation-delay:.05s}.section-card:nth-child(2){animation-delay:.1s}
+        .section-card:nth-child(3){animation-delay:.15s}.section-card:nth-child(4){animation-delay:.2s}
+        .section-card:nth-child(5){animation-delay:.25s}.section-card:nth-child(6){animation-delay:.3s}
+        .section-card:nth-child(7){animation-delay:.35s}.section-card:nth-child(8){animation-delay:.4s}
+
+        .section-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
+        .section-icon{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;}
+        .section-icon.blue{background:oklch(.55 .22 250/.10);color:var(--primary)}.section-icon.orange{background:oklch(.70 .18 85/.10);color:#c47a00}
+        .section-icon.green{background:oklch(.55 .16 155/.10);color:#0d8a5e}.section-icon.red{background:oklch(.55 .20 25/.10);color:#d94a3a}
+        .section-icon.purple{background:oklch(.50 .18 300/.10);color:#7c3aed}.section-icon.info{background:oklch(.55 .15 230/.10);color:#2563eb}
+        .section-title{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;color:var(--text-primary);letter-spacing:-.01em;}
+        .section-subtitle{font-size:13px;color:var(--text-muted);font-weight:400;margin-top:2px;}
+
+        .section-body p{color:var(--text-secondary);margin-bottom:16px;font-size:15px;line-height:1.75;}.section-body p:last-child{margin-bottom:0;}
+        .section-body strong{color:var(--text-primary);font-weight:600;}
+        .section-body ul,.section-body ol{padding-left:20px;margin-bottom:16px;}
+        .section-body li{color:var(--text-secondary);margin-bottom:8px;font-size:15px;line-height:1.65;}
+        .section-body h3{font-family:'Space Grotesk';font-size:16px;font-weight:600;margin:22px 0 12px;color:var(--text-primary);}
+
+        .code-block{position:relative;margin:20px 0;border-radius:var(--radius-md);overflow:hidden;background:#1a1d26;border:1px solid rgba(255,255,255,.07);}
+        .code-header{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);}
+        .code-lang{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;}
+        .code-dots{display:flex;gap:6px}.code-dots span{width:10px;height:10px;border-radius:50%;}.code-dots span:nth-child(1){background:#ff5f57}.code-dots span:nth-child(2){background:#febc2e}.code-dots span:nth-child(3){background:#28c840}
+        .copy-btn{position:absolute;top:10px;right:72px;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.5);padding:4px 10px;border-radius:6px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all .2s ease;font-weight:500;}
+        .copy-btn:hover{background:rgba(255,255,255,.15);color:white;}.copy-btn.copied{color:var(--success);}
+        pre{margin:0;padding:20px 20px 20px 0;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.68;}
+        pre code{color:#e2e4ec;font-family:inherit;}.kw{color:#c792ea}.str{color:#c3e88d}.cmt{color:#546e7a;font-style:italic}.fn{color:#82aaff}.cls{color:#ffcb6b}.num{color:#f78c6c}.param{color:#89ddff}
+
+        .table-wrapper{overflow-x:auto;margin:20px 0;border-radius:var(--radius-md);border:1px solid var(--border-color);}
+        table{width:100%;border-collapse:collapse;font-size:14px;}thead{background:var(--primary);}
+        th{padding:13px 18px;text-align:left;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12.5px;color:white;text-transform:uppercase;letter-spacing:.04em;}
+        td{padding:12px 18px;color:var(--text-secondary);border-bottom:1px solid var(--border-color);vertical-align:top;}
+        tbody tr{transition:all .2s ease;}tbody tr:nth-child(even){background:oklch(.55 .22 250/.02);}tbody tr:last-child td{border-bottom:none;}
+        tbody tr:hover{background:oklch(.55 .22 250/.05);}tbody tr:hover td{color:var(--text-primary);}
+        table code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--bg-subtle);padding:2px 7px;border-radius:5px;color:var(--primary-dark);}
+
+        .callout{display:flex;gap:14px;padding:18px 20px;border-radius:var(--radius-md);margin:20px 0;font-size:14px;line-height:1.65;}
+        .callout-info{background:oklch(.55 .15 230/.07);border:1px solid oklch(.55 .15 230/.15);border-left:3px solid var(--info);}
+        .callout-tip{background:oklch(.55 .16 155/.07);border:1px solid oklch(.55 .16 155/.15);border-left:3px solid var(--success);}
+        .callout-warn{background:oklch(.70 .18 85/.07);border:1px solid oklch(.70 .18 85/.15);border-left:3px solid var(--accent);}
+        .callout-danger{background:oklch(.55 .20 25/.07);border:1px solid oklch(.55 .20 25/.15);border-left:3px solid var(--danger);}
+        .callout-key{background:oklch(.55 .22 250/.06);border:1px solid oklch(.55 .22 250/.12);border-left:3px solid var(--primary);}
+        .callout-icon{font-size:19px;flex-shrink:0;margin-top:1px;}.callout-body{flex:1;}.callout-title{font-weight:600;color:var(--text-primary);margin-bottom:4px;font-size:13.5px;}
+        .callout-text{color:var(--text-secondary);line-height:1.6;}
+        .callout-text code{font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(0,0,0,.04);padding:1px 5px;border-radius:4px;color:var(--primary-dark);}
+
+        .flow-diagram{margin:28px 0;padding:28px;background:var(--bg-subtle);border-radius:var(--radius-lg);}
+        .flow-title{font-family:'Space Grotesk';font-size:15px;font-weight:600;color:var(--text-primary);text-align:center;margin-bottom:22px;}
+        .flow-container{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;}
+        .flow-node{background:var(--bg-surface);border:2px solid var(--border-color);border-radius:var(--radius-md);padding:14px 20px;text-align:center;font-size:13px;font-weight:500;color:var(--text-primary);min-width:130px;transition:all .25s ease;cursor:default;}
+        .flow-node:hover{border-color:var(--primary);box-shadow:var(--shadow-md);transform:translateY(-2px);}
+        .flow-node.primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;border-color:transparent;}
+        .flow-node.accent{background:linear-gradient(135deg,var(--accent),oklch(.60 .16 85));color:white;border-color:transparent;}
+        .flow-arrow{color:var(--text-muted);font-size:22px;padding:0 8px;font-weight:300;}
+
+        .compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:20px 0;}
+        .compare-item{background:var(--bg-subtle);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:22px;transition:all .25s ease;}
+        .compare-item:hover{border-color:var(--primary);transform:translateY(-3px);box-shadow:var(--shadow-sm);}
+        .compare-item-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;}
+        .compare-item-desc{font-size:13.5px;color:var(--text-secondary);line-height:1.58;}
+
+        /* Decision Tree Style */
+        .decision-tree { margin: 24px 0; padding: 24px; background: var(--bg-subtle); border-radius: var(--radius-lg); }
+        .decision-row { display: flex; align-items: stretch; gap: 0; margin-bottom: 12px; }
+        .decision-q { background: var(--primary); color: white; padding: 14px 20px; border-radius: var(--radius-md) 0 0 var(--radius-md); font-size: 13.5px; font-weight: 600; min-width: 200px; display: flex; align-items: center; font-family: 'Space Grotesk', sans-serif; }
+        .decision-a { display: flex; flex: 1; gap: 8px; }
+        .decision-option { flex: 1; padding: 14px 16px; background: var(--bg-surface); border: 2px solid var(--border-color); border-radius: 0 var(--radius-md) var(--radius-md) 0; font-size: 13px; transition: all 0.2s ease; text-align: center; }
+        .decision-option:hover { border-color: var(--primary); transform: translateY(-1px); }
+        .decision-option strong { color: var(--primary); display: block; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+        .decision-option span { color: var(--text-muted); font-size: 12px; }
+
+        .footer{max-width:900px;margin:0 auto;padding:32px 28px 48px;border-top:1px solid var(--border-color);}
+        .footer-links{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:22px;}
+        .footer-link{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--text-secondary);font-size:14px;font-weight:500;padding:11px 24px;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:28px;transition:all .25s ease;}
+        .footer-link:hover{color:var(--primary);border-color:var(--primary);box-shadow:var(--shadow-sm);transform:translateY(-1px);}
+        .footer-link.prev::before{content:'\2190';font-size:16px;margin-right:4px;}.footer-link.next::after{content:'\2192';font-size:16px;margin-left:4px;}
+        .footer-ref{text-align:center;font-size:12px;color:var(--text-muted);line-height:1.6;}
+        .footer-ref a{color:var(--primary);text-decoration:none;}.footer-ref a:hover{text-decoration:underline;}
+
+        .toc{position:fixed;right:40px;top:120px;width:200px;z-index:99;display:none;}
+        @media(min-width:1200px){.toc{display:block;}}
+        .toc-list{list-style:none;padding:0;position:sticky;top:120px;}.toc-list li{margin-bottom:5px;}
+        .toc-list a{display:block;text-decoration:none;color:var(--text-muted);font-size:12px;padding:5px 12px;border-left:2px solid transparent;transition:all .2s ease;border-radius:0 4px 4px 0;}
+        .toc-list a:hover,.toc-list a.active{color:var(--primary);border-left-color:var(--primary);background:oklch(.55 .22 250/.04);}
+
+        .tweaks-panel{position:fixed;bottom:24px;right:24px;z-index:999;}
+        .tweaks-toggle{width:48px;height:48px;border-radius:14px;background:var(--primary);color:white;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);transition:all .3s ease;}
+        .tweaks-toggle:hover{transform:scale(1.08) rotate(15deg);box-shadow:0 8px 30px rgba(79,110,247,.3);}
+        .tweaks-content{position:absolute;bottom:60px;right:0;width:280px;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-lg);display:none;animation:slideUp .25s ease;}
+        .tweaks-content.open{display:block;}@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .tweaks-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+        .tweaks-row{margin-bottom:14px;}.tweaks-label{font-size:12px;color:var(--text-secondary);margin-bottom:6px;display:flex;justify-content:space-between;}
+        .tweaks-label span:last-child{font-family:'JetBrains Mono',monospace;color:var(--primary);font-size:11px;}
+        .tweaks-slider{width:100%;height:5px;border-radius:3px;-webkit-appearance:none;appearance:none;background:var(--bg-subtle);outline:none;cursor:pointer;}
+        .tweaks-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--primary);cursor:pointer;box-shadow:0 2px 6px rgba(79,110,247,.3);transition:transform .15s ease;}
+        .tweaks-slider::-webkit-slider-thumb:hover{transform:scale(1.2);}
+
+        @media(max-width:768px){
+            .header-inner{padding:0 16px;}.header-nav{display:none;}.hero{padding-top:96px;padding-bottom:32px;}.main{padding:0 16px 60px;}
+            .section-card{padding:24px 20px;border-radius:var(--radius-md);}.section-header{gap:10px;}
+            .section-icon{width:40px;height:40px;font-size:18px;border-radius:10px;}.section-title{font-size:17px;}
+            th,td{padding:10px 12px;font-size:13px;}.compare-grid{grid-template-columns:1fr;}
+            .flow-container{flex-direction:column;}.flow-arrow{transform:rotate(90deg);padding:4px 0;}
+            .meta-tag{font-size:11px;padding:5px 10px;}.tweaks-panel{bottom:16px;right:16px;}.tweaks-content{width:260px;right:-8px;}
+            .decision-tree{padding:16px;}.decision-row{flex-direction:column;}.decision-q{border-radius:var(--radius-md);min-width:auto;}
+            .decision-a{flex-direction:column;}.decision-option{border-radius:var(--round-md);border-radius:var(--radius-md);}
+        }
+        ::-webkit-scrollbar{width:6px;height:6px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:3px;} ::-webkit-scrollbar-thumb:hover{background:var(--text-muted);}
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <a href="index.html" class="header-logo"><div class="header-logo-icon">LC</div>LangChain Notes</a>
+        <nav class="header-nav">
+      <a href="#comparison-table" class="nav-anchor">&sect;1 四种 Memory 全面...</a>
+      <a href="#summary" class="nav-anchor">&sect;2 本章小结</a>
+
+            <a href="13-认识LangChain.html">P13</a><a href="17-消息Message.html">P17</a>
+            <a href="21-短期记忆.html">P21</a><a href="22-短期记忆-持久存储.html">P22</a>
+            <a href="23-记忆管理策略.html" class="active">P23</a><a href="24-需求分析与功能验证.html">P24</a>
+        </nav>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>第 23 集 / Memory 总结</div>
+    <h1><span>记忆管理策略</span> Strategy & Architecture</h1>
+    <p class="hero-desc">全面对比所有 Memory 类型，掌握选型决策树，理解 Token 成本与记忆质量的关系，构建企业级记忆架构。</p>
+    <div class="hero-meta">
+        <span class="meta-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>P24 功能验证</span>
+        <span class="meta-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>~20 min</span>
+        <span class="meta-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>BV178w1z7EHQ</span>
+    </div>
+</section>
+
+<main class="main">
+
+    <!-- Section 1: Full Comparison Table -->
+    <article class="section-card" id="comparison-table">
+        <div class="section-header">
+            <div class="section-icon purple">T</div>
+            <div>
+                <h2 class="section-title">四种 Memory 全面对比</h2>
+                <p class="section-subtitle">从多个维度审视每种策略的优劣</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>维度</th>
+                            <th>BufferMemory</th>
+                            <th>WindowMemory</th>
+                            <th>SummaryMemory</th>
+                            <th>TokenBufferMemory</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>存储策略</strong></td>
+                            <td>全量原始消息</td>
+                            <td>最近 K 轮 FIFO</td>
+                            <td>LLM 摘要压缩</td>
+                            <td>Token 上限裁剪</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Token 消耗趋势</strong></td>
+                            <td style="color:var(--danger);font-weight:600;">线性增长 (O(n))</td>
+                            <td style="color:var(--success);font-weight:600;">恒定 O(k)</td>
+                            <td style="color:var(--accent);font-weight:600;">可控波动</td>
+                            <td style="color:var(--success);font-weight:600;">有上界</td>
+                        </tr>
+                        <tr>
+                            <td><strong>信息完整性</strong></td>
+                            <td style="color:var(--success);">100% 保留</td>
+                            <td style="color:var(--danger);">早期信息丢失</td>
+                            <td style="color:var(--accent);">语义保留/细节丢</td>
+                            <td style="color:var(--danger);">硬截断早期</td>
+                        </tr>
+                        <tr>
+                            <td><strong>额外 API 调用</strong></td>
+                            <td>无</td>
+                            <td>无</td>
+                            <td style="color:var(--danger);">每轮 +1 次 LLM</td>
+                            <td>仅 Tokenizer（轻量）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>延迟影响</strong></td>
+                            <td>低</td>
+                            <td>极低</td>
+                            <td style="color:var(--danger);">较高（摘要耗时）</td>
+                            <td>低</td>
+                        </tr>
+                        <tr>
+                            <td><strong>适用对话长度</strong></td>
+                            <td>&lt; 20 轮</td>
+                            <td>不限（恒定开销）</td>
+                            <td>长会话（50+轮）</td>
+                            <td>不限（可控上限）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>典型场景</strong></td>
+                            <td>调试 / 短对话</td>
+                            <td>客服 / 实时问答</td>
+                            <td>会议纪要 / 长咨询</td>
+                            <td>生产环境成本控制</td>
+                        </tr>
+                        <tr>
+                            <td><strong>推荐指数</strong></td>
+                            <td>★★☆☆☆</td>
+                            <td>★★★☆☆</td>
+                            <td>★★★★☆</td>
+                            <td>★★★★★</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-key">
+                <span class="callout-icon">*</span>
+                <div class="callout-body">
+                    <div class="callout-title">核心结论</div>
+                    <div class="callout-text">没有"最好"的 Memory，只有<strong>"最匹配场景"</strong>的 Memory。<code>TokenBufferMemory</code> 在大多数生产环境中是<strong>最安全的选择</strong> — 它同时兼顾了 Token 控制和信息平滑过渡。</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 2: Decision Tree -->
+    <article class="section-card type-orange" id="decision-tree">
+        <div class="section-header">
+            <div class="section-icon orange">&gt;</div>
+            <div>
+                <h2 class="section-title">选型决策树</h2>
+                <p class="section-subtitle">三步选出最适合的记忆策略</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>面对具体项目需求时，按照以下决策流程快速定位最佳方案：</p>
+
+            <div class="decision-tree">
+                <div class="flow-title" style="margin-bottom:20px;">Memory 选型决策流程</div>
+
+                <div class="decision-row">
+                    <div class="decision-q">Q1: 对话预期长度？</div>
+                    <div class="decision-a">
+                        <div class="decision-option">
+                            <strong>&lt; 20 轮</strong>
+                            <span>短对话 / 调试阶段</span>
+                        </div>
+                        <div class="decision-option">
+                            <strong>20~50 轮</strong>
+                            <span>中等长度会话</span>
+                        </div>
+                        <div class="decision-option">
+                            <strong>&gt; 50 轮</strong>
+                            <span>长会话 / 持续交互</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="decision-row">
+                    <div class="decision-q">Q2: 信息精度要求？</div>
+                    <div class="decision-a">
+                        <div class="decision-option">
+                            <strong>需完整原文</strong>
+                            <span>代码/数据不能丢</span>
+                        </div>
+                        <div class="decision-option">
+                            <strong>语义即可</strong>
+                            <span>大意不差就行</span>
+                        </div>
+                        <div class="decision-option">
+                            <strong>只需近期</strong>
+                            <span>上下文窗口有限</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="decision-row">
+                    <div class="decision-q">Q3: 成本敏感度？</div>
+                    <div class="decision-a">
+                        <div class="decision-option">
+                            <strong>极度敏感</strong>
+                            <span>严格控制 API 费用</span>
+                        </div>
+                        <div class="decision-option">
+                            <strong>一般</strong>
+                            <span>可接受适度开销</span>
+                        </div>
+                        <div class="decision-option">
+                            <strong>不敏感</strong>
+                            <span>体验优先于成本</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>快速选型口诀</h3>
+            <div class="compare-grid">
+                <div class="compare-item">
+                    <div class="compare-item-name">短对话 + 全量</div>
+                    <div class="compare-item-desc"><strong>BufferMemory</strong><br>调试、原型验证首选</div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">固定轮次 + 低成本</div>
+                    <div class="compare-item-desc"><strong>WindowMemory</strong><br>客服机器人标配</div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">长会话 + 省Token</div>
+                    <div class="compare-item-desc"><strong>SummaryMemory</strong><br>智能助手长期陪伴</div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">生产环境 + 精准控</div>
+                    <div class="compare-item-desc"><strong>TokenBufferMemory</strong><br>企业级应用默认选择</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 3: Token Cost Analysis -->
+    <article class="section-card type-red" id="token-cost">
+        <div class="section-header">
+            <div class="section-icon red">$</div>
+            <div>
+                <h2 class="section-title">记忆与 Token 成本的关系</h2>
+                <p class="section-subtitle">量化分析 — 每个 Memory 类型的真实开销</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>记忆策略的选择直接影响<strong>API 调用成本</strong>和<strong>响应延迟</strong>。让我们用一个具体的例子来量化对比：</p>
+
+            <h3>假设场景：用户进行了 30 轮对话</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>Memory 类型</th><th>每轮 Prompt 中的历史 Token</th><th>30轮总额外消耗</th><th>GPT-4o-mini 费用估算</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>BufferMemory</code></td>
+                            <td>约 150~300 tokens/轮<br><small>(累积增长)</small></td>
+                            <td style="color:var(--danger);font-weight:600;">~4500~9000 tokens</td>
+                            <td>~$0.005 ~ $0.01</td>
+                        </tr>
+                        <tr>
+                            <td><code>WindowMemory (k=5)</code></td>
+                            <td>恒定 ~750 tokens</td>
+                            <td style="color:var(--success);font-weight:600;">~22500 tokens (固定)</td>
+                            <td>~$0.025 (可预测)</td>
+                        </tr>
+                        <tr>
+                            <td><code>SummaryMemory</code></td>
+                            <td>摘要 ~200~400 tokens<br><small>+ 每轮摘要调用 ~500t</small></td>
+                            <td style="color:var(--accent);font-weight:600;">~6000~12000 + 30次额外调用</td>
+                            <td>~$0.03 ~ $0.06</td>
+                        </tr>
+                        <tr>
+                            <td><code>TokenBuffer (limit=2000)</code></td>
+                            <td>不超过 2000 tokens</td>
+                            <td style="color:var(--success);font-weight:600;">&le; 60000 tokens (封顶)</td>
+                            <td>&le; $0.06 (严格可控)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-info">
+                <span class="callout-icon">i</span>
+                <div class="callout-body">
+                    <div class="callout-title">隐藏成本陷阱</div>
+                    <div class="callout-text">
+                        &bull; <strong>SummaryMemory 的"隐形消费"</strong>：除了主调用的 Token 外，每轮还要额外花一次 LLM 调用来生成摘要。30 轮 = 30 次额外调用！<br>
+                        &bull; <strong>BufferMemory 的"晚期爆炸"</strong>：前期很便宜，但后期 Token 呈二次方级增长，可能突然触发超长提示错误。<br>
+                        &bull; <strong>上下文窗口限制</strong>：GPT-4o-mini 为 128K，但实际可用建议控制在 80K 以内，留足输出空间。
+                    </div>
+                </div>
+            </div>
+
+            <h3>成本优化公式</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="code-lang">Cost Model</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="cmt"># 单次对话的总 Token 成本估算模型</span>
+<span class="cmt"># Total_Cost = (System_Prompt + History_Tokens + Input + Output) * Price_per_1K</span>
+
+<span class="cmt"># BufferMemory:  History = O(n^2) 累积式增长</span><span class="cmt"># WindowMemory:   History = k * avg_tokens_per_round  (恒定)</span><span class="cmt"># SummaryMemory:  History = summary_tokens + n * summarization_cost</span><span class="cmt"># TokenBuffer:     History = min(total_tokens, max_limit)   (有界)</span>
+
+<span class="cmt"># 生产环境推荐预算分配：</span><span class="cmt"># System Prompt:   ~500-1000 tokens (角色定义)</span><span class="cmt"># History Memory:  ~2000-4000 tokens (记忆上限)</span><span class="cmt"># User Input:      ~200-500 tokens  (当前输入)</span><span class="cmt"># Model Output:    ~500-2000 tokens (预留空间)</span><span class="cmt"># ────────────────────────────────────────</span><span class="cmt"># Total Budget:    ~4000-8000 tokens per call (安全范围)</span></code></pre>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 4: Long vs Short Term -->
+    <article class="section-card type-green" id="long-short-term">
+        <div class="section-header">
+            <div class="section-icon green">{ }</div>
+            <div>
+                <h2 class="section-title">长期记忆 vs 短期记忆</h2>
+                <p class="section-subtitle">概念区分与 LangChain 的实现边界</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>在 AI 应用领域，"记忆"被划分为两个层次。LangChain 的 Memory 模块主要覆盖<strong>短期记忆</strong>，而<strong>长期记忆</strong>需要额外的架构设计：</p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>维度</th><th>短期记忆 (Short-term)</th><th>长期记忆 (Long-term)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>生命周期</strong></td>
+                            <td>当前会话内有效</td>
+                            <td>跨会话、永久保存</td>
+                        </tr>
+                        <tr>
+                            <td><strong>存储位置</strong></td>
+                            <td>Prompt 注入 / 会话缓存</td>
+                            <td>向量数据库 / 知识图谱 / 关系型数据库</td>
+                        </tr>
+                        <tr>
+                            <td><strong>典型内容</strong></td>
+                            <td>"刚才说了什么"</td>
+                            <td>"用户的偏好/历史行为/个人档案"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LangChain 组件</strong></td>
+                            <td>ConversationBufferMemory 等</td>
+                            <td>RAG + VectorStore / Entity Memory</td>
+                        </tr>
+                        <tr>
+                            <td><strong>检索方式</strong></td>
+                            <td>全量注入 Prompt</td>
+                            <td>语义搜索 / 向量相似度匹配</td>
+                        </tr>
+                        <tr>
+                            <td><strong>容量限制</strong></td>
+                            <td>受限于上下文窗口</td>
+                            <td>理论上无限（取决于存储）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>类比</strong></td>
+                            <td>工作记忆（大脑前额叶）</td>
+                            <td>长期记忆（海马体 → 大脑皮层）</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-tip">
+                <span class="callout-icon">+</span>
+                <div class="callout-body">
+                    <div class="callout-title">LangChain 的长期记忆方案预告</div>
+                    <div class="callout-text">
+                        LangChain 提供了 <strong>VectorStoreRetrieverMemory</strong> 和 <strong>Entity Memory</strong> 来支持长期记忆：<br>
+                        &bull; <strong>VectorStoreRetrieverMemory</strong>：将历史消息向量化存入 FAISS/Pinecone/Chroma，通过语义检索获取相关记忆<br>
+                        &bull; <strong>Entity Memory</strong>：自动提取实体（人名、组织等），建立实体-属性知识图谱
+                    </div>
+                </div>
+            </div>
+
+            <h3>双层记忆架构示意</h3>
+            <div class="flow-diagram">
+                <div class="flow-title">推荐的 双层记忆 架构</div>
+                <div class="flow-container" style="flex-direction:column;gap:14px;align-items:center;">
+                    <div class="flow-node accent" style="min-width:380px;"><strong>用户输入</strong> "我上次问过 Python 装饰器的问题吗？"</div>
+                    <div class="flow-arrow" style="transform:rotate(90deg);padding:0;">&darr;</div>
+                    <div style="display:flex;gap:20px;">
+                        <div style="text-align:center;">
+                            <div class="flow-node primary" style="min-width:170px;"><strong>短期记忆层</strong><br><small>最近 5 轮对话<br>WindowMemory</small></div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div class="flow-node" style="min-width:170px;border-color:var(--success);"><strong>长期记忆层</strong><br><small>用户画像/历史偏好<br>VectorStore Memory</small></div>
+                        </div>
+                    </div>
+                    <div class="flow-arrow" style="transform:rotate(90deg);padding:0;">&darr;</div>
+                    <div class="flow-node primary" style="min-width:380px;"><strong>合并注入 Prompt</strong> → LLM 生成响应</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 5: Enterprise Architecture -->
+    <article class="section-card type-purple" id="enterprise-arch">
+        <div class="section-header">
+            <div class="section-icon purple">@</div>
+            <div>
+                <h2 class="section-title">企业级记忆架构建议</h2>
+                <p class="section-subtitle">生产环境的最佳实践模式</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>在企业级 AI 应用中，记忆系统需要满足<strong>高可用、可扩展、安全合规</strong>三大要求。以下是基于实战经验总结的推荐架构：</p>
+
+            <h3>分层架构总览</h3>
+            <div class="flow-diagram">
+                <div class="flow-title">企业级记忆系统 — 五层架构</div>
+                <div class="flow-container" style="flex-direction:column;gap:10px;align-items:center;">
+                    <div class="flow-node accent" style="min-width:360px;"><strong>L1 应用层</strong> — Chain / Agent / API Gateway</div>
+                    <div class="flow-arrow" style="transform:rotate(90deg);padding:0;">&uarr;&darr;</div>
+                    <div class="flow-node primary" style="min-width:360px;"><strong>L2 策略层</strong> — TokenBufferMemory (limit=3000)</div>
+                    <div class="flow-arrow" style="transform:rotate(90deg);padding:0;">&uarr;&darr;</div>
+                    <div class="flow-node" style="min-width:360px;"><strong>L3 接口层</strong> — BaseChatMessageHistory 抽象</div>
+                    <div class="flow-arrow" style="transform:rotate(90deg);padding:0;">&uarr;&darr;</div>
+                    <div class="flow-node" style="min-width:360px;border-color:var(--success);"><strong>L4 存储层</strong> — Redis Cluster (热) + PostgreSQL (冷)</div>
+                    <div class="flow-arrow" style="transform:rotate(90deg);padding:0;">&uarr;&darr;</div>
+                    <div class="flow-node" style="min-width:360px;border-color:var(--info);"><strong>L5 安全层</strong> — 加密存储 / 访问审计 / 数据脱敏</div>
+                </div>
+            </div>
+
+            <h3>关键设计原则</h3>
+            <div class="compare-grid">
+                <div class="compare-item">
+                    <div class="compare-item-name">01 会话隔离</div>
+                    <div class="compare-item-desc">每个用户/会话使用独立的 <code>session_id</code>，确保数据互不干扰</div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">02 冷热分离</div>
+                    <div class="compare-item-desc">活跃会话放 Redis（低延迟），归档数据同步到 PG（持久可靠）</div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">03 渐进增强</div>
+                    <div class="compare-item-desc">开发用 File，测试用 Redis，上线加 PG 备份，逐步升级不停服</div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">04 优雅降级</div>
+                    <div class="compare-item-desc">Redis 故障时自动 fallback 到本地内存，保证服务不中断</div>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header"><span class="code-lang">Python - Enterprise Pattern</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain.memory <span class="kw">import</span> ConversationTokenBufferMemory
+<span class="kw">from</span> langchain_redis <span class="kw">import</span> RedisChatMessageHistory
+<span class="kw">from</span> langchain_postgres <span class="kw">import</span> PostgresChatMessageHistory
+
+<span class="kw">def</span> <span class="fn">get_memory</span>(session_id: str, use_redis: bool = <span class="kw">True</span>):
+    <span class="str">"""工厂模式：根据配置返回带正确后端的 Memory"""</span>
+    llm = ChatOpenAI(model=<span class="str">"gpt-4o-mini"</span>)
+
+    <span class="kw">if</span> use_redis:
+        history = RedisChatMessageHistory(
+            session_id=session_id,
+            url=<span class="str">"redis://redis-cluster:6379/0"</span>,
+            ttl=<span class="num">3600</span>  <span class="cmt"># 1小时后自动过期（冷数据由PG接管）</span>
+        )
+    <span class="kw">else</span>:
+        history = PostgresChatMessageHistory(
+            session_id=session_id,
+            connection_string=<span class="str">os.environ[<span class="str">"DB_URL"</span>]</span>,
+            table_name=<span class="str">"chat_histories"</span>
+        )
+
+    <span class="kw">return</span> ConversationTokenBufferMemory(
+        llm=llm,
+        max_token_limit=<span class="num">3000</span>,
+        chat_memory=history,
+        return_messages=<span class="kw">True</span>
+    )
+
+<span class="cmt"># 在 FastAPI / Flask 中使用</span>
+<span class="cmt"># memory = get_memory(session_id=current_user.session_id)</span></code></pre>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 6: Security & Privacy -->
+    <article class="section-card type-info" id="security">
+        <div class="section-header">
+            <div class="section-icon info">#</div>
+            <div>
+                <h2 class="section-title">安全性与隐私考量</h2>
+                <p class="section-subtitle">记忆系统的合规要求</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>当 AI 应用的记忆系统中存储了用户对话数据时，<strong>安全和隐私</strong>就成为不可回避的核心议题：</p>
+
+            <h3>主要风险清单</h3>
+            <div class="compare-grid">
+                <div class="compare-item" style="border-left:3px solid var(--danger);">
+                    <div class="compare-item-name" style="color:var(--danger);">数据泄露</div>
+                    <div class="compare-item-desc">Redis 未授权访问导致全部对话记录外泄；JSON 文件被上传至公开仓库</div>
+                </div>
+                <div class="compare-item" style="border-left:3px solid var(--danger);">
+                    <div class="compare-item-name" style="color:var(--danger);">PII 暴露</div>
+                    <div class="compare-item-desc">用户无意中输入手机号、身份证号、银行卡等敏感信息并被明文存储</div>
+                </div>
+                <div class="compare-item" style="border-left:3px solid var(--accent);">
+                    <div class="compare-item-name" style="color:var(--accent);">越权访问</div>
+                    <div class="compare-item-desc">session_id 可猜测导致 A 用户能读取 B 用户的聊天记录</div>
+                </div>
+                <div class="compare-item" style="border-left:3px solid var(--accent);">
+                    <div class="compare-item-name" style="color:var(--accent);">合规风险</div>
+                    <div class="compare-item-desc">违反 GDPR "被遗忘权"、未获得用户数据存储同意</div>
+                </div>
+            </div>
+
+            <h3>安全 Checklist</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>#</th><th>安全措施</th><th>优先级</th><th>实施方式</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>01</strong></td>
+                            <td>传输加密 (TLS)</td>
+                            <td style="color:var(--danger);font-weight:600;">必须</td>
+                            <td>Redis 使用 TLS 连接；PostgreSQL 启用 SSL</td>
+                        </tr>
+                        <tr>
+                            <td><strong>02</strong></td>
+                            <td>静态加密 (at-rest)</td>
+                            <td style="color:var(--danger);font-weight:600;">必须</td>
+                            <td>数据库字段级别 AES-256 加密</td>
+                        </tr>
+                        <tr>
+                            <td><strong>03</strong></td>
+                            <td>PII 自动脱敏</td>
+                            <td style="color:var(--accent);font-weight:600;">强烈推荐</td>
+                            <td>正则检测 + 替换为 [REDACTED]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>04</strong></td>
+                            <td>Session ID 不可预测</td>
+                            <td style="color:var(--danger);font-weight:600;">必须</td>
+                            <td>使用 UUID v4 或 secure random</td>
+                        </tr>
+                        <tr>
+                            <td><strong>05</strong></td>
+                            <td>数据留存策略 (Retention)</td>
+                            <td style="color:var(--danger);font-weight:600;">必须</td>
+                            <td>TTL 自动过期 + 定期清理任务</td>
+                        </tr>
+                        <tr>
+                            <td><strong>06</strong></td>
+                            <td>访问审计日志</td>
+                            <td style="color:var(--accent);font-weight:600;">强烈推荐</td>
+                            <td>记录谁在何时读取了哪些 session</td>
+                        </tr>
+                        <tr>
+                            <td><strong>07</strong></td>
+                            <td>用户导出/删除权</td>
+                            <td style="color:var(--success);font-weight:600;">推荐 (GDPR)</td>
+                            <td>提供 API 让用户下载/清除自己的数据</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-danger">
+                <span class="callout-icon">!</span>
+                <div class="callout-body">
+                    <div class="callout-title">绝对禁止事项</div>
+                    <div class="callout-text">
+                        &bull; <strong>不要</strong>将包含真实用户数据的 JSON 文件提交到 Git 仓库<br>
+                        &bull; <strong>不要</strong>在生产环境使用 FileChatMessageHistory（无并发控制、无权限管理）<br>
+                        &bull; <strong>不要</strong>将 session_id 用自增整数（可枚举攻击）
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 7: Summary -->
+    <article class="section-card" id="summary">
+        <div class="section-header">
+            <div class="section-icon blue">*</div>
+            <div>
+                <h2 class="section-title">本章小结</h2>
+                <p class="section-subtitle">三集记忆模块学习回顾</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <div class="callout callout-key">
+                <span class="callout-icon">*</span>
+                <div class="callout-body">
+                    <div class="callout-title">核心知识体系</div>
+                    <div class="callout-text">
+                        通过 P21-P23 三集的学习，我们建立了完整的 LangChain 记忆体系认知：<br><br>
+                        <strong>P21 基础篇：</strong>理解了 Memory 解决 LLM "失忆"问题的本质是「Prompt 上下文管理中间件」，掌握了 BaseMemory 四大方法和 ConversationBufferMemory 的基本用法。<br><br>
+                        <strong>P22 进阶篇：</strong>学会了三种 Token 控制策略（Window / Summary / TokenBuffer）和四种持久化后端（File / Redis / PostgreSQL / MongoDB），理解了「策略层 + 存储层」的分层架构思想。<br><br>
+                        <strong>P23 策略篇：</strong>掌握了基于场景的选型决策方法、Token 成本量化分析方法、长短记忆的区别以及企业级安全合规要求。
+                    </div>
+                </div>
+            </div>
+
+            <h3>一句话速查表</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>我想...</th><th>用这个</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>快速调试看效果</td><td><code>ConversationBufferMemory</code> + 默认内存</td></tr>
+                        <tr><td>客服机器人，只关心最近几轮</td><td><code>ConversationBufferWindowMemory(k=3~5)</code></td></tr>
+                        <tr><td>长对话但不想超 Token</td><td><code>ConversationTokenBufferMemory(limit=2000~4000)</code></td></tr>
+                        <tr><td>超长会话且不在意细节丢失</td><td><code>ConversationSummaryMemory</code></td></tr>
+                        <tr><td>重启后还要记住用户</td><td>任意 Memory + <code>FileChatMessageHistory</code></td></tr>
+                        <tr><td>多实例部署共享记忆</td><td>任意 Memory + <code>RedisChatMessageHistory</code></td></tr>
+                        <tr><td>企业级生产环境</td><td><code>TokenBuffer</code> + <code>Redis</code> + 加密 + TTL + 审计</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </article>
+
+</main>
+
+<footer class="footer">
+            <div class="footer-links">
+        <a href="22-短期记忆-持久存储.html" class="footer-link prev">上一集：短期记忆-持久存储</a>
+        <a href="24-需求分析与功能验证.html" class="footer-link next">下一集：需求分析与功能验证</a>
+    </div><div class="footer-ref">
+        参考来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">黑马程序员 LangChain 教程 P21-P23</a> &middot;
+        <a href="https://python.langchain.com/docs/concepts/memory/" target="_blank">LangChain 官方文档</a>
+    </div>
+</footer>
+
+<nav class="toc">
+    <ul class="toc-list">
+        <li><a href="#comparison-table">四种 Memory 全面对比</a></li>
+        <li><a href="#decision-tree">选型决策树</a></li>
+        <li><a href="#token-cost">Token 成本关系</a></li>
+        <li><a href="#long-short-term">长期 vs 短期记忆</a></li>
+        <li><a href="#enterprise-arch">企业级架构建议</a></li>
+        <li><a href="#security">安全性与隐私</a></li>
+        <li><a href="#summary">本章小结</a></li>
+    </ul>
+</nav>
+
+<div class="tweaks-panel">
+    <button class="tweaks-toggle" onclick="toggleTweaks()" title="Tweaks">&#9881;</button>
+    <div class="tweaks-content" id="tweaksContent">
+        <div class="tweaks-title">Tweaks<small style="color:var(--text-muted);font-weight:400;font-size:11px;">v1.0</small></div>
+        <div class="tweaks-row">
+            <div class="tweaks-label"><span>字体大小</span><span id="fontVal">100%</span></div>
+            <input type="range" class="tweaks-slider" min="0.8" max="1.3" step="0.05" value="1" onchange="changeFont(this.value)">
+        </div>
+        <div class="tweaks-row">
+            <div class="tweaks-label"><span>行高倍数</span><span id="lineVal">1.7x</span></div>
+            <input type="range" class="tweaks-slider" min="1.4" max="2.0" step="0.1" value="1.7" onchange="changeLine(this.value)">
+        </div>
+    </div>
+</div>
+
+<script>
+function copyCode(btn){const code=btn.parentElement.querySelector('pre code').textContent;navigator.clipboard.writeText(code).then(()=>{btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2000);});}
+function toggleTweaks(){document.getElementById('tweaksContent').classList.toggle('open');}
+function changeFont(val){document.documentElement.style.setProperty('--font-scale',val);document.getElementById('fontVal').textContent=Math.round(val*100)+'%';}
+function changeLine(val){document.body.style.lineHeight=val;document.getElementById('lineVal').textContent=val+'x';}
+document.addEventListener('click',function(e){const panel=document.querySelector('.tweaks-panel');if(!panel.contains(e.target))document.getElementById('tweaksContent').classList.remove('open');});
+const sections=document.querySelectorAll('.section-card[id]');const tocLinks=document.querySelectorAll('.toc-list a');
+window.addEventListener('scroll',()=>{let current='';sections.forEach(s=>{if(scrollY>=s.offsetTop-140)current=s.getAttribute('id');});tocLinks.forEach(l=>{l.classList.remove('active');if(l.getAttribute('href')==='#'+current)l.classList.add('active');});});
+</script>
+
+</body>
+</html>

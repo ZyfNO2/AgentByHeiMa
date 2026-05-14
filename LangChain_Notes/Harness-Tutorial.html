@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harness 实践：让 Agent 全自动制作知识讲解视频</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0F0F1A;
+            --bg-secondary: #161625;
+            --bg-card: #1C1C2E;
+            --bg-elevated: #242438;
+            --accent-primary: #00D4AA;
+            --accent-secondary: #6366F1;
+            --accent-tertiary: #F472B6;
+            --text-primary: #E2E8F0;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --border-color: rgba(99, 102, 241, 0.15);
+            --glow-primary: rgba(0, 212, 170, 0.4);
+            --glow-secondary: rgba(99, 102, 241, 0.4);
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== Background Effects ===== */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bg-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .bg-glow-1 {
+            top: -200px;
+            right: -100px;
+            background: var(--accent-primary);
+        }
+
+        .bg-glow-2 {
+            bottom: 20%;
+            left: -200px;
+            background: var(--accent-secondary);
+        }
+
+        .bg-glow-3 {
+            top: 50%;
+            right: -150px;
+            background: var(--accent-tertiary);
+            opacity: 0.08;
+        }
+
+        /* ===== Layout ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== Navigation ===== */
+        nav {
+            position: fixed;
+            top: 0;
+            left:0;
+            right: 0;
+            z-index: 100;
+            padding: 16px 0;
+            backdrop-filter: blur(20px);
+            background: rgba(15, 15, 26, 0.8);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            padding: 12px 0;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .nav-logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-logo svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-primary);
+            transition: width 0.3s ease;
+            border-radius: 1px;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* ===== Hero Section ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 120px 0 80px;
+            position: relative;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+            align-items: center;
+        }
+
+        .hero-text {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--accent-primary);
+            margin-bottom: 24px;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.5); }
+        }
+
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(36px, 5vw, 56px);
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-desc {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            max-width: 520px;
+            line-height: 1.8;
+        }
+
+        .hero-meta {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-bottom: 36px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .meta-item svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--accent-secondary);
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, #00B894 100%);
+            color: #0F0F1A;
+            box-shadow: 0 4px 20px var(--glow-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 40px var(--glow-primary);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-secondary);
+            background: var(--bg-elevated);
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Hero Visual */
+        .hero-visual {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+
+        .video-card {
+            position: relative;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .video-card:hover {
+            transform: translateY(-8px) scale(1.02);
+        }
+
+        .video-thumbnail {
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-thumbnail::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 30% 40%, rgba(0, 212, 170, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+        }
+
+        .play-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(0, 212, 170, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 2;
+            box-shadow: 0 8px 32px var(--glow-primary);
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+            background: var(--accent-primary);
+        }
+
+        .play-button svg {
+            width: 32px;
+            height: 32px;
+            fill: #0F0F1A;
+            margin-left: 4px;
+        }
+
+        .video-info {
+            padding: 20px 24px;
+        }
+
+        .video-info h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .video-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .video-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .stat svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--accent-primary);
+        }
+
+        /* ===== Section Common ===== */
+        section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-label {
+            display: inline-block;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent-primary);
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(28px, 4vw, 42px);
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .section-desc {
+            font-size: 17px;
+            color: var(--text-secondary);
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        /* ===== Concept Section ===== */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+        }
+
+        .concept-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .concept-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .concept-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(0, 212, 170, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .concept-card:hover::before {
+            opacity: 1;
+        }
+
+        .concept-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 26px;
+        }
+
+        .concept-icon.green { background: rgba(0, 212, 170, 0.15); }
+        .concept-icon.purple { background: rgba(99, 102, 241, 0.15); }
+        .concept-icon.pink { background: rgba(244, 114, 182, 0.15); }
+        .concept-icon.blue { background: rgba(59, 130, 246, 0.15); }
+
+        .concept-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .concept-card p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        /* ===== Tools Section ===== */
+        .tools-showcase {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .tool-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px 32px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .tool-item:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-elevated);
+            transform: translateX(8px);
+        }
+
+        .tool-number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            opacity: 0.6;
+            min-width: 48px;
+        }
+
+        .tool-content h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .tool-content p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .tool-tag {
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .tag-core { background: rgba(0, 212, 170, 0.15); color: var(--accent-primary); }
+        .tag-ai { background: rgba(99, 102, 241, 0.15); color: var(--accent-secondary); }
+        .tag-cli { background: rgba(244, 114, 182, 0.15); color: var(--accent-tertiary); }
+        .tag-tool { background: rgba(59, 130, 246, 0.15); color: #3B82F6; }
+
+        /* ===== Workflow Section ===== */
+        .workflow-timeline {
+            position: relative;
+            padding-left: 48px;
+        }
+
+        .workflow-timeline::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary), var(--accent-tertiary));
+        }
+
+        .workflow-step {
+            position: relative;
+            margin-bottom: 48px;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .workflow-step.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .workflow-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-marker {
+            position: absolute;
+            left: -48px;
+            top: 4px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            border: 3px solid var(--accent-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent-primary);
+            z-index: 2;
+        }
+
+        .step-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 28px 32px;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            border-color: rgba(0, 212, 170, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .step-card h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .step-card h4 span {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .step-card p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .step-code {
+            margin-top: 16px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            color: var(--accent-primary);
+            overflow-x: auto;
+            border: 1px solid rgba(0, 212, 170, 0.1);
+        }
+
+        /* ===== Resources Section ===== */
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .resource-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 28px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+        }
+
+        .resource-card:hover {
+            border-color: var(--accent-secondary);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 36px rgba(99, 102, 241, 0.15);
+        }
+
+        .resource-card h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .resource-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .resource-link {
+            font-size: 13px;
+            color: var(--accent-primary);
+            word-break: break-all;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .resource-link svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        /* ===== Footer ===== */
+        footer {
+            padding: 48px 0;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== Animations ===== */
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 900px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-desc {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .hero-meta {
+                justify-content: center;
+            }
+
+            .hero-actions {
+                justify-content: center;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .tool-item {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .tool-number {
+                font-size: 24px;
+            }
+
+            .tool-tag {
+                justify-self: start;
+            }
+
+            .workflow-timeline {
+                padding-left: 36px;
+            }
+
+            .step-marker {
+                left: -36px;
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+        }
+
+        /* ===== Scrollbar ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-elevated);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/></svg>
+                Harness Lab
+            </a>
+            <ul class="nav-links">
+                <li><a href="#concepts">核心概念</a></li>
+                <li><a href="#tools">工具链</a></li>
+                <li><a href="#workflow">实战流程</a></li>
+                <li><a href="#resources">资源链接</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <div class="hero-badge">AI Agent 自动化教程</div>
+                    <h1>让 Agent 全自动制作知识讲解视频</h1>
+                    <p class="hero-desc">深入探索 Harness Engineering 的工程实践，了解如何利用 AI Agent + Skill 体系实现从脚本生成到视频合成的全自动化知识视频生产流程。</p>
+                    <div class="hero-meta">
+                        <div class="meta-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            code秘密花园
+                        </div>
+                        <div class="meta-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            约 23 分钟
+                        </div>
+                        <div class="meta-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            7.7万 播放
+                        </div>
+                    </div>
+                    <div class="hero-actions">
+                        <a href="https://www.bilibili.com/video/BV1ypdgBCE9B/" target="_blank" class="btn btn-primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            观看原视频
+                        </a>
+                        <a href="#workflow" class="btn btn-secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            开始学习
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="video-card">
+                        <div class="video-thumbnail">
+                            <div class="play-button">
+                                <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3>Harness 实践：让 Agent 全自动制作知识讲解视频</h3>
+                            <p>B站 · code秘密花园 · 人人都能学会的 AI 教程系列</p>
+                            <div class="video-stats">
+                                <div class="stat">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                                    4192
+                                </div>
+                                <div class="stat">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                                    9723
+                                </div>
+                                <div class="stat">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    1139
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Concepts Section -->
+    <section id="concepts">
+        <div class="container">
+            <div class="section-header fade-in">
+                <span class="section-label">Core Concepts</span>
+                <h2 class="section-title">什么是 Harness Engineering？</h2>
+                <p class="section-desc">Harness 是一种新兴的 AI 工程范式，通过「套索」将大语言模型与外部工具、数据源和工作流紧密编织在一起，让 AI Agent 具备真正的工程化能力。</p>
+            </div>
+            <div class="concept-grid">
+                <div class="concept-card fade-in">
+                    <div class="concept-icon green">🎯</div>
+                    <h3>Skill 技能体系</h3>
+                    <p>Skill 是 Harness 的核心单元 —— 可复用、可组合的 AI 能力模块。每个 Skill 封装了特定领域的知识和操作逻辑，Agent 可以按需调用，像搭积木一样构建复杂工作流。</p>
+                </div>
+                <div class="concept-card fade-in">
+                    <div class="concept-icon purple">🤖</div>
+                    <h3>Agent 智能体</h3>
+                    <p>AI Agent 不再是简单的对话机器人，而是具备自主规划、工具调用、多步骤推理能力的智能实体。它能够理解任务目标，拆解执行路径，并协调多个 Skill 完成复杂目标。</p>
+                </div>
+                <div class="concept-card fade-in">
+                    <div class="concept-icon pink">🔗</div>
+                    <h3>MCP 协议层</h3>
+                    <p>Model Context Protocol (MCP) 是连接 AI 与外部世界的标准化接口。通过 MCP，Agent 可以无缝访问数据库、API、文件系统等资源，打破模型的能力边界。</p>
+                </div>
+                <div class="concept-card fade-in">
+                    <div class="concept-icon blue">🎬</div>
+                    <h3>全自动化流水线</h3>
+                    <p>从内容策划 → 脚本生成 → 语音合成 → 视频渲染，整条生产线由 Agent 自主驱动。人类只需提供主题方向，剩余工作全部交由 AI 完成。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section id="tools">
+        <div class="container">
+            <div class="section-header fade-in">
+                <span class="section-label">Toolchain</span>
+                <h2 class="section-title">核心技术工具链</h2>
+                <p class="section-desc">这套自动化视频制作方案由四大核心组件构成，各司其职又紧密协作。</p>
+            </div>
+            <div class="tools-showcase">
+                <div class="tool-item fade-in">
+                    <div class="tool-number">01</div>
+                    <div class="tool-content">
+                        <h4>Claude Code</h4>
+                        <p>Anthropic 出品的终端 AI 编程助手，支持自然语言驱动的代码执行与文件操作，是整个自动化流程的「大脑」和调度中心。</p>
+                    </div>
+                    <span class="tool-tag tag-core">核心引擎</span>
+                </div>
+                <div class="tool-item fade-in">
+                    <div class="tool-number">02</div>
+                    <div class="tool-content">
+                        <h4>Garden Skills 开源库</h4>
+                        <p>code秘密花园维护的 Skill 集合，包含视频制作、文档处理、数据分析等多种预构建技能模块，开箱即用。</p>
+                    </div>
+                    <span class="tool-tag tag-ai">Skill 库</span>
+                </div>
+                <div class="tool-item fade-in">
+                    <div class="tool-number">03</div>
+                    <div class="tool-content">
+                        <h4>MiniMax CLI</h4>
+                        <p>国产大模型 MiniMax 的命令行工具，用于高质量语音合成（TTS），为视频配音提供自然流畅的 AI 旁白声音。</p>
+                    </div>
+                    <span class="tool-tag tag-cli">语音合成</span>
+                </div>
+                <div class="tool-item fade-in">
+                    <div class="tool-number">04</div>
+                    <div class="tool-content">
+                        <h4>CC Switch</h4>
+                        <p>Claude Code 的增强切换工具，支持多模型后端切换、会话管理、配置优化等功能，提升开发体验和工作效率。</p>
+                    </div>
+                    <span class="tool-tag tag-tool">效率工具</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workflow Section -->
+    <section id="workflow">
+        <div class="container">
+            <div class="section-header fade-in">
+                <span class="section-label">Workflow</span>
+                <h2 class="section-title">完整实战流程</h2>
+                <p class="section-desc">从零开始，一步步搭建属于你的 AI 视频自动化生产线。</p>
+            </div>
+            <div class="workflow-timeline">
+                <div class="workflow-step">
+                    <div class="step-marker">1</div>
+                    <div class="step-card">
+                        <h4>环境准备 <span>/ Preparation</span></h4>
+                        <p>安装 Claude Code CLI、配置 API Key、克隆 Garden Skills 仓库。确保基础运行环境就绪，这是一切自动化工作的前提条件。</p>
+                        <div class="step-code">$ npm install -g @anthropic-ai/claude-code<br>$ git clone https://github.com/ConardLi/garden-skills/</div>
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-marker">2</div>
+                    <div class="step-card">
+                        <h4>定义 Skill 工作流 <span>/ Define Workflow</span></h4>
+                        <p>根据视频类型选择或自定义 Skill 组合。例如「技术教程」类视频需要：Research Skill（资料搜集）→ Script Skill（脚本撰写）→ TTS Skill（语音合成）→ Render Skill（视频渲染）。</p>
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-marker">3</div>
+                    <div class="step-card">
+                        <h4>输入主题与约束 <span>/ Input Topic</span></h4>
+                        <p>向 Agent 描述你想要制作的视频主题、目标受众、时长要求、风格偏好。Agent 会基于这些信息进行自主规划和内容创作。</p>
+                        <div class="step-code">「请制作一期关于 React Server Components 的技术讲解视频，面向中级前端开发者，时长控制在10分钟左右，风格偏向简洁专业」</div>
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-marker">4</div>
+                    <div class="step-card">
+                        <h4>Agent 自主执行 <span>/ Auto Execution</span></p>
+                        <p>Agent 开始自主运转：搜索资料 → 整理大纲 → 撰写详细脚本 → 分段生成语音 → 合成字幕轨道 → 渲染最终视频。整个过程无需人工干预。</p>
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-marker">5</div>
+                    <div class="step-card">
+                        <h4>审核与迭代 <span>/ Review & Iterate</span></p>
+                        <p>预览生成的视频效果，如需调整可向 Agent 反馈修改意见。支持多轮对话式优化，直到产出满意的内容成品。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Resources Section -->
+    <section id="resources">
+        <div class="container">
+            <div class="section-header fade-in">
+                <span class="section-label">Resources</span>
+                <h2 class="section-title">相关资源链接</h2>
+                <p class="section-desc">视频中提到的所有开源项目和工具，一键直达。</p>
+            </div>
+            <div class="resources-grid">
+                <a href="https://github.com/ConardLi/garden-skills/" target="_blank" class="resource-card fade-in">
+                    <h4>Garden Skills</h4>
+                    <p>全套 Skill 开源仓库，包含视频制作、知识检索等多种能力模块</p>
+                    <span class="resource-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        github.com/ConardLi/garden-skills/
+                    </span>
+                </a>
+                <a href="https://code.claude.com/docs/zh-CN/overview" target="_blank" class="resource-card fade-in">
+                    <h4>Claude Code</h4>
+                    <p>Anthropic 官方 AI 终端编程助手，支持自然语言驱动开发</p>
+                    <span class="resource-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        code.claude.com/docs/zh-CN/overview
+                    </span>
+                </a>
+                <a href="https://github.com/MiniMax-AI/cli" target="_blank" class="resource-card fade-in">
+                    <h4>MiniMax CLI</h4>
+                    <p>MiniMax 大模型命令行工具，用于高质量 AI 语音合成</p>
+                    <span class="resource-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        github.com/MiniMax-AI/cli
+                    </span>
+                </a>
+                <a href="https://github.com/farion1231/cc-switch/releases/tag/v3.14.1" target="_blank" class="resource-card fade-in">
+                    <h4>CC Switch</h4>
+                    <p>Claude Code 增强工具，支持多模型切换与会话管理</p>
+                    <span class="resource-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        github.com/farion1231/cc-switch
+                    </span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>本页面基于 B站视频 <a href="https://www.bilibili.com/video/BV1ypdgBCE9B/" target="_blank">BV1ypdgBCE9B</a> 内容整理 · UP主: <a href="https://space.bilibili.com/474921808" target="_blank">code秘密花园</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 100);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in, .workflow-step').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Parallax glow effect on mouse move
+        document.addEventListener('mousemove', (e) => {
+            const glows = document.querySelectorAll('.bg-glow');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            glows.forEach((glow, i) => {
+                const speed = (i + 1) * 20;
+                glow.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+            });
+        });
+
+        // Play button interaction
+        const playButton = document.querySelector('.play-button');
+        if (playButton) {
+            playButton.addEventListener('click', () => {
+                window.open('https://www.bilibili.com/video/BV1ypdgBCE9B/', '_blank');
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,915 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第14集 - 快速入门和Agent原理 | LangChain学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f8f9fc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f8;
+    --bg-code: #1a1d26;
+    --text-primary: #1a1d26;
+    --text-secondary: #5a6072;
+    --text-muted: #949aad;
+    --primary: oklch(0.55 0.22 250);
+    --primary-light: oklch(0.75 0.15 250);
+    --accent: oklch(0.70 0.18 85);
+    --success: oklch(0.55 0.16 155);
+    --danger: oklch(0.55 0.20 25);
+    --info: oklch(0.55 0.15 230);
+    --border: #e2e4ea;
+    --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+    --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 6px rgba(26,29,38,0.04);
+    --shadow-lg: 0 8px 30px rgba(26,29,38,0.10), 0 4px 12px rgba(26,29,38,0.06);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --font-scale: 1;
+    --line-height-scale: 1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page); color: var(--text-primary);
+    line-height: 1.7; font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    transition: font-size .3s ease, line-height .3s ease;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(248,249,252,0.78);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    transition: box-shadow .3s ease;
+  }
+  .header.scrolled { box-shadow: var(--shadow-sm); }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; padding: 0 24px;
+  }
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px;
+    color: var(--primary); text-decoration: none; letter-spacing: -0.02em;
+  }
+  .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .header-nav { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 600px; }
+  .header-nav a {
+    text-decoration: none; color: var(--text-secondary);
+    font-size: 12px; font-weight: 500; padding: 5px 10px;
+    border-radius: 20px; transition: all .2s; white-space: nowrap;
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .header-nav a:hover, .header-nav a.active {
+    background: var(--primary-light); color: var(--primary);
+  }
+
+  /* ===== Hero ===== */
+  .hero {
+    padding: 120px 24px 56px; max-width: 1200px; margin: 0 auto; text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--bg-subtle));
+    border: 1px solid oklch(0.85 0.05 250);
+    padding: 6px 16px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 24px;
+  }
+  .hero-badge::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 16px;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero-desc {
+    font-size: 17px; color: var(--text-secondary);
+    max-width: 720px; margin: 0 auto 28px; line-height: 1.65;
+  }
+  .hero-meta {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
+  }
+  .meta-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: var(--radius-xs);
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .meta-tag svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+  /* ===== Content Sections ===== */
+  .content { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+
+  .section {
+    background: var(--bg-surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 36px 40px; margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .section::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary); border-radius: 4px 0 0 4px;
+  }
+  .section.accent::before { background: var(--accent); }
+  .section.success::before { background: var(--success); }
+  .section.info::before { background: var(--info); }
+  .section.danger::before { background: var(--danger); }
+  .section.visible { opacity: 1; transform: translateY(0); }
+  .section:hover { box-shadow: var(--shadow-md); }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--primary); color: #fff;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .section p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* ===== Highlight Box ===== */
+  .highlight-box {
+    display: flex; gap: 16px;
+    background: linear-gradient(135deg, oklch(0.97 0.01 250), var(--bg-surface));
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 20px 22px; margin: 20px 0;
+  }
+  .highlight-box.accent {
+    background: linear-gradient(135deg, oklch(0.98 0.015 85), var(--bg-surface));
+    border-left-color: var(--accent);
+  }
+  .highlight-box.success {
+    background: linear-gradient(135deg, oklch(0.97 0.01 155), var(--bg-surface));
+    border-left-color: var(--success);
+  }
+  .highlight-box.danger {
+    background: linear-gradient(135deg, oklch(0.98 0.015 25), var(--bg-surface));
+    border-left-color: var(--danger);
+  }
+  .highlight-box.info {
+    background: linear-gradient(135deg, oklch(0.97 0.01 230), var(--bg-surface));
+    border-left-color: var(--info);
+  }
+  .hb-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-top: 2px; }
+  .hb-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.7; }
+  .hb-body strong { color: var(--text-primary); }
+  .hb-body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-subtle); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: var(--primary);
+  }
+
+  /* ===== Tables ===== */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--primary); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 13px; text-align: left;
+    padding: 12px 16px; color: #fff;
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  tbody td {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text-secondary); vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--bg-subtle); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.97 0.005 250); }
+  table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; background: var(--bg-subtle);
+    padding: 1px 6px; border-radius: 4px; color: var(--primary);
+  }
+
+  /* ===== Code Blocks ===== */
+  .code-block {
+    position: relative; margin: 20px 0; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border); background: var(--bg-code);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: oklch(0.75 0.08 250);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .code-copy-btn {
+    cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+    color: oklch(0.7 0.03 250); font-family: 'Outfit', sans-serif;
+    font-size: 12px; padding: 4px 12px; border-radius: 6px; transition: all .2s;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); }
+  .code-copy-btn.copied { color: var(--success); border-color: oklch(0.55 0.16 155); }
+  pre {
+    margin: 0; padding: 20px 20px 20px 0;
+    overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; line-height: 1.7; color: #e0e2e8; tab-size: 2;
+  }
+  pre .kw { color: #c792ea; }
+  pre .fn { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .cmt { color: rgba(255,255,255,0.35); font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .op { color: #89ddff; }
+
+  /* ===== ReAct Cycle Diagram ===== */
+  .react-cycle {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin: 28px 0; flex-wrap: wrap;
+  }
+  .react-step {
+    background: var(--bg-surface); border: 2px solid var(--border);
+    border-radius: var(--radius-sm); padding: 18px 22px;
+    text-align: center; min-width: 140px; transition: all .25s ease;
+    position: relative;
+  }
+  .react-step:nth-child(1) { border-color: var(--primary); }
+  .react-step:nth-child(3) { border-color: var(--accent); }
+  .react-step:nth-child(5) { border-color: var(--success); }
+  .react-step:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+  .react-step .rs-icon { font-size: 28px; margin-bottom: 8px; }
+  .react-step .rs-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 14px; color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .react-step .rs-desc { font-size: 12px; color: var(--text-muted); line-height: 1.45; }
+  .react-arrow {
+    font-size: 24px; color: var(--text-muted);
+    padding: 0 8px; font-weight: 300;
+  }
+
+  /* ===== Component Cards ===== */
+  .comp-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 20px 0;
+  }
+  @media (max-width: 640px) { .comp-grid { grid-template-columns: 1fr; } }
+  .comp-card {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px; transition: all .25s ease;
+  }
+  .comp-card:hover { background: var(--bg-surface); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+  .comp-card .cc-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .comp-card .cc-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .comp-card .cc-icon.pri { background: oklch(0.95 0.05 250); }
+  .comp-card .cc-icon.acc { background: oklch(0.97 0.04 85); }
+  .comp-card .cc-icon.suc { background: oklch(0.95 0.06 155); }
+  .comp-card .cc-icon.inf { background: oklch(0.95 0.05 230); }
+  .comp-card .cc-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 15px; color: var(--text-primary);
+  }
+  .comp-card .cc-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* ===== Footer Nav ===== */
+  .footer-nav {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 60px;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link-card {
+    flex: 1; display: flex; align-items: center; gap: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit; transition: all .25s ease;
+  }
+  .nav-link-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .nav-link-card.disabled { opacity: .45; pointer-events: none; }
+  .nl-dir { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .nl-label { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .nl-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; }
+
+  .footer-ref {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 40px;
+    text-align: center; font-size: 12.5px; color: var(--text-muted);
+  }
+  .footer-ref a { color: var(--primary); text-decoration: none; }
+
+  /* ===== Tweaks Panel ===== */
+  .tweaks-panel { position: fixed; right: 20px; bottom: 20px; z-index: 999; }
+  .tweaks-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-md); transition: all .25s ease;
+  }
+  .tweaks-toggle:hover { transform: scale(1.08); box-shadow: var(--shadow-lg); }
+  .tweaks-body {
+    position: absolute; bottom: 54px; right: 0;
+    width: 280px; background: var(--bg-surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 20px; display: none;
+    animation: tweaksIn .2s ease;
+  }
+  .tweaks-body.open { display: block; }
+  @keyframes tweaksIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .tweaks-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tweaks-close { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 2px; }
+  .tweaks-group { margin-bottom: 14px; }
+  .tweaks-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tweaks-slider {
+    width: 100%; height: 4px; border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--bg-subtle); outline: none;
+  }
+  .tweaks-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--primary); cursor: pointer;
+    border: 2px solid #fff; box-shadow: var(--shadow-sm);
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .section { padding: 24px 20px; }
+    .hero { padding: 100px 16px 40px; }
+    .header-inner { padding: 0 16px; }
+    .content { padding: 0 16px 60px; }
+    .table-wrap { margin: 16px -20px; border-radius: 0; border-left: none; border-right: none; }
+    .header-nav { display: none; }
+    .react-cycle { flex-direction: column; }
+    .react-arrow { transform: rotate(90deg); }
+  }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="hdr">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">LC Notes <span>LangChain</span></a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 Agent vs Cha...</a>
+      <a href="#s2" class="nav-anchor">&sect;2 Agent 工作循环：R...</a>
+      <a href="#s3" class="nav-anchor">&sect;3 create_react...</a>
+      <a href="#s4" class="nav-anchor">&sect;4 Agent 的四大核心组...</a>
+      <a href="#s5" class="nav-anchor">&sect;5 Tool Calling...</a>
+      <a href="#s6" class="nav-anchor">&sect;6 完整案例：多工具协作 A...</a>
+
+      <a href="13-认识LangChain.html">P13</a>
+      <a href="14-快速入门和Agent原理.html" class="active">P14</a>
+      <a href="15-初始化模型.html">P15</a>
+      <a href="16-调用模型.html">P16</a>
+      <a href="17-消息Message.html">P17</a>
+      <a href="21-短期记忆.html">P21</a>
+      <a href="24-需求分析与功能验证.html">P24</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">第 14 集 &middot; 核心原理</div>
+  <h1>快速入门与 <span class="highlight">Agent 原理</span></h1>
+  <p class="hero-desc">深入理解 Agent 与 Chain 的本质区别，掌握 ReAct 推理循环的工作机制，学会用 create_react_agent() 构建具备自主决策能力的智能体。</p>
+  <div class="hero-meta">
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 时长 18:36</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 核心篇</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg> ReAct 循环</span>
+  </div>
+</section>
+
+<!-- Content -->
+<main class="content">
+
+<!-- S1: Agent vs Chain -->
+<article class="section" id="s1">
+  <h2 class="section-title"><span class="num">1</span> Agent vs Chain：本质区别</h2>
+
+  <p>在 LangChain 中，<strong>Chain（链）</strong>和 <strong>Agent（智能体）</strong>是两种截然不同的执行模式，理解它们的区别是掌握 LangChain 的第一步。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:20%">对比维度</th><th style="width:40%">Chain（链）</th><th>Agent（智能体）</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>执行逻辑</strong></td>
+          <td><strong>预定义的固定流程</strong>——开发者事先确定好每一步的执行顺序，代码按既定路径运行</td>
+          <td><strong>动态自主决策</strong>——LLM 根据当前上下文实时决定下一步该做什么，路径不固定</td>
+        </tr>
+        <tr>
+          <td><strong>适用场景</strong></td>
+          <td>流程明确、步骤可预知的任务，如：文本摘要、翻译流水线、格式转换</td>
+          <td>开放性问题、需要多步推理的任务，如：复杂问答、研究分析、多工具协作</td>
+        </tr>
+        <tr>
+          <td><strong>工具调用</strong></td>
+          <td>按代码写死的顺序依次调用，无法跳过或动态选择</td>
+          <td>根据推理结果自主选择调用哪个工具，可以多次调用不同工具</td>
+        </tr>
+        <tr>
+          <td><strong>可控性</strong></td>
+          <td>高 —— 每一步都由开发者精确控制</td>
+          <td>中 —— 通过 System Prompt 和工具约束间接控制</td>
+        </tr>
+        <tr>
+          <td><strong>类比</strong></td>
+          <td>像<strong>工厂流水线</strong>：原料进来，经过固定的加工工序，产出成品</td>
+          <td>像<strong>有经验的员工</strong>：接到任务后自己判断需要用什么工具、查什么资料、怎么完成</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>选择建议：</strong>如果你的任务流程清晰、步骤固定（如「读取PDF -> 提取关键信息 -> 生成报告」），用 <strong>Chain + LCEL</strong> 更高效可靠；如果任务需要 LLM 自主判断和规划（如「帮我调研某个技术方案并给出建议」），则应该使用 <strong>Agent</strong>。
+    </div>
+  </div>
+</article>
+
+<!-- S2: ReAct Loop -->
+<article class="section accent" id="s2">
+  <h2 class="section-title"><span class="num">2</span> Agent 工作循环：ReAct 模式</h2>
+
+  <p>目前 LangChain 中最主流的 Agent 模式是 <strong>ReAct（Reasoning + Acting）</strong>，它源自 Yao et al. (2022) 的论文《ReAct: Synergizing Reasoning and Acting in Language Models》。ReAct 将「思考」和「行动」交织在一起，形成一个闭环推理过程：</p>
+
+  <!-- ReAct Cycle Visual -->
+  <div class="react-cycle">
+    <div class="react-step">
+      <div class="rs-icon">&#129504;</div>
+      <div class="rs-label">Thought（思考）</div>
+      <div class="rs-desc">LLM 分析当前问题<br>决定下一步行动策略</div>
+    </div>
+    <div class="react-arrow">&rarr;</div>
+    <div class="react-step">
+      <div class="rs-icon">&#128295;</div>
+      <div class="rs-label">Action（行动）</div>
+      <div class="rs-desc">选择并调用一个工具<br>传入参数执行操作</div>
+    </div>
+    <div class="react-arrow">&rarr;</div>
+    <div class="react-step">
+      <div class="rs-icon">&#128270;</div>
+      <div class="rs-label">Observation（观察）</div>
+      <div class="rs-desc">获取工具返回的结果<br>作为新的上下文输入</div>
+    </div>
+    <div class="react-arrow">&#8635;</div>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>ReAct 的核心优势：</strong>传统的 Chain 是「一步到位」，而 ReAct 允许 Agent 在获得中间结果后<strong>重新评估</strong>并调整策略。如果第一次搜索结果不够好，Agent 可以换关键词再搜一次，或者换个工具尝试。这种「试错-修正」的能力使 Agent 能够处理远比 Chain 复杂的任务。
+    </div>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">完整执行示例</h3>
+
+  <p>假设用户问：<strong>「北京今天天气如何？适合户外运动吗？」</strong> Agent 的完整思考链路如下：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Agent 执行日志</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt">=== 用户输入 ===</span>
+<span class="str">"北京今天天气如何？适合户外运动吗？"</span>
+
+<span class="cmt">=== 第 1 轮循环 ===</span>
+<span class="fn">Thought</span>: 我需要查询北京今天的天气情况，然后根据温度和天气状况判断是否适合户外运动。让我先搜索北京今天的天气。
+
+<span class="fn">Action</span>: duckduckgo_search
+<span class="fn">Action Input</span>: <span class="str">"北京今天天气"</span>
+
+<span class="fn">Observation</span>: 北京今天晴转多云，气温 18~28°C，空气质量良，紫外线中等...
+
+<span class="cmt">=== 第 2 轮循环 ===</span>
+<span class="fn">Thought</span>: 已经获取到北京的天气信息了。气温 18~28°C，晴天转多云，空气质量良好。这个条件非常适合户外运动。我可以直接回答用户的问题了。
+
+<span class="fn">Final Answer</span>: 北京今天的天气非常不错！气温在 18~28°C 之间，晴天转多云，空气质量为良。这样的天气条件非常适合户外运动，比如跑步、骑行、登山等。建议避开正午时段（紫外线中等），早晚时段更为舒适。</code></pre>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#9989;</div>
+    <div class="hb-body">
+      <strong>关键观察：</strong>注意 Agent 在第一轮获得搜索结果后，并没有立即输出答案，而是进行了<strong>第二轮 Thought</strong>来综合分析结果，最终才给出 Final Answer。这种多轮推理能力正是 Agent 区别于简单 API 调用的核心所在。
+    </div>
+  </div>
+</article>
+
+<!-- S3: create_react_agent -->
+<article class="section" id="s3">
+  <h2 class="section-title"><span class="num">3</span> create_react_agent() 使用方法</h2>
+
+  <p><code>create_react_agent()</code> 是 LangChain 创建 ReAct 类型 Agent 的核心函数。它接收三个核心参数：LLM 实例、工具列表、以及可选的系统提示词模板。</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain.agents <span class="kw">import</span> create_react_agent, AgentExecutor
+<span class="kw">from</span> langchain_community.tools <span class="kw">import</span> DuckDuckGoSearchRun, WikipediaQueryRun
+<span class="kw">from</span> langchain_community.utilities <span class="kw">import</span> WikipediaAPIWrapper
+
+<span class="cmt"># ========== 1. 初始化 LLM ==========<span class="kw">llm</span> = <span class="fn">ChatOpenAI</span>(
+    model=<span class="str">"gpt-4o-mini"</span>,
+    temperature=<span class="num">0</span>,       <span class="cmt"># Agent 场景推荐 temperature=0，保证推理稳定</span>
+)
+
+<span class="cmt"># ========== 2. 准备工具集 ==========
+tools = [
+    <span class="fn">DuckDuckGoSearchRun</span>(),                    <span class="cmt"># 网络搜索</span>
+    <span class="fn">WikipediaQueryRun</span>(api_wrapper=<span class="fn">WikipediaAPIWrapper</span>()),  <span class="cmt"># 维基百科查询</span>
+]
+
+<span class="cmt"># ========== 3. 创建 ReAct Agent ==========
+prompt = <span class="str">"""你是一个乐于助人的 AI 助手。请使用提供的工具来回答用户的问题。
+当你不知道答案时，主动使用搜索工具查找相关信息。
+
+可用工具：
+{tool_names}
+
+{instructions}"""</span>
+
+agent = <span class="fn">create_react_agent</span>(
+    llm=llm,
+    tools=tools,
+    prompt=prompt,           <span class="cmt">// 可选：自定义系统提示词</span>
+)
+
+<span class="cmt"># ========== 4. 包装为 AgentExecutor ==========
+agent_executor = <span class="fn">AgentExecutor</span>(
+    agent=agent,
+    tools=tools,
+    verbose=<span class="kw">True</span>,              <span class="cmt">// 打印完整的思考链路</span>
+    handle_parsing_errors=<span class="kw">True</span>,   <span class="cmt">// 解析失败时自动重试</span>
+    max_iterations=<span class="num">10</span>,            <span class="cmt">// 最大循环次数，防止无限循环</span>
+    return_intermediate_steps=<span class="kw">True</span>, <span class="cmt">// 返回中间步骤用于调试</span>
+)
+
+<span class="cmt"># ========== 5. 运行 Agent ==========
+result = agent_executor.<span class="fn">invoke</span>({
+    <span class="str">"input"</span>: <span class="str">"什么是量子计算？它和经典计算有什么区别？"</span>
+})
+
+<span class="fn">print</span>(result[<span class="str">"output"</span>])</code></pre>
+  </div>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#9888;&#65039;</div>
+    <div class="hb-body">
+      <strong>重要提示：</strong><code>create_react_agent()</code> 只负责创建 Agent 的<strong>推理逻辑</strong>（即 LLM 如何思考和选择工具），而实际的<strong>执行管理</strong>（循环控制、错误处理、最大迭代次数等）是由 <code>AgentExecutor</code> 来完成的。两者配合使用才是完整的 Agent 运行时。
+    </div>
+  </div>
+</article>
+
+<!-- S4: Core Components -->
+<article class="section info" id="s4">
+  <h2 class="section-title"><span class="num">4</span> Agent 的四大核心组件</h2>
+
+  <p>一个完整的 Agent 由四个核心组件构成，每个组件各司其职又紧密协作：</p>
+
+  <div class="comp-grid">
+    <div class="comp-card">
+      <div class="cc-header">
+        <div class="cc-icon pri">&#129302;</div>
+        <div class="cc-title">LLM（大脑）</div>
+      </div>
+      <div class="cc-desc">Agent 的「大脑」，负责理解用户意图、进行推理判断、生成 Action 决策和最终回答。推荐使用支持 Tool Calling 的模型（GPT-4o / Claude 3.5 / DeepSeek-V3），temperature 设为 0 以保证推理稳定性。</div>
+    </div>
+    <div class="comp-card">
+      <div class="cc-header">
+        <div class="cc-icon acc">&#128295;</div>
+        <div class="cc-title">Tools（手脚）</div>
+      </div>
+      <div class="cc-desc">Agent 可调用的外部能力集合。每个 Tool 包含名称、描述、参数 schema。LLM 根据 Tool 的描述来判断何时以及如何调用它们。工具描述写得越清晰，Agent 的调用准确率越高。</div>
+    </div>
+    <div class="comp-card">
+      <div class="cc-header">
+        <div class="cc-icon suc">&#128451;</div>
+        <div class="cc-title">Memory（记忆）</div>
+      </div>
+      <div class="cc-desc">让 Agent 具备跨轮次记忆能力。在单次对话中，AgentExecutor 自动维护 conversation history；跨会话场景则需要配置 ConversationBufferMemory 或其他持久化存储方案。</div>
+    </div>
+    <div class="comp-card">
+      <div class="cc-header">
+        <div class="cc-icon inf">&#128221;</div>
+        <div class="cc-title">System Prompt（人设）</div>
+      </div>
+      <div class="cc-desc">定义 Agent 的角色、行为规范和使用约束。好的 System Prompt 能显著提升 Agent 表现：明确角色定位、指定输出格式、限制行为边界、设定安全护栏。</div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>组件协作关系：</strong>用户提问进入 Agent 后，<strong>System Prompt</strong> 设定行为框架，<strong>LLM</strong> 在此框架内进行推理，通过 <strong>Tool Calling</strong> 机制选择合适的 <strong>Tools</strong> 获取外部信息，<strong>Memory</strong> 保证多轮对话的连贯性。四个组件缺一不可，共同构成了 Agent 的完整能力体系。
+    </div>
+  </div>
+</article>
+
+<!-- S5: Tool Calling -->
+<article class="section" id="s5">
+  <h2 class="section-title"><span class="num">5</span> Tool Calling 机制详解</h2>
+
+  <p>Tool Calling 是 Agent 能力的基石。现代主流 LLM（GPT-4 / Claude / Gemini）原生支持 Function Calling / Tool Use 功能，LangChain 将这一能力标准化为统一的 Tool 接口。</p>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">Tool Calling 工作流程</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:18%">阶段</th><th>发生的事情</th><th style="width:30%">说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. 注册</strong></td>
+          <td>将 Tool 列表传给 LLM</td>
+          <td>每个 Tool 包含 name、description、parameters（JSON Schema）。这些元数据帮助 LLM 理解工具能力。</td>
+        </tr>
+        <tr>
+          <td><strong>2. 决策</strong></td>
+          <td>LLM 输出 tool_call 请求</td>
+          <td>当 LLM 判断需要调用工具时，不会直接返回文字，而是返回结构化的 tool_call 对象（含工具名和参数）。</td>
+        </tr>
+        <tr>
+          <td><strong>3. 执行</strong></td>
+          <td>LangChain 执行对应 Tool</td>
+          <td>框架解析 tool_call，找到匹配的 Tool 实例，将参数传入并执行，获取返回结果。</td>
+        </tr>
+        <tr>
+          <td><strong>4. 回馈</strong></td>
+          <td>结果作为新消息回传 LLM</td>
+          <td>Tool 的执行结果被包装为 ToolMessage，追加到对话历史中，供 LLM 进行下一轮推理。</td>
+        </tr>
+        <tr>
+          <td><strong>5. 终止</strong></td>
+          <td>LLM 给出最终回答</td>
+          <td>当 LLM 认为已收集到足够信息，不再请求工具调用，而是直接返回 Final Answer。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">自定义 Tool 示例</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+<span class="kw">from</span> typing <span class="kw">import</span> Annotated
+
+<span class="cmt"># 使用 @tool 装饰器快速定义自定义工具</span>
+<span class="kw">@tool</span>
+<span class="kw">def</span> <span class="fn">calculate</span>(
+    expression: Annotated[<span class="str">str</span>, <span class="str">"要计算的数学表达式，如 '(2+3)*4'"</span>]
+) -> <span class="str">str</span>:
+    <span class="str">"""执行数学计算并返回结果。支持加减乘除和括号。"""</span>
+    <span class="kw">try</span>:
+        result = <span class="fn">eval</span>(expression)
+        <span class="kw">return</span> <span class="str">f"计算结果: {expression} = {result}"</span>
+    <span class="kw">except</span> Exception as e:
+        <span class="kw">return</span> <span class="str">f"计算错误: {e}"</span>
+
+
+<span class="kw">@tool</span>
+<span class="kw">def</span> <span class="fn">get_word_count</span>(
+    text: Annotated[<span class="str">str</span>, <span class="str">"要统计字数的文本内容"</span>]
+) -> <span class="str">str</span>:
+    <span class="str">"""统计文本的字数（中文按字符计，英文按单词计）。"""</span>
+    chinese_chars = <span class="fn">len</span>([c <span class="kw">for</span> c <span class="kw">in</span> text <span class="kw">if</span> <span class="str">'\u4e00'</span> <= c <= <span class="str">'\u9fff'</span>])
+    english_words = <span class="fn">len</span>(text.split())
+    <span class="kw">return</span> <span class="str">f"中文字符数: {chinese_chars}, 英文单词数: {english_words}"</span>
+
+
+<span class="cmt"># 将自定义工具加入 Agent</span>
+tools = [calculate, get_word_count]</code></pre>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#128640;</div>
+    <div class="hb-body">
+      <strong>编写高质量 Tool 的技巧：</strong><br>
+      &#x2022; <strong>name 要简洁明了</strong>：用 snake_case 命名，如 <code>web_search</code> 而非 <code>searchTheInternetForInformation</code><br>
+      &#x2022; <strong>docstring 就是 LLM 看到的「说明书」</strong>：详细描述功能、使用场景、参数含义和约束<br>
+      &#x2022; <strong>参数类型注解 + 描述</strong>：用 Annotated[type, description] 格式，LLM 会据此生成正确的参数值<br>
+      &#x2022; <strong>错误处理要友好</strong>：返回人类可读的错误信息而非抛异常，方便 LLM 理解并调整策略
+    </div>
+  </div>
+</article>
+
+<!-- S6: Practical Demo -->
+<article class="section success" id="s6">
+  <h2 class="section-title"><span class="num">6</span> 完整案例：多工具协作 Agent</h2>
+
+  <p>让我们把以上所有知识整合起来，构建一个具备搜索、计算、文本分析能力的全能型 Agent：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">import</span> os
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain.agents <span class="kw">import</span> create_react_agent, AgentExecutor
+<span class="kw">from</span> langchain_community.tools <span class="kw">import</span> DuckDuckGoSearchRun
+<span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+<span class="kw">from</span> typing <span class="kw">import</span> Annotated
+
+<span class="cmt"># --- 环境变量加载 ---
+<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
+<span class="fn">load_dotenv</span>()   <span class="cmt"># 从 .env 文件加载 OPENAI_API_KEY</span>
+
+<span class="cmt"># --- 自定义工具：单位换算 ---
+<span class="kw">@tool</span>
+<span class="kw">def</span> <span class="fn">convert_unit</span>(
+    value: Annotated[<span class="float</span>, <span class="str">"要换算的数值"</span>],
+    from_unit: Annotated[<span class="str">str</span>, <span class="str">"原始单位 (km/mile/kg/lb/C/F)"</span>],
+    to_unit: Annotated[<span class="str">str</span>, <span class="str">"目标单位"</span>],
+) -> <span class="str">str</span>:
+    <span class="str">"""在不同度量单位之间进行换算。支持长度、重量、温度。"""</span>
+    conversions = {
+        (<span class="str">'km'</span>, <span class="str">'mile'</span>): <span class="kw">lambda</span> v: v * <span class="num">0.621371</span>,
+        (<span class="str">'mile'</span>, <span class="str">'km'</span>): <span class="kw">lambda</span> v: v * <span class="num">1.60934</span>,
+        (<span class="str">'kg'</span>, <span class="str">'lb'</span>): <span class="kw">lambda</span> v: v * <span class="num">2.20462</span>,
+        (<span class="str">'lb'</span>, <span class="str">'kg'</span>): <span class="kw">lambda</span> v: v * <span class="num">0.453592</span>,
+        (<span class="str">'C'</span>, <span class="str">'F'</span>): <span class="kw">lambda</span> v: v * <span class="num">9</span>/<span class="num">5</span> + <span class="num">32</span>,
+        (<span class="str">'F'</span>, <span class="str">'C'</span>): <span class="kw">lambda</span> v: (v - <span class="num">32</span>) * <span class="num">5</span>/<span class="num">9</span>,
+    }
+    key = (from_unit.lower(), to_unit.lower())
+    <span class="kw">if</span> key <span class="kw">not in</span> conversions:
+        <span class="kw">return</span> <span class="str">f"不支持 {from_unit} 到 {to_unit} 的换算"</span>
+    result = conversions[key](value)
+    <span class="kw">return</span> <span class="str">f"{value} {from_unit} = {result:.2f} {to_unit}"</span>
+
+
+<span class="cmt"># --- 组装 Agent ---
+llm = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+tools = [
+    <span class="fn">DuckDuckGoSearchRun</span>(),   <span class="cmt">// 网络搜索</span>
+    convert_unit,                  <span class="cmt">// 单位换算</span>
+]
+
+agent = <span class="fn">create_react_agent</span>(llm, tools)
+executor = <span class="fn">AgentExecutor</span>(
+    agent=agent, tools=tools,
+    verbose=<span class="kw">True</span>,
+    handle_parsing_errors=<span class="kw">True</span>,
+    max_iterations=<span class="num">8</span>,
+)
+
+<span class="cmt"># --- 测试运行 ---
+response = executor.<span class="fn">invoke</span>({
+    <span class="str">"input"</span>: (
+        <span class="str">"马拉松全程是多少公里？换成英里是多少？"</span>
+        <span class="str">"另外帮我查一下今年波士顿马拉松的冠军成绩。"</span>
+    )
+})
+
+<span class="fn">print</span>(<span class="str">"\n=== 最终回答 ==="</span>)
+<span class="fn">print</span>(response[<span class="str">"output"</span>])</code></pre>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#127881;</div>
+    <div class="hb-body">
+      <strong>恭喜你！</strong>到这里你已经掌握了 LangChain Agent 的核心原理和实战技能。从下一集开始，我们将深入模型的初始化细节和多种调用方式，逐步解锁更强大的功能。记住：<strong>最好的学习方式就是动手实践</strong>——修改上面的代码，添加更多工具，看看 Agent 能做出什么有趣的事情吧！
+    </div>
+  </div>
+</article>
+
+</main>
+
+<!-- Footer Nav -->
+<nav class="footer-nav">
+  <a href="13-认识LangChain.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 13 集 - 认识LangChain</div>
+    </div>
+  </a>
+  <a href="15-初始化模型.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 15 集 - 初始化模型</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="footer-ref">
+  参考来源：<a href="https://www.langchain.com.cn/docs/how_to/agents/" target="_blank">LangChain Agents 官方文档</a> &middot;
+  视频来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">B站 黑马程序员 BV178w1z7EHQ</a>
+</div>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+  <button class="tweaks-toggle" onclick="toggleTweaks()" title="调节面板">&#9881;</button>
+  <div class="tweaks-body" id="tweaksBody">
+    <div class="tweaks-title">
+      Tweaks
+      <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">字体大小</label>
+      <input type="range" class="tweaks-slider" min="0.85" max="1.25" step="0.05" value="1" oninput="setFontSize(this.value)">
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">行距</label>
+      <input type="range" class="tweaks-slider" min="0.9" max="1.4" step="0.05" value="1" oninput="setLineHeight(this.value)">
+    </div>
+  </div>
+</div>
+
+<script>
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => { hdr.classList.toggle('scrolled', window.scrollY > 20); });
+
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) setTimeout(() => entry.target.classList.add('visible'), i * 80);
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = '已复制!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function toggleTweaks() { document.getElementById('tweaksBody').classList.toggle('open'); }
+function setFontSize(val) { document.documentElement.style.setProperty('--font-scale', val); }
+function setLineHeight(val) { document.documentElement.style.setProperty('--line-height-scale', val); }
+</script>
+</body>
+</html>

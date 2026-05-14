@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第18集 - 提示词工程 | LangChain学习笔记</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8f9fc;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f1f3f8;
+            --text-primary: #1a1d26;
+            --text-secondary: #5a6072;
+            --text-muted: #949aad;
+            --primary: oklch(0.55 0.22 250);
+            --primary-light: oklch(0.75 0.15 250);
+            --accent: oklch(0.70 0.18 85);
+            --success: oklch(0.55 0.16 155);
+            --danger: oklch(0.55 0.20 25);
+            --info: oklch(0.55 0.15 230);
+            --border-color: #e2e5ef;
+            --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+            --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 4px rgba(26,29,38,0.04);
+            --shadow-lg: 0 8px 24px rgba(26,29,38,0.12), 0 4px 8px rgba(26,29,38,0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --font-size-base: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: var(--font-size-base);
+            -webkit-font-smoothing: antialiased;
+            transition: font-size 0.2s ease;
+        }
+
+        /* Header Navigation */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(248, 249, 252, 0.85);
+            border-bottom: 1px solid var(--border-color);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .header.scrolled {
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0.875rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-brand-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            max-width: 600px;
+            justify-content: flex-end;
+        }
+
+        .nav-link {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            position: relative;
+            white-space: nowrap;
+        }
+  .nav-links a.nav-anchor {
+    background: rgba(79,110,247,0.10);
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .nav-links a.nav-anchor:hover {
+    background: rgba(79,110,247,0.18);
+  }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 1px;
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 7rem 0 3rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--info));
+            color: white;
+            padding: 0.375rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.25rem, 5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.1s forwards;
+        }
+
+        .hero-title-accent {
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 620px;
+            margin: 0 auto 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.2s forwards;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.3s forwards;
+        }
+
+        .meta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 0.875rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .meta-tag-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        /* Content Section */
+        .content-section {
+            padding-bottom: 4rem;
+        }
+
+        .section-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .section-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .section-card.accent-bar-success { border-left-color: var(--success); }
+        .section-card.accent-bar-accent { border-left-color: var(--accent); }
+        .section-card.accent-bar-info { border-left-color: var(--info); }
+        .section-card.accent-bar-danger { border-left-color: var(--danger); }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-subtle);
+        }
+
+        .section-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            color: white;
+            border-radius: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-content {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .section-content p {
+            margin-bottom: 1rem;
+        }
+
+        .section-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Sub-heading inside content */
+        .section-subtitle {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--text-primary);
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(85, 120, 250, 0.06), rgba(100, 140, 255, 0.04));
+            border-left: 4px solid var(--primary);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 1.25rem 1.5rem;
+            margin: 1.25rem 0;
+        }
+
+        .highlight-box.success {
+            background: linear-gradient(135deg, rgba(85, 180, 130, 0.06), rgba(100, 200, 150, 0.04));
+            border-left-color: var(--success);
+        }
+
+        .highlight-box.warning {
+            background: linear-gradient(135deg, rgba(220, 160, 60, 0.06), rgba(235, 180, 80, 0.04));
+            border-left-color: var(--accent);
+        }
+
+        .highlight-box.danger {
+            background: linear-gradient(135deg, rgba(220, 90, 80, 0.06), rgba(235, 105, 95, 0.04));
+            border-left-color: var(--danger);
+        }
+
+        .highlight-box-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .highlight-box.success .highlight-box-title { color: var(--success); }
+        .highlight-box.warning .highlight-box-title { color: var(--accent); }
+        .highlight-box.danger .highlight-box-title { color: var(--danger); }
+
+        .highlight-box-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Code Block */
+        .code-block {
+            position: relative;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-md);
+            margin: 1.25rem 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.25rem;
+            background: rgba(26, 29, 38, 0.03);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-lang {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .code-copy-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.625rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+
+        .code-block:hover .code-copy-btn {
+            opacity: 1;
+        }
+
+        .code-copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.05);
+        }
+
+        .code-body {
+            padding: 1.25rem;
+            overflow-x: auto;
+        }
+
+        .code-body pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.84375rem;
+            line-height: 1.65;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .code-body code {
+            font-family: inherit;
+        }
+
+        /* Syntax Highlighting (Basic) */
+        .code-keyword { color: #c678dd; }
+        .code-string { color: #98c379; }
+        .code-comment { color: #5c6370; font-style: italic; }
+        .code-function { color: #61afef; }
+        .code-class { color: #e5c07b; }
+        .code-variable { color: #e06c75; }
+        .code-param { color: #d19a66; }
+        .code-operator { color: #56b6c2; }
+
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.25rem 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            color: white;
+        }
+
+        th {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        tbody tr:nth-child(even) {
+            background: var(--bg-subtle);
+        }
+
+        tbody tr:hover {
+            background: rgba(85, 120, 250, 0.04);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        td code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: rgba(85, 120, 250, 0.08);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        /* List Styles */
+        .content-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 1rem 0;
+        }
+
+        .content-list li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .content-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.6rem;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .content-list li strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0;
+        }
+
+        .info-item {
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .info-item:hover {
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.03);
+        }
+
+        .info-item-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.375rem;
+        }
+
+        .info-item-value {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .info-item-value code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: rgba(85, 120, 250, 0.08);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            padding: 2.5rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .footer-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .footer-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(85, 120, 250, 0.04);
+            transform: translateX(4px);
+        }
+
+        .footer-link.next {
+            flex-direction: row-reverse;
+        }
+
+        .footer-link.next:hover {
+            transform: translateX(-4px);
+        }
+
+        .footer-reference {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .footer-reference a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer-reference a:hover {
+            text-decoration: underline;
+        }
+
+        /* Tweaks Panel */
+        .tweaks-panel {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 999;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .tweaks-panel.collapsed {
+            padding: 0.625rem 0.875rem;
+        }
+
+        .tweaks-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .tweaks-panel.collapsed .tweaks-label,
+        .tweaks-panel.collapsed .tweaks-slider,
+        .tweaks-panel.collapsed .tweaks-value {
+            display: none;
+        }
+
+        .tweaks-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .tweaks-toggle:hover {
+            color: var(--primary);
+        }
+
+        .tweaks-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .tweaks-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 2.5rem;
+            text-align: center;
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 5.5rem 0 2.5rem;
+            }
+
+            .section-card {
+                padding: 1.75rem;
+                border-radius: var(--radius-md);
+            }
+
+            .section-title {
+                font-size: 1.175rem;
+            }
+
+            .table-wrapper {
+                font-size: 0.8125rem;
+            }
+
+            th, td {
+                padding: 0.625rem 0.75rem;
+            }
+
+            .footer-nav {
+                flex-direction: column;
+            }
+
+            .footer-link {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .tweaks-panel {
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-page);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="header">
+    <div class="nav-container">
+        <a href="index.html" class="nav-brand">
+            <span class="nav-brand-icon">LC</span>
+            LangChain Notes
+        </a>
+        <nav class="nav-links">
+            <a href="#s1" class="nav-anchor">&sect;1 ChatPromptTe...</a>
+
+            <a href="13-认识LangChain.html" class="nav-link">P13 认识</a>
+            <a href="14-快速入门和Agent原理.html" class="nav-link">P14 入门</a>
+            <a href="15-初始化模型.html" class="nav-link">P15 初始化</a>
+            <a href="16-调用模型.html" class="nav-link">P16 调用</a>
+            <a href="17-消息Message.html" class="nav-link">P17 消息</a>
+            <a href="18-提示词工程.html" class="nav-link active">P18 提示词</a>
+            <a href="19-工具Tools.html" class="nav-link">P19 工具</a>
+            <a href="20-预定义工具Tavily.html" class="nav-link">P20 Tavily</a>
+            <a href="21-短期记忆.html" class="nav-link">P21 短期记忆</a>
+            <a href="22-短期记忆-持久存储.html" class="nav-link">P22 持久化</a>
+            <a href="23-记忆管理策略.html" class="nav-link">P23 记忆策略</a>
+            <a href="24-需求分析与功能验证.html" class="nav-link">P24 需求分析</a>
+            <a href="25-对接LangSmith.html" class="nav-link">P25 LangSmith</a>
+            <a href="26-搭建服务端并对接OSS.html" class="nav-link">P26 服务端</a>
+            <a href="27-AI私厨完成Agent开发.html" class="nav-link">P27 Agent</a>
+        </nav>
+    </div>
+</header>
+
+<main class="main-container">
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-badge">Chapter 02 / Model I/O</div>
+        <h1 class="hero-title">
+            第18集：<span class="hero-title-accent">提示词工程</span>
+        </h1>
+        <p class="hero-subtitle">
+            掌握 LangChain 的提示词编排艺术 —— 从模板创建到 Few-Shot 学习、从输出解析器到最佳实践，系统性地提升 LLM 输出质量
+        </p>
+        <div class="hero-meta">
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M10 8l6 4-6 4V8z"/></svg>
+                集数 P18-P19
+            </span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                时长 32:15
+            </span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                BV178w1z7EHQ
+            </span>
+        </div>
+    </section>
+
+    <!-- Content -->
+    <div class="content-section">
+
+        <!-- Card 1: ChatPromptTemplate -->
+        <article class="section-card" id="s1" data-animate>
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2 class="section-title">ChatPromptTemplate 创建模板</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    <strong>ChatPromptTemplate</strong> 是 LangChain 中用于构建结构化提示词的核心类。它允许开发者定义带有变量的提示词模板，在运行时动态注入参数，从而实现提示词的复用与管理。相比手动拼接字符串，使用模板可以大幅降低出错概率并提高代码可维护性。
+                </p>
+
+                <h3 class="section-subtitle">from_template() — 字符串模板基础用法</h3>
+                <p>最简单的创建方式，直接从字符串模板生成 <code>ChatPromptTemplate</code> 实例：</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
+
+<span class="code-comment"># 定义带变量的字符串模板（使用 Python f-string 风格的占位符）</span>
+template = ChatPromptTemplate.from_template(
+    <span class="code-string">"你是一名{role}专家，请用{tone}的语气回答以下问题：\n\n{question}"</span>
+)
+
+<span class="code-comment"># 调用 .format() 注入变量，返回完整的消息列表</span>
+messages = template.format(
+    role=<span class="code-string">"Python 编程"</span>,
+    tone=<span class="code-string">"专业且友好"</span>,
+    question=<span class="code-string">"什么是装饰器？"</span>
+)
+
+<span class="code-keyword">print</span>(messages)
+<span class="code-comment"># 输出：你是一名Python 编程专家，请用专业且友好的语气回答以下问题：</span>
+<span class="code-comment">#       什么是装饰器？</span></code></pre></div>
+                </div>
+
+                <h3 class="section-subtitle">from_messages() — 消息列表模板</h3>
+                <p>更灵活的方式，支持按角色分别定义每条消息的内容模板，适合多轮对话场景：</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
+<span class="code-keyword">from</span> langchain_core.messages <span class="code-keyword">import</span> SystemMessage, HumanMessage
+
+<span class="code-comment"># 使用 from_messages 构建多角色消息模板</span>
+template = ChatPromptTemplate.from_messages([
+    (<span class="code-string">"system"</span>, <span class="code-string">"你是{name}，一个{personality}的 AI 助手。只回答关于{topic}的问题。"</span>),
+    (<span class="code-string">"human"</span>, <span class="code-string">"{user_input}"</span>)
+])
+
+<span class="code-comment"># 格式化后得到完整的消息对象列表</span>
+messages = template.format_messages(
+    name=<span class="code-string">"小智"</span>,
+    personality=<span class="code-string">"幽默风趣"</span>,
+    topic=<span class="code-string">"机器学习"</span>,
+    user_input=<span class="code-string">"解释一下梯度下降"</span>
+)
+
+<span class="code-comment"># messages[0] 是 SystemMessage, messages[1] 是 HumanMessage</span>
+<span class="code-keyword">print</span>(<span class="code-keyword">type</span>(messages[0]))  <span class="code-comment"># &lt;class 'langchain_core.messages.system.SystemMessage'&gt;</span>
+<span class="code-keyword">print</span>(messages[<span class="code-param">0</span>].content)     <span class="code-comment"># 你是小智，一个幽默风趣的 AI 助手。只回答关于机器学习的问题。</span></code></pre></div>
+                </div>
+
+                <h3 class="section-subtitle">两种方式对比</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>对比维度</th>
+                                <th>from_template()</th>
+                                <th>from_messages()</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>输入形式</strong></td>
+                                <td>单个字符串模板</td>
+                                <td>消息元组/消息对象列表</td>
+                            </tr>
+                            <tr>
+                                <td><strong>输出类型</strong></td>
+                                <td>String（纯文本）</td>
+                                <td>List[Message]（结构化消息）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>角色控制</strong></td>
+                                <td>隐式（需在文本中描述）</td>
+                                <td>显式（每条消息指定 role）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>适用场景</strong></td>
+                                <td>简单单轮提示词</td>
+                                <td>多轮对话、System/User 分离</td>
+                            </tr>
+                            <tr>
+                                <td><strong>灵活性</strong></td>
+                                <td>较低</td>
+                                <td>较高，可混合 Message 对象与模板</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight-box">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+                        本天才的建议
+                    </div>
+                    <div class="highlight-box-content">
+                        在实际项目中<strong>优先使用 <code>from_messages()</code></strong>。
+                        它输出的结构化消息可以直接传给 <code>model.invoke(messages)</code>，
+                        无需额外转换。而且当你的提示词需要同时包含 system、user、assistant 角色时，
+                        只有 <code>from_messages()</code> 能优雅地表达这种结构。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Card 2: 变量注入与部分填充 -->
+        <article class="section-card accent-bar-accent" data-animate>
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2 class="section-title">变量注入与部分填充</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    提示词模板的真正威力在于<strong>变量管理</strong>。LangChain 提供了三种层次的变量注入机制：
+                    完整填充（format）、部分填充（partial）、以及动态变量（partial_variables），
+                    分别适用于不同的使用场景。
+                </p>
+
+                <h3 class="section-subtitle">.format() — 完整填充所有变量</h3>
+                <p>最基础的用法，一次性提供所有必需变量的值：</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
+
+template = ChatPromptTemplate.from_template(
+    <span class="code-string">"将以下内容翻译为{target_lang}：\n\n{text}"</span>
+)
+
+<span class="code-comment"># 一次性填入所有变量</span>
+result = template.format(
+    target_lang=<span class="code-string">"English"</span>,
+    text=<span class="code-string">"人工智能正在改变世界"</span>
+)
+<span class="code-keyword">print</span>(result)
+<span class="code-comment"># 将以下内容翻译为 English：</span>
+<span class="code-comment"># 人工智能正在改变世界</span></code></pre></div>
+                </div>
+
+                <h3 class="section-subtitle">.partial() — 预填充部分变量</h3>
+                <p>
+                    当某些变量是固定的（如系统角色、日期等），可以使用 <code>.partial()</code> 预先填充，
+                    返回一个新的模板实例，剩余变量稍后再填入。这在<strong>管道（Pipeline）</strong>中特别有用——
+                    上游组件固定一部分变量，下游组件再补充剩余部分。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
+
+<span class="code-comment"># 定义包含多个变量的模板</span>
+template = ChatPromptTemplate.from_template(
+    <span class="code-string">"当前时间：{current_time}\n"</span>
+    <span class="code-string">"角色：{role}\n"</span>
+    <span class="code-string">"用户问题：{question}"</span>
+)
+
+<span class="code-comment"># 使用 partial() 预填充固定变量，返回新模板</span>
+partial_template = template.partial(
+    current_time=<span class="code-string">"2025-01-15 10:30"</span>,
+    role=<span class="code-string">"技术支持工程师"</span>
+)
+
+<span class="code-comment"># 后续只需填入剩余变量</span>
+result = partial_template.format(question=<span class="code-string">"如何重置密码？"</span>)
+<span class="code-keyword">print</span>(result)</code></pre></div>
+                </div>
+
+                <h3 class="section-subtitle">partial_variables — 动态变量</h3>
+                <p>
+                    对于<strong>每次调用时值都可能变化</strong>的变量（如当前日期、随机数、外部 API 结果），
+                    可以传入可调用对象（Callable），LangChain 会在每次 format 时自动执行该函数获取最新值。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> datetime <span class="code-keyword">import</span> datetime
+<span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
+
+<span class="code-comment"># 定义动态获取当前时间的函数</span>
+<span class="code-keyword">def</span> <span class="code-function">get_current_time</span>() -> <span class="code-class">str</span>:
+    <span class="code-keyword">return</span> datetime.now().strftime(<span class="code-string">"%Y-%m-%d %H:%M:%S"</span>)
+
+<span class="code-comment"># 创建模板时通过 partial_variables 绑定动态变量</span>
+template = ChatPromptTemplate.from_template(
+    <span class="code-string">"现在是 {current_time}。\n请回答：{question}"</span>,
+    partial_variables={
+        <span class="code-string">"current_time"</span>: get_current_time  <span class="code-comment"># 传入函数引用</span>
+    }
+)
+
+<span class="code-comment"># 每次 format 都会重新调用 get_current_time()</span>
+r1 = template.format(question=<span class="code-string">"今天星期几？"</span>)
+<span class="code-keyword">import</span> time; time.sleep(<span class="code-param">2</span>)
+r2 = template.format(question=<span class="code-string">"现在几点了？"</span>)
+
+<span class="code-keyword">print</span>(r1)  <span class="code-comment"># 现在是 2025-01-15 10:30:01...</span>
+<span class="code-keyword">print</span>(r2)  <span class="code-comment"># 现在是 2025-01-15 10:30:03... （时间不同！）</span></code></pre></div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>方法</th>
+                                <th>触发时机</th>
+                                <th>适用场景</th>
+                                <th>返回值</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>.format(**vars)</code></td>
+                                <td>立即</td>
+                                <td>一次性完整填充</td>
+                                <td>格式化后的字符串/消息列表</td>
+                            </tr>
+                            <tr>
+                                <td><code>.partial(**vars)</code></td>
+                                <td>立即（固定值）</td>
+                                <td>固定值的预填充</td>
+                                <td>新的 Template 实例</td>
+                            </tr>
+                            <tr>
+                                <td><code>partial_variables={}</code></td>
+                                <td>每次 format 时</td>
+                                <td>动态变化的值（时间、API 等）</td>
+                                <td>构造时绑定 Callable</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </article>
+
+        <!-- Card 3: Few-Shot Prompting -->
+        <article class="section-card accent-bar-success" data-animate>
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2 class="section-title">Few-Shot Prompting 实现</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    <strong>Few-Shot Learning（少样本学习）</strong> 是提升 LLM 输出质量最有效的技巧之一。
+                    通过在提示词中提供若干高质量的输入-输出示例，模型能够快速理解期望的输出格式和风格，
+                    从而显著减少幻觉和不一致问题。LangChain 为此提供了完善的模板和示例选择机制。
+                </p>
+
+                <h3 class="section-subtitle">FewShotPromptTemplate — 文本模式少样本</h3>
+                <p>用于传统的文本补全场景，将示例拼接到提示词中：</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> FewShotPromptTemplate, PromptTemplate
+
+<span class="code-comment"># 定义示例集合 —— 每个示例是一个字典</span>
+examples = [
+    {<span class="code-string">"input"</span>: <span class="code-string">"开心"</span>, <span class="code-string">"output"</span>: <span class="code-string">"情绪积极指数：9/10，建议保持现状"</span>},
+    {<span class="code-string">"input"</span>: <span class="code-string">"焦虑"</span>, <span class="code-string">"output"</span>: <span class="code-string">"情绪积极指数：3/10，建议深呼吸放松"</span>},
+    {<span class="code-string">"input"</span>: <span class="code-string">"平静"</span>, <span class="code-string">"output"</span>: <span class="code-string">"情绪积极指数：7/10，状态良好"</span>},
+]
+
+<span class="code-comment"># 定义单个示例的格式模板</span>
+example_prompt = PromptTemplate.from_template(
+    <span class="code-string">"用户输入：{input}\n分析结果：{output}"</span>
+)
+
+<span class="code-comment"># 创建 Few-Shot 提示词模板</span>
+few_shot_template = FewShotPromptTemplate(
+    examples=examples,              <span class="code-comment"># 示例数据源</span>
+    example_prompt=example_prompt,  <span class="code-comment"># 单个示例的渲染格式</span>
+    suffix=<span class="code-string">"用户输入：{user_input}\n分析结果："</span>,  <span class="code-comment"># 待预测的后缀</span>
+    input_variables=[<span class="code-string">"user_input"</span>]      <span class="code-comment"># 最终用户输入的变量名</span>
+)
+
+<span class="code-comment"># 生成最终提示词（包含示例 + 待预测输入）</span>
+prompt = few_shot_format.format(user_input=<span class="code-string">"兴奋"</span>)</code></pre></div>
+                </div>
+
+                <h3 class="section-subtitle">FewShotChatMessagePromptTemplate — 聊天模式少样本</h3>
+                <p>专为聊天模型设计，示例以消息列表的形式组织，更适合 ChatModel：</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
+<span class="code-keyword">from</span> langchain_core.prompt_values <span class="code-keyword">import</span> FewShotChatMessagePromptTemplate
+
+<span class="code-comment"># 定义聊天模式的示例（每个示例是一组消息）</span>
+examples = [
+    [
+        (<span class="code-string">"human"</span>, <span class="code-string">"将'hello world'翻译成中文"</span>),
+        (<span class="code-string">"ai"</span>, <span class="code-string">"'你好世界'"</span>)
+    ],
+    [
+        <span class="code-string">("human", "将'good morning'翻译成中文")</span>,
+        <span class="code-string">("ai", "'早上好'")</span>
+    ],
+]
+
+<span class="code-comment"># 定义示例的消息模板</span>
+example_prompt = ChatPromptTemplate.from_messages([
+    (<span class="code-string">"human"</span>, <span class="code-string">"{user_input}"</span>),
+    (<span class="code-string">"ai"</span>, <span class="code-string">"{ai_output}"</span>)
+])
+
+<span class="code-comment"># 创建聊天模式 Few-Shot 模板</span>
+few_shot_chat_prompt = FewShotChatMessagePromptTemplate(
+    examples=examples,
+    example_prompt=example_prompt
+)
+
+<span class="code-comment">// 组合到完整的提示词模板中</span>
+final_prompt = ChatPromptTemplate.from_messages([
+    (<span class="code-string">"system"</span>, <span class="code-string">"你是一名专业翻译，请将英文翻译为中文并用引号包裹结果。"</span>),
+    few_shot_chat_prompt,           <span class="code-comment"><!-- 注入示例消息 --></span>
+    (<span class="code-string">"human"</span>, <span class="code-string">"{query}"</span>)     <span class="code-comment"><!-- 用户实际查询 --></span>
+])</code></pre></div>
+                </div>
+
+                <h3 class="section-subtitle">示例选择器（Example Selector）</h3>
+                <p>
+                    当示例库很大时，全部塞进上下文会消耗大量 token 且可能造成干扰。
+                    <strong>Example Selector</strong> 可以根据策略智能选取最相关的子集：
+                </p>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">LengthBasedExampleSelector</div>
+                        <div class="info-item-value">根据 token 长度限制自动截取示例数量</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">SemanticSimilarityExampleSelector</div>
+                        <div class="info-item-value">基于语义相似度选择最相关示例（需向量库）</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">MaxMarginalRelevanceExampleSelector</div>
+                        <div class="info-item-value">兼顾相似度与多样性的平衡选择</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">Custom Selector</div>
+                        <div class="info-item-value">继承 BaseExampleSelector 自定义选择逻辑</div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.example_selectors <span class="code-keyword">import</span> LengthBasedExampleSelector
+<span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> FewShotPromptTemplate, PromptTemplate
+
+<span class="code-comment"># 准备大量示例（假设有 20+ 条）</span>
+all_examples = [
+    {<span class="code-string">"word"</span>: <span class="code-string">"happy"</span>, <span class="code-string">"antonym"</span>: <span class="code-string">"sad"</span>},
+    {<span class="code-string">"word"</span>: <span class="code-string">"tall"</span>, <span class="code-string">"antonym"</span>: <span class="code-string">"short"</span>},
+    <span class="code-comment"># ... 更多示例 ...</span>
+]
+
+<span class="code-comment"># 创建基于长度的选择器 —— 自动控制示例数量以适应 token 预算</span>
+selector = LengthBasedExampleSelector(
+    examples=all_examples,
+    max_length=<span class="code-param">200</span>,          <span class="code-comment"># 最大字符长度限制</span>
+    example_prompt=PromptTemplate.from_template(<span class="code-string">"单词：{word} → 反义词：{antonym}"</span>),
+    get_text_length=<span class="code-keyword">lambda</span> x: len(x)  <span class="code-comment"># 长度计算函数</span>
+)
+
+<span class="code-comment"># 选择器会根据 max_length 自动决定放入多少条示例</span>
+few_shot = FewShotPromptTemplate(
+    example_selector=selector,    <span class="code-comment"># 使用选择器替代固定 examples</span>
+    example_prompt=...,           <span class="code-comment"># 同上</span>
+    suffix=<span class="code-string">"单词：{input} → 反义词："</span>,
+    input_variables=[<span class="code-string">"input"</span>]
+)</code></pre></div>
+                </div>
+
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        Few-Shot 最佳实践
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
+                            <li style="margin-bottom:0.3rem;">示例质量 > 数量：3 个精准示例优于 10 个模糊示例</li>
+                            <li style="margin-bottom:0.3rem;">示例应覆盖边界情况（edge cases），而非仅展示正常路径</li>
+                            <li style="margin-bottom:0.3rem;">对于聊天模型，优先使用 <code>FewShotChatMessagePromptTemplate</code></li>
+                            <li>配合 Example Selector 控制 token 消耗，避免超出上下文窗口</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Card 4: 输出解析器 -->
+        <article class="section-card accent-bar-info" data-animate>
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2 class="section-title">输出解析器（Output Parsers）</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    LLM 的原始输出是自由格式的文本，但在实际应用中我们往往需要<strong>结构化的数据</strong>（JSON、特定 Schema 等）。
+                    <strong>Output Parser</strong> 正是解决这个问题的桥梁——它在提示词中嵌入格式指令，
+                    并在模型输出后将文本解析为目标数据结构。
+                </p>
+
+                <h3 class="section-subtitle">StrOutputParser — 字符串输出解析</h3>
+                <p>最简单的解析器，将 AIMessage 的 content 直接提取为纯字符串，常用于 LCEL 管道末端：</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.output_parsers <span class="code-keyword">import</span> StrOutputParser
+<span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
+<span class="code-keyword">from</span> langchain_openai <span class="code-keyword">import</span> ChatOpenAI
+
+<span class="code-comment"># 构建 LCEL 管道：prompt | model | parser</span>
+chain = (
+    ChatPromptTemplate.from_template(<span class="code-string">"用一句话解释：{topic}"</span>)
+    | ChatOpenAI(model=<span class="code-string">"gpt-4o-mini"</span>)
+    | StrOutputParser()         <span class="code-comment"># AIMessage -> str</span>
+)
+
+<span class="code-comment"># 直接得到字符串，无需 .content 属性访问</span>
+result = chain.invoke({<span class="code-string">"topic"</span>: <span class="code-string">"量子纠缠"</span>})
+<span class="code-keyword">print</span>(result)       <span class="code-comment"># "量子纠缠是两个粒子间存在的神秘关联..."</span>
+<span class="code-keyword">print</span>(<span class="code-keyword">type</span>(result))  <span class="code-comment"># &lt;class 'str'&gt;</span></code></pre></div>
+                </div>
+
+                <h3 class="section-subtitle">JSONOutputParser — JSON 结构化输出</h3>
+                <p>引导模型输出合法的 JSON 格式，并自动解析为 Python dict：</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.output_parsers <span class="code-keyword">import</span> JsonOutputParser
+<span class="code-keyword">from</span> langchain_openai <span class="code-keyword">import</span> ChatOpenAI
+<span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
+
+<span class="code-comment"># 创建 JSON 解析器（会自动生成格式指令）</span>
+parser = JsonOutputParser()
+
+<span class="code-comment"># 将格式指令注入提示词 —— 这一步至关重要！</span>
+prompt = ChatPromptTemplate.from_template(
+    <span class="code-string">"提取以下文本中的实体信息，并以 JSON 格式输出。\n"</span>
+    <span class="code-string">"{format_instructions}\n\n"</span>
+    <span class="code-string">"文本内容：{text}"</span>
+).partial(format_instructions=parser.get_format_instructions())
+
+<span class="code-comment"># 构建管道</span>
+chain = prompt | ChatOpenAI(model=<span class="code-string">"gpt-4o-mini"</span>) | parser
+
+<span class="code-comment"># 输出已经是 Python dict，可直接程序化处理</span>
+result = chain.invoke({<span class="code-string">"text"</span>: <span class="code-string">"苹果公司总部位于加州库比蒂诺，由史蒂夫·乔布斯创立"</span>})
+<span class="code-keyword">print</span>(result)
+<span class="code-comment"># {'entities': [{'name': '苹果公司', 'type': '组织'}, {'name': '加州库比蒂诺', 'type': '地点'}, ...]}</span>
+<span class="code-keyword">print</span>(<span class="code-keyword">type</span>(result))  <span class="code-comment"># &lt;class 'dict'&gt;</span></code></pre></div>
+                </div>
+
+                <h3 class="section-subtitle">PydanticOutputParser — Pydantic 模型验证输出</h3>
+                <p>
+                    最强大的解析器，结合 Pydantic 模型定义<strong>严格的输出 Schema</strong>，
+                    不仅解析 JSON 还会进行字段类型验证，确保输出完全符合预期结构：
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> pydantic <span class="code-keyword">import</span> BaseModel, Field
+<span class="code-keyword">from</span> langchain_core.output_parsers <span class="code-keyword">import</span> PydanticOutputParser
+<span class="code-keyword">from</span> langchain_openai <span class="code-keyword">import</span> ChatOpenAI
+<span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
+
+<span class="code-comment"># === Step 1: 用 Pydantic 定义输出结构 ===</span>
+<span class="code-keyword">class</span> <span class="code-class">MovieReview</span>(BaseModel):
+    <span class="code-string">"""电影评论的结构化输出"""</span>
+    title: str = Field(description=<span class="code-string">"电影名称"</span>)
+    rating: <span class="code-keyword">float</span> = Field(description=<span class="code-string">"评分，范围 0-10"</span>)
+    summary: str = Field(description=<span class="code-string">"一句话剧情概括"</span>)
+    pros: list[str] = Field(description=<span class="code-string">"优点列表"</span>)
+    cons: list[str] = Field(description=<span class="code-string">"缺点列表"</span>)
+    recommendation: str = Field(description=<span class="code-string">"推荐程度：强烈推荐/推荐/一般/不推荐"</span>)
+
+<span class="code-comment"># === Step 2: 创建解析器 ===</span>
+parser = PydanticOutputParser(pydantic_object=MovieReview)
+
+<span class="code-comment"># === Step 3: 构建含格式指令的提示词 ===</span>
+prompt = ChatPromptTemplate.from_template(
+    <span class="code-string">"你是一位资深影评人。请对以下电影进行深度点评。\n"</span>
+    <span class="code-string">"{format_instructions}\n\n"</span>
+    <span class="code-string">"电影名称：{movie_name}"</span>
+).partial(format_instructions=parser.get_format_instructions())
+
+<span class="code-comment"># === Step 4: 执行管道 ===</span>
+chain = prompt | ChatOpenAI(model=<span class="code-string">"gpt-4o-mini"</span>) | parser
+
+result = chain.invoke({<span class="code-string">"movie_name"</span>: <span class="code-string">"盗梦空间 Inception"</span>})
+
+<span class="code-comment"># 输出是 MovieReview 实例，具有完整的类型提示和字段验证</span>
+<span class="code-keyword">print</span>(result.title)           <span class="code-comment"># 盗梦空间 Inception</span>
+<span class="code-keyword">print</span>(result.rating)          <span class="code-comment"># 9.2</span>
+<span class="code-keyword">print</span>(result.pros)            <span class="code-comment"># ['视觉效果震撼', '叙事结构精妙', ...]</span>
+<span class="code-keyword">print</span>(<span class="code-keyword">type</span>(result))         <span class="code-comment"># &lt;class '__main__.MovieReview'&gt;</span>
+<span class="code-keyword">print</span>(result.model_dump())   <span class="code-comment"># 转换为标准 dict</span></code></pre></div>
+                </div>
+
+                <h3 class="section-subtitle">三种解析器对比</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>特性</th>
+                                <th>StrOutputParser</th>
+                                <th>JSONOutputParser</th>
+                                <th>PydanticOutputParser</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>输出类型</strong></td>
+                                <td><code>str</code></td>
+                                <td><code>dict</code></td>
+                                <td><code>BaseModel</code> 子类</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Schema 约束</strong></td>
+                                <td>无</td>
+                                <td>弱（任意 JSON）</td>
+                                <td>强（Pydantic 模型定义）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>类型校验</strong></td>
+                                <td>-</td>
+                                <td>无</td>
+                                <td>有（字段类型 + 必填检查）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>IDE 支持</strong></td>
+                                <td>一般</td>
+                                <td>一般</td>
+                                <td>优秀（自动补全 + 类型检查）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>适用场景</strong></td>
+                                <td>简单文本输出</td>
+                                <td>通用结构化数据</td>
+                                <td>严格 Schema 的 API/数据处理</td>
+                            </tr>
+                            <tr>
+                                <td><strong>复杂度</strong></td>
+                                <td>最低</td>
+                                <td>低</td>
+                                <td>中等（需定义 Pydantic 类）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight-box">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        解析器工作原理
+                    </div>
+                    <div class="highlight-box-content">
+                        所有 Output Parser 的核心机制相同：<strong>(1)</strong> 通过 <code>get_format_instructions()</code>
+                        生成格式指令文本 → <strong>(2)</strong> 将指令注入提示词告诉模型期望的输出格式 →
+                        <strong>(3)</strong> 模型按要求输出 → <strong>(4)</strong> Parser 的 <code>parse()</code> 方法将文本转换为目标类型。
+                        如果模型输出不符合格式，Parser 会抛出 <code>OutputParserException</code>。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Card 5: 最佳实践 -->
+        <article class="section-card accent-bar-danger" data-animate>
+            <div class="section-header">
+                <span class="section-number">05</span>
+                <h2 class="section-title">提示词优化最佳实践</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    写好提示词是一门兼具工程性与艺术性的技能。以下是经过大量实践验证的最佳实践原则，
+                    遵循这些准则可以显著提升 LLM 应用的可靠性和输出质量。
+                </p>
+
+                <h3 class="section-subtitle">System Prompt 设计原则</h3>
+                <ul class="content-list">
+                    <li>
+                        <strong>明确身份与职责边界</strong>：开篇即声明"你是 XXX"，限定回答范围。
+                        例如："你是一名专注于 React 生态的前端顾问，仅回答 18 版本以上的相关问题。"
+                    </li>
+                    <li>
+                        <strong>指定输出语言和风格</strong>：明确要求"使用中文回答"、"代码使用 TypeScript"、
+                        "解释要面向初中级开发者"等约束条件。
+                    </li>
+                    <li>
+                        <strong>设置拒绝策略</strong>：告知模型在什么情况下应拒绝回答。
+                        例如："如果问题涉及医疗诊断，请明确说明无法提供专业建议并建议就医。"
+                    </li>
+                    <li>
+                        <strong>控制输出长度</strong>：通过指令约束回复篇幅。
+                        例如："回答不超过 200 字"、"分 3 点简要说明"、"以表格形式呈现"。
+                    </li>
+                </ul>
+
+                <h3 class="section-subtitle">角色设定技巧</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">具体胜于模糊</div>
+                        <div class="info-item-value">"资深 Go 工程师，10年分布式系统经验" > "编程专家"</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">赋予思维框架</div>
+                        <div class="info-item-value">"采用 First Principles 思考方式逐步拆解问题"</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">模拟受众定位</div>
+                        <div class="info-item-value">"向没有技术背景的产品经理解释"</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">设定行为约束</div>
+                        <div class="info-item-value">"先给出结论，再用论据支撑，最后举例"</div>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">输出格式约束方法</h3>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Prompt 技巧</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment"># 方法一：自然语言描述格式要求</span>
+system_prompt = <span class="code-string">"""
+你是一个数据分析助手。请严格按照以下格式输出：
+
+## 数据概览
+- 总记录数：xxx
+- 时间范围：xxx ~ xxx
+
+## 关键指标
+| 指标名称 | 数值 | 同比变化 |
+|---------|------|---------|
+| ...     | ...  | ...     |
+
+## 结论
+（不超过 3 句话）
+"""</span>
+
+<span class="code-comment"># 方法二：使用 Output Parser（推荐，更可靠）</span>
+<span class="code-comment"># 结合 PydanticOutputParser 或 JSONOutputParser 强制结构化输出</span>
+
+<span class="code-comment"># 方法三：提供输出模板（Few-Shot 最有效的方式之一）</span>
+few_shot_example = <span class="code-string">"""
+示例输入：分析 Q3 销售数据
+示例输出：
+{
+  "summary": "Q3销售额同比增长15%",
+  "highlights": ["新产品线贡献30%增长"],
+  "risks": ["库存周转率下降"],
+  "action_items": ["加大新产品推广"]
+}
+"""</span></code></pre></div>
+                </div>
+
+                <h3 class="section-subtitle">Chain-of-Thought (CoT) 引导</h3>
+                <p>
+                    通过引导模型<strong>逐步推理</strong>而非直接给出答案，可以显著提升复杂问题的解决准确率：
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>cot_prompt = ChatPromptTemplate.from_template(
+    <span class="code-string">"""你是一位逻辑严密的数学老师。解答问题时请遵循以下步骤：</span>
+<span class="code-string"></span>
+<span class="code-string">**解题步骤要求：**</span>
+<span class="code-string">1. **理解题意**：用自己的话复述题目要求和已知条件</span>
+<span class="code-string">2. **制定计划**：列出你打算使用的公式或方法</span>
+<span class="code-string">3. **逐步推导**：一步一步展示计算过程，不要跳步</span>
+<span class="code-string">4. **验证结果**：检查答案是否合理</span>
+<span class="code-string">5. **最终答案**：用一句话总结答案</span>
+<span class="code-string"></span>
+<span class="code-string">---</span>
+<span class="code-string">题目：{problem}</span>
+<span class="code-string">"""</span>
+)
+
+<span class="code-comment"># CoT 的关键：给模型"思考的空间"，而不是催促它快速作答</span></code></pre></div>
+                </div>
+
+                <h3 class="section-subtitle">常见反模式与避坑指南</h3>
+
+                <div class="highlight-box danger">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        这些错误本天才见得多了
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul class="content-list" style="margin:0;">
+                            <li>
+                                <strong>提示词过长导致注意力稀释</strong>：
+                                System Prompt 超过 500 字后效果递减。核心指令前置，次要信息放后或移入 Few-Shot 示例。
+                            </li>
+                            <li>
+                                <strong>矛盾指令引发混乱</strong>：
+                                同时要求"详细解释"和"简洁回答"。每个提示词聚焦单一目标，不要让模型做不可能的事。
+                            </li>
+                            <li>
+                                <strong>忽略 Output Parser 的格式指令</strong>：
+                                创建了 Parser 却忘记把 <code>get_format_instructions()</code> 注入提示词，
+                                导致模型根本不知道你要什么格式。
+                            </li>
+                            <li>
+                                <strong>Few-Shot 示例与任务不匹配</strong>：
+                                示例展示的是简短回答，却期望模型输出长篇分析。示例的风格和长度必须与期望输出一致。
+                            </li>
+                            <li>
+                                <strong>过度依赖默认行为</strong>：
+                                不写 System Prompt 直接丢问题给模型，然后抱怨输出不稳定。
+                                明确的指令永远是稳定性的基石。
+                            </li>
+                            <li>
+                                <strong>缺少负面示例（Negative Examples）</strong>：
+                                只展示正确做法却不说明"不要做什么"。在 Few-Shot 中加入反面案例往往能大幅减少错误模式。
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box success" style="margin-top: 1.25rem;">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        提示词工程 Checklist
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:none;padding:0;margin:0;">
+                            <li style="padding:0.25rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;System Prompt 是否明确了角色、约束和输出格式？
+                            </li>
+                            <li style="padding:0.25rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;是否使用了 Output Parser 并注入了格式指令？
+                            </li>
+                            <li style="padding:0.25rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;Few-Shot 示例是否覆盖了主要场景和边界情况？
+                            </li>
+                            <li style="padding:0.25rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;是否测试了异常输入（超长文本、空输入、恶意 Prompt）？
+                            </li>
+                            <li style="padding:0.25rem 0;">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;提示词是否经过至少 3 轮迭代优化？
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <nav class="footer-nav">
+  <a href="17-消息Message.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 17 集 - 消息Message</div>
+    </div>
+  </a>
+  <a href="19-工具Tools.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 19 集 - 工具Tools</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+        <div class="footer-reference">
+            参考来源：<a href="https://python.langchain.ac.cn/docs/concepts/prompt_templates/" target="_blank">LangChain 官方文档 - Prompt Templates</a> |
+            课程来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">黑马程序员 LangChain 教程 BV178w1z7EHQ</a>
+        </div>
+    </div>
+</footer>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel" id="tweaksPanel">
+    <button class="tweaks-toggle" onclick="toggleTweaks()" title="调整字体大小">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+    </button>
+    <span class="tweaks-label">字号</span>
+    <input type="range" class="tweaks-slider" id="fontSlider" min="12" max="22" value="16" step="1" oninput="adjustFontSize(this.value)">
+    <span class="tweaks-value" id="fontValue">16px</span>
+</div>
+
+<script>
+    // Header scroll effect
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 20) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    // Intersection Observer for fade-up animations
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -50px 0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, index * 100);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.section-card[data-animate]').forEach(card => {
+        observer.observe(card);
+    });
+
+    // Copy code function
+    function copyCode(btn) {
+        const codeBlock = btn.closest('.code-block');
+        const code = codeBlock.querySelector('code').textContent;
+
+        navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copied!';
+            btn.style.color = 'var(--success)';
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+                btn.style.color = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Copy failed:', err);
+        });
+    }
+
+    // Tweaks Panel
+    let tweaksExpanded = true;
+
+    function toggleTweaks() {
+        const panel = document.getElementById('tweaksPanel');
+        tweaksExpanded = !tweaksExpanded;
+        if (tweaksExpanded) {
+            panel.classList.remove('collapsed');
+        } else {
+            panel.classList.add('collapsed');
+        }
+    }
+
+    function adjustFontSize(size) {
+        document.documentElement.style.setProperty('--font-size-base', size + 'px');
+        document.getElementById('fontValue').textContent = size + 'px';
+    }
+</script>
+
+</body>
+</html>

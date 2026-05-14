@@ -1,0 +1,814 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第22集 - 短期记忆持久存储 | LangChain 学习笔记</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8f9fc;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f1f3f8;
+            --text-primary: #1a1d26;
+            --text-secondary: #5a6072;
+            --text-muted: #949aad;
+            --primary: oklch(0.55 0.22 250);
+            --primary-light: oklch(0.75 0.15 250);
+            --primary-dark: oklch(0.40 0.20 250);
+            --accent: oklch(0.70 0.18 85);
+            --accent-light: oklch(0.85 0.12 85);
+            --success: oklch(0.55 0.16 155);
+            --danger: oklch(0.55 0.20 25);
+            --info: oklch(0.55 0.15 230);
+            --border-color: #e2e4ec;
+            --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+            --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 4px rgba(26,29,38,0.04);
+            --shadow-lg: 0 8px 24px rgba(26,29,38,0.10), 0 4px 8px rgba(26,29,38,0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --font-scale: 1;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page); color: var(--text-primary);
+            line-height: 1.7; font-size: calc(16px * var(--font-scale));
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248,249,252,0.78);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .header-inner { max-width: 1200px; margin: 0 auto; padding: 0 28px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        .header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-primary); font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 17px; }
+        .header-logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: 9px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: 700; }
+        .header-nav { display: flex; align-items: center; gap: 3px; }
+        .header-nav a { text-decoration: none; color: var(--text-secondary); font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 20px; transition: all 0.2s ease; white-space: nowrap; }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+        .header-nav a:hover { color: var(--primary); background: var(--bg-subtle); }
+        .header-nav a.active { color: var(--primary); background: oklch(0.55 0.22 250 / 0.10); font-weight: 600; }
+
+        .hero { padding-top: 112px; padding-bottom: 48px; text-align: center; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, oklch(0.55 0.22 250 / 0.08), oklch(0.70 0.18 85 / 0.08)); border: 1px solid oklch(0.55 0.22 250 / 0.15); padding: 6px 18px; border-radius: 24px; font-size: 13px; font-weight: 500; color: var(--primary); margin-bottom: 22px; }
+        .hero-badge-dot { width: 7px; height: 7px; background: var(--success); border-radius: 50%; animation: pulse-dot 2s infinite; }
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+        .hero h1 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(30px,5vw,46px); font-weight: 700; line-height: 1.15; margin-bottom: 16px; letter-spacing: -.02em; }
+        .hero h1 span { background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero-desc { font-size: 17px; color: var(--text-secondary); max-width: 650px; margin: 0 auto 28px; line-height: 1.65; }
+        .hero-meta { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+        .meta-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--bg-surface); border: 1px solid var(--border-color); padding: 6px 14px; border-radius: 20px; font-size: 12.5px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
+        .meta-tag svg { width: 14px; height: 14px; opacity: .65; }
+
+        .main { max-width: 900px; margin: 0 auto; padding: 0 28px 80px; }
+
+        .section-card {
+            background: var(--bg-surface); border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary); border-radius: var(--radius-lg);
+            padding: 36px; margin-bottom: 28px; box-shadow: var(--shadow-sm);
+            transition: all .35s cubic-bezier(.25,.46,.45,.94);
+            animation: fadeUp .6s ease both; position: relative; overflow: hidden;
+        }
+        .section-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); border-color: oklch(0.55 0.22 250 / 0.25); }
+        .section-card.type-orange { border-left-color: var(--accent); }
+        .section-card.type-green { border-left-color: var(--success); }
+        .section-card.type-red { border-left-color: var(--danger); }
+        .section-card.type-purple { border-left-color: #7c3aed; }
+        .section-card.type-info { border-left-color: var(--info); }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+        .section-card:nth-child(1){animation-delay:.05s} .section-card:nth-child(2){animation-delay:.1s}
+        .section-card:nth-child(3){animation-delay:.15s} .section-card:nth-child(4){animation-delay:.2s}
+        .section-card:nth-child(5){animation-delay:.25s} .section-card:nth-child(6){animation-delay:.3s}
+        .section-card:nth-child(7){animation-delay:.35s} .section-card:nth-child(8){animation-delay:.4s}
+
+        .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+        .section-icon { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 21px; flex-shrink: 0; }
+        .section-icon.blue{background:oklch(.55 .22 250/.10);color:var(--primary)}
+        .section-icon.orange{background:oklch(.70 .18 85/.10);color:#c47a00}
+        .section-icon.green{background:oklch(.55 .16 155/.10);color:#0d8a5e}
+        .section-icon.red{background:oklch(.55 .20 25/.10);color:#d94a3a}
+        .section-icon.purple{background:oklch(.50 .18 300/.10);color:#7c3aed}
+        .section-icon.info{background:oklch(.55 .15 230/.10);color:#2563eb}
+        .section-title { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600; color: var(--text-primary); letter-spacing: -.01em; }
+        .section-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
+
+        .section-body p { color: var(--text-secondary); margin-bottom: 16px; font-size: 15px; line-height: 1.75; }
+        .section-body p:last-child { margin-bottom: 0; }
+        .section-body strong { color: var(--text-primary); font-weight: 600; }
+        .section-body ul,.section-body ol { padding-left: 20px; margin-bottom: 16px; }
+        .section-body li { color: var(--text-secondary); margin-bottom: 8px; font-size: 15px; line-height: 1.65; }
+        .section-body h3 { font-family:'Space Grotesk';font-size:16px;font-weight:600;margin:22px 0 12px;color:var(--text-primary); }
+
+        .code-block { position:relative;margin:20px 0;border-radius:var(--radius-md);overflow:hidden;background:#1a1d26;border:1px solid rgba(255,255,255,.07); }
+        .code-header { display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06); }
+        .code-lang { font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:.06em; }
+        .code-dots{display:flex;gap:6px}.code-dots span{width:10px;height:10px;border-radius:50%}
+        .code-dots span:nth-child(1){background:#ff5f57}.code-dots span:nth-child(2){background:#febc2e}.code-dots span:nth-child(3){background:#28c840}
+        .copy-btn{position:absolute;top:10px;right:72px;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.5);padding:4px 10px;border-radius:6px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all .2s ease;font-weight:500;}
+        .copy-btn:hover{background:rgba(255,255,255,.15);color:white}.copy-btn.copied{color:var(--success)}
+        pre{margin:0;padding:20px 20px 20px 0;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.68;}
+        pre code{color:#e2e4ec;font-family:inherit}
+        .kw{color:#c792ea}.str{color:#c3e88d}.cmt{color:#546e7a;font-style:italic}.fn{color:#82aaff}.cls{color:#ffcb6b}.num{color:#f78c6c}.param{color:#89ddff}.op{color:#89ddff}
+
+        .table-wrapper{overflow-x:auto;margin:20px 0;border-radius:var(--radius-md);border:1px solid var(--border-color);}
+        table{width:100%;border-collapse:collapse;font-size:14px;}
+        thead{background:var(--primary);}
+        th{padding:13px 18px;text-align:left;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12.5px;color:white;text-transform:uppercase;letter-spacing:.04em;}
+        td{padding:12px 18px;color:var(--text-secondary);border-bottom:1px solid var(--border-color);vertical-align:top;}
+        tbody tr{transition:all .2s ease;}tbody tr:nth-child(even){background:oklch(.55 .22 250/.02)}tbody tr:last-child td{border-bottom:none}
+        tbody tr:hover{background:oklch(.55 .22 250/.05)}tbody tr:hover td{color:var(--text-primary)}
+        table code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--bg-subtle);padding:2px 7px;border-radius:5px;color:var(--primary-dark);}
+
+        .callout{display:flex;gap:14px;padding:18px 20px;border-radius:var(--radius-md);margin:20px 0;font-size:14px;line-height:1.65;}
+        .callout-info{background:oklch(.55 .15 230/.07);border:1px solid oklch(.55 .15 230/.15);border-left:3px solid var(--info);}
+        .callout-tip{background:oklch(.55 .16 155/.07);border:1px solid oklch(.55 .16 155/.15);border-left:3px solid var(--success);}
+        .callout-warn{background:oklch(.70 .18 85/.07);border:1px solid oklch(.70 .18 85/.15);border-left:3px solid var(--accent);}
+        .callout-danger{background:oklch(.55 .20 25/.07);border:1px solid oklch(.55 .20 25/.15);border-left:3px solid var(--danger);}
+        .callout-key{background:oklch(.55 .22 250/.06);border:1px solid oklch(.55 .22 250/.12);border-left:3px solid var(--primary);}
+        .callout-icon{font-size:19px;flex-shrink:0;margin-top:1px;}.callout-body{flex:1;}.callout-title{font-weight:600;color:var(--text-primary);margin-bottom:4px;font-size:13.5px;}
+        .callout-text{color:var(--text-secondary);line-height:1.6;}
+        .callout-text code{font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(0,0,0,.04);padding:1px 5px;border-radius:4px;color:var(--primary-dark);}
+
+        .flow-diagram{margin:28px 0;padding:28px;background:var(--bg-subtle);border-radius:var(--radius-lg);}
+        .flow-title{font-family:'Space Grotesk';font-size:15px;font-weight:600;color:var(--text-primary);text-align:center;margin-bottom:22px;}
+        .flow-container{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;}
+        .flow-node{background:var(--bg-surface);border:2px solid var(--border-color);border-radius:var(--radius-md);padding:14px 20px;text-align:center;font-size:13px;font-weight:500;color:var(--text-primary);min-width:130px;transition:all .25s ease;cursor:default;}
+        .flow-node:hover{border-color:var(--primary);box-shadow:var(--shadow-md);transform:translateY(-2px);}
+        .flow-node.primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;border-color:transparent;}
+        .flow-node.accent{background:linear-gradient(135deg,var(--accent),oklch(.60 .16 85));color:white;border-color:transparent;}
+        .flow-arrow{color:var(--text-muted);font-size:22px;padding:0 8px;font-weight:300;}
+
+        .compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:20px 0;}
+        .compare-item{background:var(--bg-subtle);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:22px;transition:all .25s ease;}
+        .compare-item:hover{border-color:var(--primary);transform:translateY(-3px);box-shadow:var(--shadow-sm);}
+        .compare-item-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;}
+        .compare-item-desc{font-size:13.5px;color:var(--text-secondary);line-height:1.58;}
+
+        .footer{max-width:900px;margin:0 auto;padding:32px 28px 48px;border-top:1px solid var(--border-color);}
+        .footer-links{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:22px;}
+        .footer-link{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--text-secondary);font-size:14px;font-weight:500;padding:11px 24px;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:28px;transition:all .25s ease;}
+        .footer-link:hover{color:var(--primary);border-color:var(--primary);box-shadow:var(--shadow-sm);transform:translateY(-1px);}
+        .footer-link.prev::before{content:'\2190';font-size:16px;margin-right:4px;}.footer-link.next::after{content:'\2192';font-size:16px;margin-left:4px;}
+        .footer-ref{text-align:center;font-size:12px;color:var(--text-muted);line-height:1.6;}
+        .footer-ref a{color:var(--primary);text-decoration:none;}.footer-ref a:hover{text-decoration:underline;}
+
+        .toc{position:fixed;right:40px;top:120px;width:200px;z-index:99;display:none;}
+        @media(min-width:1200px){.toc{display:block;}}
+        .toc-list{list-style:none;padding:0;position:sticky;top:120px;}.toc-list li{margin-bottom:5px;}
+        .toc-list a{display:block;text-decoration:none;color:var(--text-muted);font-size:12px;padding:5px 12px;border-left:2px solid transparent;transition:all .2s ease;border-radius:0 4px 4px 0;}
+        .toc-list a:hover,.toc-list a.active{color:var(--primary);border-left-color:var(--primary);background:oklch(.55 .22 250/.04);}
+
+        .tweaks-panel{position:fixed;bottom:24px;right:24px;z-index:999;}
+        .tweaks-toggle{width:48px;height:48px;border-radius:14px;background:var(--primary);color:white;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);transition:all .3s ease;}
+        .tweaks-toggle:hover{transform:scale(1.08) rotate(15deg);box-shadow:0 8px 30px rgba(79,110,247,.3);}
+        .tweaks-content{position:absolute;bottom:60px;right:0;width:280px;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-lg);display:none;animation:slideUp .25s ease;}
+        .tweaks-content.open{display:block;}
+        @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .tweaks-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+        .tweaks-row{margin-bottom:14px;}.tweaks-label{font-size:12px;color:var(--text-secondary);margin-bottom:6px;display:flex;justify-content:space-between;}
+        .tweaks-label span:last-child{font-family:'JetBrains Mono',monospace;color:var(--primary);font-size:11px;}
+        .tweaks-slider{width:100%;height:5px;border-radius:3px;-webkit-appearance:none;appearance:none;background:var(--bg-subtle);outline:none;cursor:pointer;}
+        .tweaks-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--primary);cursor:pointer;box-shadow:0 2px 6px rgba(79,110,247,.3);transition:transform .15s ease;}
+        .tweaks-slider::-webkit-slider-thumb:hover{transform:scale(1.2);}
+
+        @media(max-width:768px){
+            .header-inner{padding:0 16px;}.header-nav{display:none;}
+            .hero{padding-top:96px;padding-bottom:32px;}.main{padding:0 16px 60px;}
+            .section-card{padding:24px 20px;border-radius:var(--radius-md);}.section-header{gap:10px;}
+            .section-icon{width:40px;height:40px;font-size:18px;border-radius:10px;}.section-title{font-size:17px;}
+            th,td{padding:10px 12px;font-size:13px;}.compare-grid{grid-template-columns:1fr;}
+            .flow-container{flex-direction:column;}.flow-arrow{transform:rotate(90deg);padding:4px 0;}
+            .meta-tag{font-size:11px;padding:5px 10px;}.tweaks-panel{bottom:16px;right:16px;}.tweaks-content{width:260px;right:-8px;}
+        }
+        ::-webkit-scrollbar{width:6px;height:6px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:3px;} ::-webkit-scrollbar-thumb:hover{background:var(--text-muted);}
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <a href="index.html" class="header-logo"><div class="header-logo-icon">LC</div>LangChain Notes</a>
+        <nav class="header-nav">
+      <a href="#token-memory" class="nav-anchor">&sect;1 Conversation...</a>
+      <a href="#architecture" class="nav-anchor">&sect;2 完整架构模式</a>
+
+            <a href="13-认识LangChain.html">P13</a><a href="17-消息Message.html">P17</a>
+            <a href="21-短期记忆.html">P21</a><a href="22-短期记忆-持久存储.html" class="active">P22</a>
+            <a href="23-记忆管理策略.html">P23</a><a href="24-需求分析与功能验证.html">P24</a>
+        </nav>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>第 22 集 / Memory 进阶</div>
+    <h1><span>持久化存储</span> Persistent Storage</h1>
+    <p class="hero-desc">掌握滑动窗口、摘要压缩、Token 限制等高级记忆策略，并学会通过文件、Redis、PostgreSQL 实现对话历史的持久化保存。</p>
+    <div class="hero-meta">
+        <span class="meta-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>P23 管理策略</span>
+        <span class="meta-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>~18 min</span>
+        <span class="meta-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>BV178w1z7EHQ</span>
+    </div>
+</section>
+
+<main class="main">
+
+    <!-- Section 1: Why Persistence -->
+    <article class="section-card type-red" id="why-persistence">
+        <div class="section-header">
+            <div class="section-icon red">!</div>
+            <div>
+                <h2 class="section-title">为什么需要持久化？</h2>
+                <p class="section-subtitle">内存存储的四大致命缺陷</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>上一集我们学习了基本的 Memory 组件，但它们默认将所有数据存在<strong>进程内存（RAM）</strong>中。这在生产环境中会引发严重问题：</p>
+
+            <div class="compare-grid">
+                <div class="compare-item">
+                    <div class="compare-item-name">01 重启丢失</div>
+                    <div class="compare-item-desc">Python 进程退出后，所有对话记录<strong>永久消失</strong>，用户重新打开页面就是"失忆状态"</div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">02 崩溃风险</div>
+                    <div class="compare-item-desc">服务异常宕机、OOM 被杀等场景下，未落盘的记忆<strong>全部清零</strong></div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">03 无法共享</div>
+                    <div class="compare-item-desc">多实例部署（K8s 多 Pod）时，不同实例各自维护独立内存，<strong>用户可能被路由到无记忆的实例</strong></div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">04 Token 爆炸</div>
+                    <div class="compare-item-desc">BufferMemory 随轮次线性增长，长对话极易<strong>超出上下文窗口限制</strong></div>
+                </div>
+            </div>
+
+            <div class="callout callout-key">
+                <span class="callout-icon">*</span>
+                <div class="callout-body">
+                    <div class="callout-title">本集两大解决方向</div>
+                    <div class="callout-text">
+                        <strong>方向 A — 记忆策略优化：</strong>WindowMemory / SummaryMemory / TokenBufferMemory，控制 Token 消耗<br>
+                        <strong>方向 B — 存储后端持久化：</strong>FileChatMessageHistory / Redis / PostgreSQL，实现跨会话记忆保留
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 2: WindowMemory -->
+    <article class="section-card type-orange" id="window-memory">
+        <div class="section-header">
+            <div class="section-icon orange">[ ]</div>
+            <div>
+                <h2 class="section-title">ConversationBufferWindowMemory</h2>
+                <p class="section-subtitle">滑动窗口 — FIFO 队列式记忆裁剪</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p><strong>核心思路：</strong>只保留最近 K 轮对话，超出部分按 FIFO 规则丢弃。就像一个固定大小的环形缓冲区，Token 消耗恒定可控。</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="code-lang">Python</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain.memory <span class="kw">import</span> ConversationBufferWindowMemory
+<span class="kw">from</span> langchain.chains <span class="kw">import</span> ConversationChain
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+
+llm = ChatOpenAI(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+
+<span class="cmt"># 只保留最近 3 轮对话（一轮 = 一问一答）</span>
+memory = ConversationBufferWindowMemory(
+    k=<span class="num">3</span>,                      <span class="cmt"># 窗口大小：保留最近几轮</span>
+    memory_key=<span class="str">"chat_history"</span>,
+    return_messages=<span class="kw">True</span>
+)
+
+chain = ConversationChain(llm=llm, memory=memory)
+
+<span class="cmt"># 第 1~6 轮对话...</span>
+<span class="cmt"># 第 7 轮时：第 1 轮的内容已被自动丢弃，只保留第 4~6 轮</span></code></pre>
+            </div>
+
+            <h3>工作原理可视化</h3>
+            <div class="flow-diagram">
+                <div class="flow-title">k=3 滑动窗口 — 时间线示意</div>
+                <div class="flow-container">
+                    <div class="flow-node" style="opacity:0.45;">第1轮<br><small>(已丢弃)</small></div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node" style="opacity:0.45;">第2轮<br><small>(已丢弃)</small></div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node" style="opacity:0.45;">第3轮<br><small>(已丢弃)</small></div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node primary">第4轮</div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node primary">第5轮</div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node accent">第6轮 (当前)</div>
+                </div>
+                <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-muted);">窗口向右滑动，最早进入的消息最先被挤出</p>
+            </div>
+
+            <div class="callout callout-tip">
+                <span class="callout-icon">+</span>
+                <div class="callout-body">
+                    <div class="callout-title">适用场景</div>
+                    <div class="callout-text"><strong>客服聊天机器人</strong>、<strong>实时问答系统</strong>、<strong>游戏 NPC 对话</strong>等只需关注近期上下文的场景。Token 消耗恒定且可预测。</div>
+                </div>
+            </div>
+
+            <div class="callout callout-danger">
+                <span class="callout-icon">X</span>
+                <div class="callout-body">
+                    <div class="callout-title">硬伤</div>
+                    <div class="callout-text">早期关键信息会被<strong>永久丢失</strong>！用户在第 1 轮说了名字，到第 k+1 轮就再也找不回来了。"鱼的记忆"问题依然存在，只是遗忘得更规律而已。</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 3: SummaryMemory -->
+    <article class="section-card type-green" id="summary-memory">
+        <div class="section-header">
+            <div class="section-icon green">{ }</div>
+            <div>
+                <h2 class="section-title">ConversationSummaryMemory</h2>
+                <p class="section-subtitle">摘要记忆 — LLM 驱动的智能压缩</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p><strong>完全不同的策略：</strong>不保留原始对话，而是让 LLM 在每轮结束后<strong>自动生成一段精炼摘要</strong>来替代旧内容。无论聊多久，记忆长度始终可控。</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="code-lang">Python</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain.memory <span class="kw">import</span> ConversationSummaryMemory
+<span class="kw">from</span> langchain.chains <span class="kw">import</span> ConversationChain
+
+<span class="cmt"># 需要 LLM 来生成摘要（额外消耗 Token！）</span>
+memory = ConversationSummaryMemory(
+    llm=ChatOpenAI(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>),
+    memory_key=<span class="str">"chat_history"</span>,
+    return_messages=<span class="kw">False</span>       <span class="cmt"># 摘要以字符串形式返回</span>
+)
+
+chain = ConversationChain(llm=llm, memory=memory)
+<span class="cmt"># 每轮对话后，LLM 自动更新摘要...</span></code></pre>
+            </div>
+
+            <h3>摘要更新机制</h3>
+            <div class="flow-diagram">
+                <div class="flow-title">SummaryMemory 的迭代摘要流程</div>
+                <div class="flow-container" style="flex-direction:column;gap:12px;align-items:flex-start;">
+                    <div class="flow-node" style="width:100%;max-width:420px;">用户输入 + AI 回答（新的一轮对话）</div>
+                    <div class="flow-arrow" style="transform:rotate(90deg);padding:0;">&darr;</div>
+                    <div class="flow-node primary" style="width:100%;max-width:420px;">LLM 将 新对话 + 旧摘要 合并为新摘要</div>
+                    <div class="flow-arrow" style="transform:rotate(90deg);padding:0;">&darr;</div>
+                    <div class="flow-node accent" style="width:100%;max-width:420px;">旧摘要被替换为新的精炼版本</div>
+                </div>
+            </div>
+
+            <div class="callout callout-info">
+                <span class="callout-icon">i</span>
+                <div class="callout-body">
+                    <div class="callout-title">摘要效果示例</div>
+                    <div class="callout-text">
+                        原始对话（10轮，约 2000 tokens）经过摘要压缩：<br><br>
+                        <em>"用户名叫小明，25岁，想学习 Python 装饰器；已解释了 @语法糖和闭包原理；随后询问了异步编程，介绍了 async/await 和事件循环机制；用户对生成器表达式感兴趣..."</em><br><br>
+                        压缩至约 200~400 tokens，保留了<strong>关键信息脉络</strong>。
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <span class="callout-icon">!</span>
+                <div class="callout-body">
+                    <div class="callout-title">注意事项</div>
+                    <div class="callout-text">
+                        &bull; 每轮需要<strong>额外调用一次 LLM</strong>来生成摘要，增加延迟和 API 成本<br>
+                        &bull; 摘要过程可能<strong>丢失精确细节</strong>（具体数字、准确表述、代码片段等）<br>
+                        &bull; 短对话时反而比 BufferMemory 更费 Token（摘要本身也有固定开销）
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 4: TokenBufferMemory -->
+    <article class="section-card" id="token-memory">
+        <div class="section-header">
+            <div class="section-icon blue">#</div>
+            <div>
+                <h2 class="section-title">ConversationTokenBufferMemory</h2>
+                <p class="section-subtitle">Token 限制 — 最精准的上下文长度控制</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>如果说 WindowMemory 按<strong>"轮数"</strong>限制，TokenBufferMemory 则按<strong>"Token 数量"</strong>限制。它使用 Tokenizer 精确计算每条消息的 Token 数，当总量超限时从<strong>最早的消息开始逐条裁剪</strong>。</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="code-lang">Python</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain.memory <span class="kw">import</span> ConversationTokenBufferMemory
+
+memory = ConversationTokenBufferMemory(
+    llm=ChatOpenAI(model=<span class="str">"gpt-4o-mini"</span>),
+    max_token_limit=<span class="num">2000</span>,      <span class="cmt"># 最大 Token 上限</span>
+    memory_key=<span class="str">"chat_history"</span>,
+    return_messages=<span class="kw">True</span>
+)
+
+<span class="cmt"># 当总 token 数超过 2000 时，自动从最旧消息开始裁剪</span></code></pre>
+            </div>
+
+            <h3>三种策略的核心对比</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>对比维度</th><th>WindowMemory</th><th>SummaryMemory</th><th>TokenBufferMemory</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>限制单位</strong></td>
+                            <td>对话轮数（K 轮）</td>
+                            <td>摘要长度（LLM 控制）</td>
+                            <td>Token 数量</td>
+                        </tr>
+                        <tr>
+                            <td><strong>控制精度</strong></td>
+                            <td>粗粒度（各轮长短不一）</td>
+                            <td>模糊（依赖 LLM 能力）</td>
+                            <td>细粒度（精确对齐模型窗口）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>信息保留</strong></td>
+                            <td>整轮丢弃，有信息断层</td>
+                            <td>语义压缩，细节可能丢</td>
+                            <td>逐条裁剪，相对平滑</td>
+                        </tr>
+                        <tr>
+                            <td><strong>额外开销</strong></td>
+                            <td>几乎为零</td>
+                            <td>每次需调 LLM 生成摘要</td>
+                            <td>需 Tokenizer 计算（轻量）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>最佳场景</strong></td>
+                            <td>客服/有限轮次对话</td>
+                            <td>长会话/会议纪要</td>
+                            <td>严格成本控制的生产环境</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-tip">
+                <span class="callout-icon">+</span>
+                <div class="callout-body">
+                    <div class="callout-title">最佳实践</div>
+                    <div class="callout-text">建议将 <code>max_token_limit</code> 设置为模型上下文窗口的 <strong>60%~70%</strong>，留出足够空间给 System Prompt 和当前输入输出。例如 GPT-4o 的 128K 窗口可设为 ~70000~90000 tokens。</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 5: FileChatMessageHistory -->
+    <article class="section-card type-purple" id="file-persist">
+        <div class="section-header">
+            <div class="section-icon purple">@</div>
+            <div>
+                <h2 class="section-title">FileChatMessageHistory</h2>
+                <p class="section-subtitle">文件持久化 — 最简单的跨会话方案</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>LangChain 通过 <strong>BaseChatMessageHistory</strong> 抽象层实现了存储后端的解耦。<strong>FileChatMessageHistory</strong> 是最简单的持久化实现 — 将对话历史以 JSON 格式写入本地文件，重启后可恢复。</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="code-lang">Python</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain_community.chat_message_histories <span class="kw">import</span> FileChatMessageHistory
+<span class="kw">from</span> langchain.memory <span class="kw">import</span> ConversationBufferMemory
+
+<span class="cmt"># 创建基于文件的历史记录器</span>
+history = FileChatMessageHistory(file_path=<span class="str">"chat_history.json"</span>)
+
+<span class="cmt"># 将其注入 Memory 组件</span>
+memory = ConversationBufferMemory(
+    chat_memory=history,          <span class="cmt"># 核心：指定存储后端</span>
+    memory_key=<span class="str">"chat_history"</span>,
+    return_messages=<span class="kw">True</span>
+)
+
+chain = ConversationChain(llm=llm, memory=memory)
+
+<span class="cmt"># 对话内容会自动写入 chat_history.json</span>
+<span class="cmt"># 下次启动程序时，history 会从文件加载已有记录</span></code></pre>
+            </div>
+
+            <h3>文件存储格式</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="code-lang">JSON Structure</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="cmt">// chat_history.json 文件内容示例</span>[
+  {<span class="str">"type"</span>: <span class="str">"human"</span>, <span class="str">"data"</span>: {<span class="str">"content"</span>: <span class="str">"你好"</span>}},
+  {<span class="str">"type"</span>: <span class="str">"ai"</span>,   <span class="str">"data"</span>: {<span class="str">"content"</span>: <span class="str">"你好呀！有什么可以帮你的？"</span>}},
+  {<span class="str">"type"</span>: <span class="str">"human"</span>, <span class="str">"data"</span>: {<span class="str">"content"</span>: <span class="str">"我叫小明"</span>}},
+  {<span class="str">"type"</span>: <span class="str">"ai"</span>,   <span class="str">"data"</span>: {<span class="str">"content"</span>: <span class="str">"你好小明！很高兴认识你~"</span>}}
+]</code></pre>
+            </div>
+
+            <div class="callout callout-info">
+                <span class="callout-icon">i</span>
+                <div class="callout-body">
+                    <div class="callout-title">chat_memory 参数是关键</div>
+                    <div class="callout-text">所有 Memory 类都支持 <code>chat_memory</code> 参数来指定自定义的 <code>BaseChatMessageHistory</code> 实现。这就是 LangChain 存储<strong>抽象层设计</strong>的魅力 — 切换后端只需改一行代码。</div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <span class="callout-icon">!</span>
+                <div class="callout-body">
+                    <div class="callout-title">适用与局限</div>
+                    <div class="callout-text">
+                        <strong>适合：</strong>单机开发调试、原型验证、个人工具项目<br>
+                        <strong>不适合：</strong>生产环境多实例部署、高并发场景、大规模用户系统
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 6: Backend Storage -->
+    <article class="section-card type-info" id="backend-storage">
+        <div class="section-header">
+            <div class="section-icon info">&lt;/&gt;</div>
+            <div>
+                <h2 class="section-title">Redis / PostgreSQL 后端存储</h2>
+                <p class="section-subtitle">企业级持久化方案</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>在生产环境中，文件存储远远不够。LangChain 社区和生态提供了多种<strong>数据库级别的持久化后端</strong>，支持多实例共享、高并发读写和数据安全备份。</p>
+
+            <h3>方案一：Redis Chat History</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="code-lang">Python</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain_redis <span class="kw">import</span> RedisChatMessageHistory
+<span class="kw">from</span> langchain.memory <span class="kw">import</span> ConversationBufferMemory
+
+<span class="cmt"># 连接 Redis，每个 session_id 对应一个用户的对话历史</span>
+redis_history = RedisChatMessageHistory(
+    session_id=<span class="str">"user-12345"</span>,     <span class="cmt"># 用户唯一标识</span>
+    url=<span class="str">"redis://localhost:6379/0"</span>  <span class="cmt"># Redis 连接地址</span>
+)
+
+memory = ConversationBufferMemory(
+    chat_memory=redis_history,
+    memory_key=<span class="str">"chat_history"</span>,
+    return_messages=<span class="kw">True</span>
+)
+
+<span class="cmt"># 所有实例共享同一份 Redis 数据，天然支持多实例部署</span></code></pre>
+            </div>
+
+            <h3>方案二：PostgreSQL Chat History</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="code-lang">Python</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain_postgres <span class="kw">import</span> PostgresChatMessageHistory
+<span class="kw">from</span> langchain.memory <span class="kw">import</span> ConversationBufferMemory
+
+<span class="cmt"># 使用 PostgreSQL 作为持久化后端</span>
+pg_history = PostgresChatMessageHistory(
+    connection_string=<span class="str">"postgresql://user:pass@localhost:5432/langchain"</span>,
+    session_id=<span class="str">"user-12345"</span>,
+    table_name=<span class="str">"chat_histories"</span>
+)
+
+memory = ConversationBufferMemory(
+    chat_memory=pg_history,
+    memory_key=<span class="str">"chat_history"</span>,
+    return_messages=<span class="kw">True</span>
+)</code></pre>
+            </div>
+
+            <h3>后端方案选型指南</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>方案</th><th>延迟</th><th>并发能力</th><th>数据可靠性</th><th>运维复杂度</th><th>推荐场景</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>File</code></td>
+                            <td>极低</td><td>差（单进程）</td>
+                            <td>低（无备份）</td>
+                            <td>极简</td>
+                            <td>开发调试 / 原型</td>
+                        </tr>
+                        <tr>
+                            <td><code>Redis</code></td>
+                            <td>低（亚毫秒）</td>
+                            <td>优秀（10万+ QPS）</td>
+                            <td>中（可选 RDB/AOF）</td>
+                            <td>中等</td>
+                            <td>高并发实时应用</td>
+                        </tr>
+                        <tr>
+                            <td><code>PostgreSQL</code></td>
+                            <td>中（毫秒级）</td>
+                            <td>良好（连接池）</td>
+                            <td>高（ACID + WAL）</td>
+                            <td>较高</td>
+                            <td>企业级 / 合规要求</td>
+                        </tr>
+                        <tr>
+                            <td><code>MongoDB</code></td>
+                            <td>低</td>
+                            <td>优秀</td>
+                            <td>中（副本集）</td>
+                            <td>中等</td>
+                            <td>灵活 Schema 场景</td>
+                        </tr>
+                        <tr>
+                            <td><code>SQLAlchemy</code></td>
+                            <td>中</td>
+                            <td>良好</td>
+                            <td>高</td>
+                            <td>较高</td>
+                            <td>已有 SQL 基础设施</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-tip">
+                <span class="callout-icon">+</span>
+                <div class="callout-body">
+                    <div class="callout-title">安装提示</div>
+                    <div class="callout-text">
+                        <code>pip install langchain-redis langchain-postgres</code><br>
+                        各社区包由第三方维护，使用前请检查版本兼容性。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 7: Architecture Pattern -->
+    <article class="section-card" id="architecture">
+        <div class="section-header">
+            <div class="section-icon blue">$</div>
+            <div>
+                <h2 class="section-title">完整架构模式</h2>
+                <p class="section-subtitle">策略 + 后端的组合拳</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>在实际项目中，我们通常会将<strong>记忆策略</strong>和<strong>存储后端</strong>组合使用，形成完整的记忆架构：</p>
+
+            <div class="flow-diagram">
+                <div class="flow-title">推荐的分层架构</div>
+                <div class="flow-container" style="flex-direction:column;gap:14px;align-items:center;">
+                    <div class="flow-node accent" style="min-width:320px;"><strong>应用层</strong> — Chain / Agent 调用</div>
+                    <div class="flow-arrow" style="transform:rotate(90deg);padding:0;">&darr;</div>
+                    <div class="flow-node primary" style="min-width:320px;"><strong>策略层</strong> — Window / Summary / TokenBuffer</div>
+                    <div class="flow-arrow" style="transform:rotate(90deg);padding:0;">&darr;</div>
+                    <div class="flow-node" style="min-width:320px;"><strong>接口层</strong> — BaseChatMessageHistory</div>
+                    <div class="flow-arrow" style="transform:rotate(90deg);padding:0;">&darr;</div>
+                    <div class="flow-node" style="min-width:320px;"><strong>存储层</strong> — Redis / PostgreSQL / File</div>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header"><span class="code-lang">Python - Production Example</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain_redis <span class="kw">import</span> RedisChatMessageHistory
+<span class="kw">from</span> langchain.memory <span class="kw">import</span> ConversationTokenBufferMemory
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+
+<span class="cmt"># 生产环境推荐组合：TokenBuffer + Redis</span>
+<span class="cmt"># 策略层：控制 Token 消耗上限</span>
+<span class="cmt"># 存储层：支持多实例共享和重启恢复</span>
+
+llm = ChatOpenAI(model=<span class="str">"gpt-4o-mini"</span>)
+
+<span class="cmt"># 1. 定义存储后端（Redis）</span>
+history = RedisChatMessageHistory(
+    session_id=<span class="str">"user-session-abc123"</span>,
+    url=<span class="str">"redis://prod-redis.cluster:6379/0"</span>
+)
+
+<span class="cmt"># 2. 定义记忆策略（Token 上限控制）</span>
+memory = ConversationTokenBufferMemory(
+    llm=llm,
+    max_token_limit=<span class="num">3000</span>,
+    chat_memory=history,
+    return_messages=<span class="kw">True</span>
+)
+
+<span class="cmt"># 3. 注入 Chain 或 Agent</span>
+chain = ConversationChain(llm=llm, memory=memory)</code></pre>
+            </div>
+
+            <div class="callout callout-key">
+                <span class="callout-icon">*</span>
+                <div class="callout-body">
+                    <div class="callout-title">架构原则总结</div>
+                    <div class="callout-text">
+                        <strong>关注点分离：</strong>策略管"留什么"，后端管"存哪里"<br>
+                        <strong>接口统一：</strong>BaseChatMessageHistory 让切换成本降到最低<br>
+                        <strong>渐进增强：</strong>先用 File 开发，上线前换 Redis/PG 即可
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+</main>
+
+<footer class="footer">
+            <div class="footer-links">
+        <a href="21-短期记忆.html" class="footer-link prev">上一集：短期记忆</a>
+        <a href="23-记忆管理策略.html" class="footer-link next">下一集：记忆管理策略</a>
+    </div><div class="footer-ref">
+        参考来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">黑马程序员 LangChain 教程 P21-P23</a> &middot;
+        <a href="https://python.langchain.com/docs/concepts/memory/" target="_blank">LangChain 官方文档</a>
+    </div>
+</footer>
+
+<nav class="toc">
+    <ul class="toc-list">
+        <li><a href="#why-persistence">为什么需要持久化</a></li>
+        <li><a href="#window-memory">WindowMemory 滑动窗口</a></li>
+        <li><a href="#summary-memory">SummaryMemory 摘要记忆</a></li>
+        <li><a href="#token-memory">TokenBufferMemory Token限制</a></li>
+        <li><a href="#file-persist">FileChatMessageHistory 文件持久化</a></li>
+        <li><a href="#backend-storage">Redis/PostgreSQL 后端存储</a></li>
+        <li><a href="#architecture">完整架构模式</a></li>
+    </ul>
+</nav>
+
+<div class="tweaks-panel">
+    <button class="tweaks-toggle" onclick="toggleTweaks()" title="Tweaks">&#9881;</button>
+    <div class="tweaks-content" id="tweaksContent">
+        <div class="tweaks-title">Tweaks<small style="color:var(--text-muted);font-weight:400;font-size:11px;">v1.0</small></div>
+        <div class="tweaks-row">
+            <div class="tweaks-label"><span>字体大小</span><span id="fontVal">100%</span></div>
+            <input type="range" class="tweaks-slider" min="0.8" max="1.3" step="0.05" value="1" onchange="changeFont(this.value)">
+        </div>
+        <div class="tweaks-row">
+            <div class="tweaks-label"><span>行高倍数</span><span id="lineVal">1.7x</span></div>
+            <input type="range" class="tweaks-slider" min="1.4" max="2.0" step="0.1" value="1.7" onchange="changeLine(this.value)">
+        </div>
+    </div>
+</div>
+
+<script>
+function copyCode(btn){
+    const code = btn.parentElement.querySelector('pre code').textContent;
+    navigator.clipboard.writeText(code).then(()=>{
+        btn.textContent='Copied!';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2000);
+    });
+}
+function toggleTweaks(){document.getElementById('tweaksContent').classList.toggle('open');}
+function changeFont(val){document.documentElement.style.setProperty('--font-scale',val);document.getElementById('fontVal').textContent=Math.round(val*100)+'%';}
+function changeLine(val){document.body.style.lineHeight=val;document.getElementById('lineVal').textContent=val+'x';}
+document.addEventListener('click',function(e){const panel=document.querySelector('.tweaks-panel');if(!panel.contains(e.target))document.getElementById('tweaksContent').classList.remove('open');});
+const sections=document.querySelectorAll('.section-card[id]');const tocLinks=document.querySelectorAll('.toc-list a');
+window.addEventListener('scroll',()=>{let current='';sections.forEach(s=>{if(scrollY>=s.offsetTop-140)current=s.getAttribute('id');});tocLinks.forEach(l=>{l.classList.remove('active');if(l.getAttribute('href')==='#'+current)l.classList.add('active');});});
+</script>
+
+</body>
+</html>

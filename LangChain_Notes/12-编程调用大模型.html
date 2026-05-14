@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第12集 - 编程调用大模型 | LangChain学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f8f9fc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f8;
+    --bg-code: #1a1d26;
+    --text-primary: #1a1d26;
+    --text-secondary: #5a6072;
+    --text-muted: #949aad;
+    --primary: oklch(0.55 0.22 250);
+    --primary-light: oklch(0.75 0.15 250);
+    --accent: oklch(0.70 0.18 85);
+    --success: oklch(0.55 0.16 155);
+    --danger: oklch(0.55 0.20 25);
+    --info: oklch(0.55 0.15 230);
+    --border: #e2e4ea;
+    --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+    --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 6px rgba(26,29,38,0.04);
+    --shadow-lg: 0 8px 30px rgba(26,29,38,0.10), 0 4px 12px rgba(26,29,38,0.06);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --font-scale: 1;
+    --line-height-scale: 1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.7 * var(--line-height-scale);
+    font-size: 16px * var(--font-scale);
+    -webkit-font-smoothing: antialiased;
+    transition: font-size .3s ease, line-height .3s ease;
+  }
+
+  /* ===== Header / Navigation ===== */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: rgba(248,249,252,0.78);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    transition: box-shadow .3s ease;
+  }
+  .header.scrolled { box-shadow: var(--shadow-sm); }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; padding: 0 24px;
+  }
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px;
+    color: var(--primary); text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+  .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .header-nav {
+    display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end;
+    max-width: 720px; overflow-x: auto;
+  }
+  .header-nav::-webkit-scrollbar { display: none; }
+  .header-nav a {
+    text-decoration: none; color: var(--text-secondary);
+    font-size: 11.5px; font-weight: 500; padding: 4px 9px;
+    border-radius: 20px; transition: all .2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .header-nav a:hover, .header-nav a.active {
+    background: var(--primary-light); color: var(--primary);
+  }
+
+  /* ===== Hero Section ===== */
+  .hero {
+    padding: 120px 24px 56px;
+    max-width: 900px; margin: 0 auto;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--bg-subtle));
+    border: 1px solid oklch(0.85 0.05 250);
+    padding: 6px 18px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; color: var(--primary);
+    margin-bottom: 24px;
+  }
+  .hero-badge::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success); animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700; line-height: 1.15;
+    letter-spacing: -0.03em; margin-bottom: 16px;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero-desc {
+    font-size: 17px; color: var(--text-secondary);
+    max-width: 680px; margin: 0 auto 28px; line-height: 1.65;
+  }
+  .hero-meta {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
+  }
+  .meta-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: var(--radius-xs);
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .meta-tag svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+  /* ===== Content Sections ===== */
+  .content { max-width: 900px; margin: 0 auto; padding: 0 24px 80px; }
+
+  .section {
+    background: var(--bg-surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 36px 40px; margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .section::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary);
+    border-radius: 4px 0 0 4px;
+  }
+  .section.accent::before { background: var(--accent); }
+  .section.success::before { background: var(--success); }
+  .section.info::before { background: var(--info); }
+  .section.danger::before { background: var(--danger); }
+  .section.visible {
+    opacity: 1; transform: translateY(0);
+  }
+  .section:hover { box-shadow: var(--shadow-md); }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--primary); color: #fff;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .section p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* ===== Highlight Box (Key Points) ===== */
+  .highlight-box {
+    display: flex; gap: 16px;
+    background: linear-gradient(135deg, oklch(0.97 0.01 250), var(--bg-surface));
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 20px 22px; margin: 20px 0;
+  }
+  .highlight-box.accent {
+    background: linear-gradient(135deg, oklch(0.98 0.015 85), var(--bg-surface));
+    border-left-color: var(--accent);
+  }
+  .highlight-box.success {
+    background: linear-gradient(135deg, oklch(0.97 0.01 155), var(--bg-surface));
+    border-left-color: var(--success);
+  }
+  .highlight-box.danger {
+    background: linear-gradient(135deg, oklch(0.98 0.015 25), var(--bg-surface));
+    border-left-color: var(--danger);
+  }
+  .highlight-box.info {
+    background: linear-gradient(135deg, oklch(0.97 0.01 230), var(--bg-surface));
+    border-left-color: var(--info);
+  }
+  .hb-icon {
+    flex-shrink: 0; width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-top: 2px;
+  }
+  .hb-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.7; }
+  .hb-body strong { color: var(--text-primary); }
+  .hb-body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-subtle); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: var(--primary);
+  }
+
+  /* ===== Tables ===== */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--primary); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 13px; text-align: left;
+    padding: 12px 16px; color: #fff;
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  tbody td {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text-secondary); vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--bg-subtle); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.97 0.005 250); }
+  table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; background: var(--bg-subtle);
+    padding: 1px 6px; border-radius: 4px; color: var(--primary);
+  }
+
+  /* ===== Code Blocks ===== */
+  .code-block {
+    position: relative; margin: 20px 0; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border);
+    background: var(--bg-code);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: oklch(0.75 0.08 250);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .code-copy-btn {
+    cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+    color: oklch(0.7 0.03 250); font-family: 'Outfit', sans-serif;
+    font-size: 12px; padding: 4px 12px; border-radius: 6px;
+    transition: all .2s;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); }
+  .code-copy-btn.copied { color: var(--success); border-color: oklch(0.55 0.16 155); }
+  pre {
+    margin: 0; padding: 20px 20px 20px 0;
+    overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; line-height: 1.7; color: #e0e2e8;
+    tab-size: 2;
+  }
+  pre .kw { color: #c792ea; }
+  pre .fn { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .cmt { color: rgba(255,255,255,0.35); font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .op { color: #89ddff; }
+
+  /* ===== Platform Cards (for Section 4) ===== */
+  .platform-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 14px; margin: 20px 0;
+  }
+  @media (max-width: 768px) { .platform-grid { grid-template-columns: 1fr; } }
+  .platform-card {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px; text-align: center;
+    transition: all .25s ease;
+  }
+  .platform-card:hover { background: var(--bg-surface); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+  .pc-icon { font-size: 28px; margin-bottom: 10px; }
+  .pc-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 15px; color: var(--text-primary); margin-bottom: 6px;
+  }
+  .pc-url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px; color: var(--text-muted);
+    background: var(--bg-surface); padding: 3px 10px;
+    border-radius: 4px; display: inline-block; margin-bottom: 8px;
+  }
+  .pc-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
+
+  /* ===== Tip Grid (for Section 5) ===== */
+  .tip-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 14px; margin: 20px 0;
+  }
+  @media (max-width: 640px) { .tip-grid { grid-template-columns: 1fr; } }
+  .tip-card {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px;
+    transition: all .25s ease;
+    border-left: 3px solid var(--info);
+  }
+  .tip-card:hover { background: var(--bg-surface); box-shadow: var(--shadow-sm); }
+  .tc-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 15px; color: var(--text-primary);
+    margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .tc-title .tc-badge {
+    font-size: 11px; font-weight: 600; padding: 2px 8px;
+    border-radius: 4px; background: var(--info); color: #fff;
+  }
+  .tc-desc { font-size: 13.5px; color: var(--text-secondary); line-height: 1.65; }
+  .tc-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; background: var(--bg-surface);
+    padding: 8px 12px; border-radius: 6px;
+    margin-top: 10px; color: var(--primary);
+    display: block; border: 1px solid var(--border);
+  }
+
+  /* ===== Footer / Nav Links ===== */
+  .footer-nav {
+    max-width: 900px; margin: 0 auto; padding: 0 24px 60px;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link-card {
+    flex: 1; display: flex; align-items: center; gap: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit;
+    transition: all .25s ease;
+  }
+  .nav-link-card:hover {
+    border-color: var(--primary); box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .nav-link-card.disabled { opacity: .45; pointer-events: none; }
+  .nl-dir { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .nl-label { font-family: 'Space Grotesk', font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .nl-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; }
+
+  .footer-ref {
+    max-width: 900px; margin: 0 auto; padding: 0 24px 40px;
+    text-align: center; font-size: 12.5px; color: var(--text-muted);
+  }
+  .footer-ref a { color: var(--primary); text-decoration: none; }
+
+  /* ===== Tweaks Panel ===== */
+  .tweaks-panel {
+    position: fixed; right: 20px; bottom: 20px;
+    z-index: 999;
+  }
+  .tweaks-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-md);
+    transition: all .25s ease;
+  }
+  .tweaks-toggle:hover { transform: scale(1.08); box-shadow: var(--shadow-lg); }
+  .tweaks-body {
+    position: absolute; bottom: 54px; right: 0;
+    width: 280px; background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 20px;
+    display: none;
+    animation: tweaksIn .2s ease;
+  }
+  .tweaks-body.open { display: block; }
+  @keyframes tweaksIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .tweaks-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tweaks-close {
+    background: none; border: none; cursor: pointer;
+    font-size: 16px; color: var(--text-muted);
+    padding: 2px;
+  }
+  .tweaks-group { margin-bottom: 14px; }
+  .tweaks-label {
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    margin-bottom: 6px; display: block;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .tweaks-slider {
+    width: 100%; height: 4px; border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--bg-subtle); outline: none;
+  }
+  .tweaks-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--primary);
+    cursor: pointer; border: 2px solid #fff;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .section { padding: 24px 20px; }
+    .hero { padding: 100px 16px 40px; }
+    .header-inner { padding: 0 16px; }
+    .content { padding: 0 16px 60px; }
+    .table-wrap { margin: 16px -20px; border-radius: 0; border-left: none; border-right: none; }
+    .header-nav { display: none; }
+  }
+
+  /* ===== Animations ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="hdr">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">LC Notes <span>LangChain</span></a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 OpenAI Pytho...</a>
+      <a href="#s2" class="nav-anchor">&sect;2 基础调用：chat.co...</a>
+      <a href="#s3" class="nav-anchor">&sect;3 多轮对话实现</a>
+      <a href="#s4" class="nav-anchor">&sect;4 DeepSeek / 百...</a>
+      <a href="#s5" class="nav-anchor">&sect;5 实用技巧汇总</a>
+      <a href="#s6" class="nav-anchor">&sect;6 常见错误排查表</a>
+
+      <a href="index.html">P00</a>
+      <a href="#">P01</a>
+      <a href="#">P02</a>
+      <a href="#">P03</a>
+      <a href="#">P04</a>
+      <a href="#">P05</a>
+      <a href="#">P06</a>
+      <a href="#">P07</a>
+      <a href="#">P08</a>
+      <a href="#">P09</a>
+      <a href="#">P10</a>
+      <a href="#">P11</a>
+      <a href="12-编程调用大模型.html" class="active">P12</a>
+      <a href="13-认识LangChain.html">P13</a>
+      <a href="14-快速入门和Agent原理.html">P14</a>
+      <a href="15-初始化模型.html">P15</a>
+      <a href="16-调用模型.html">P16</a>
+      <a href="17-消息Message.html">P17</a>
+      <a href="18-提示词工程.html">P18</a>
+      <a href="19-工具Tools.html">P19</a>
+      <a href="20-预定义工具Tavily.html">P20</a>
+      <a href="21-短期记忆.html">P21</a>
+      <a href="22-短期记忆-持久存储.html">P22</a>
+      <a href="23-记忆管理策略.html">P23</a>
+      <a href="24-需求分析与功能验证.html">P24</a>
+      <a href="25-对接LangSmith.html">P25</a>
+      <a href="26-搭建服务端并对接OSS.html">P26</a>
+      <a href="27-AI私厨完成Agent开发.html">P27</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">第 12 集 &middot; API 编程实战</div>
+  <h1>编程调用 <span class="highlight">大模型</span></h1>
+  <p class="hero-desc">从零掌握 OpenAI Python SDK 的完整使用方法，包括 Client 初始化、同步/异步调用、流式输出、多轮对话构建，以及 DeepSeek / 百炼 / Ollama 多平台无缝切换技巧。</p>
+  <div class="hero-meta">
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 时长 17:59</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> AI 通识篇</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg> SDK 实战</span>
+  </div>
+</section>
+
+<!-- Content -->
+<main class="content">
+
+<!-- S1: OpenAI Python SDK Intro -->
+<article class="section" id="s1">
+  <h2 class="section-title"><span class="num">1</span> OpenAI Python SDK 入门</h2>
+
+  <p><strong>OpenAI Python SDK</strong> 是官方提供的 Python 客户端库，封装了与 OpenAI API 及所有兼容接口通信的全部逻辑。它是目前 LLM 应用开发中最基础、最核心的依赖之一。</p>
+
+  <div class="highlight-box">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>为什么从 SDK 学起？</strong>LangChain 底层的 Model I/O 模块本质上就是对各厂商 SDK 的<strong>统一抽象封装</strong>。理解了原生 SDK 的调用方式、参数含义和返回值结构，后续学习 LangChain 的 <code>ChatOpenAI</code>、<code>invoke()</code>、<code>stream()</code> 等概念时就会豁然开朗——它们只是换了一层更优雅的外衣。
+    </div>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">安装与初始化</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Bash / Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt"># === 第一步：安装 SDK ===</span>
+<span class="cmt"># pip install openai</span>
+
+<span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+<span class="cmt"># === 第二步：创建客户端实例 ===</span>
+<span class="cmt"># 方式 A：直接传入参数（最常用）</span>
+client = <span class="fn">OpenAI</span>(
+    base_url=<span class="str">"https://api.openai.com/v1"</span>,   <span class="cmt"># API 端点地址</span>
+    api_key=<span class="str">"sk-xxxxxxxxxxxxxxxx"</span>,        <span class="cmt"># 你的 API 密钥</span>
+)
+
+<span class="cmt"># 方式 B：通过环境变量自动读取（推荐生产环境）</span>
+<span class="cmt"># 设置环境变量 OPENAI_API_KEY 后可直接：</span>
+<span class="cmt"># client = OpenAI()  # 自动从环境变量读取</span></code></pre>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">关键参数详解</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:18%">参数</th><th style="width:30%">说明</th><th>典型值</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>base_url</code></td><td>API 服务端点地址。不同平台此处不同，是切换模型提供商的核心参数。</td><td><code>https://api.openai.com/v1</code></td></tr>
+        <tr><td><code>api_key</code></td><td>身份认证密钥。每个平台注册后独立生成，切勿泄露或硬编码。</td><td><code>sk-xxx...</code></td></tr>
+        <tr><td><code>timeout</code></td><td>请求超时时间（秒）。网络不稳定时可适当调大。</td><td><code>httpx.Timeout(60.0)</code></td></tr>
+        <tr><td><code>max_retries</code></td><td>自动重试次数。遇到临时网络问题时 SDK 会自动重试。</td><td><code>2</code></td></tr>
+        <tr><td><code>organization</code></td><td>OpenAI 组织 ID（仅 OpenAI 官方需要）。</td><td><code>org-xxx</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#9989;</div>
+    <div class="hb-body">
+      <strong>同步 vs 异步客户端：</strong>SDK 提供两个类——<code>OpenAI</code>（同步）和 <code>AsyncOpenAI</code>（异步）。对于简单的脚本和命令行工具，用 <code>OpenAI</code> 即可；对于 Web 服务、高并发场景，应使用 <code>AsyncOpenAI</code> + <code>async/await</code> 以获得更好的性能。两者的 API 接口完全一致，只是返回类型不同（直接结果 vs Coroutine）。
+    </div>
+  </div>
+</article>
+
+<!-- S2: Basic Call chat.completions.create() -->
+<article class="section accent" id="s2">
+  <h2 class="section-title"><span class="num">2</span> 基础调用：chat.completions.create()</h2>
+
+  <p><code>chat.completions.create()</code> 是 SDK 中最核心的方法，用于向聊天模型发送请求并获取回复。理解它的参数和返回值结构，是掌握整个 SDK 的基石。</p>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">最简调用示例</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+client = <span class="fn">OpenAI</span>(base_url=<span class="str">"..."</span>, api_key=<span class="str">"..."</span>)
+
+response = client.chat.completions.<span class="fn">create</span>(
+    model=<span class="str">"gpt-4o-mini"</span>,       <span class="cmt"># 指定使用的模型名称</span>
+    messages=[                        <span class="cmt">// 消息列表（必填）</span>
+        {<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"你好，请用一句话介绍 Python。"}</span>
+    ],
+    temperature=<span class="num">0.7</span>,              <span class="cmt">// 随机性控制（0=确定性，2=最大随机）</span>
+    max_tokens=<span class="num">500</span>,               <span class="cmt">// 最大输出 token 数</span>
+)
+
+<span class="cmt"># === 提取回复文本（三种常用方式）===</span>
+<span class="cmt"># 方式 1：最常用的属性访问</span>
+<span class="fn">print</span>(response.choices[<span class="num">0</span>].message.content)
+
+<span class="cmt"># 方式 2：使用 model_dump 转为字典</span>
+<span class="fn">print</span>(response.<span class="fn">model_dump_json</span>(indent=<span class="num">2</span>))
+
+<span class="cmt"># 方式 3：访问元数据</span>
+<span class="fn">print</span>(f<span class="str">"模型: {response.model}"</span>)
+<span class="fn">print</span>(f<span class="str">"用量: {response.usage}"</span>)</code></pre>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">返回值 ChatCompletion 结构解析</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:22%">字段路径</th><th style="width:28%">类型</th><th>含义</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>response.id</code></td><td>str</td><td>本次请求的唯一标识符，用于日志追踪和调试</td></tr>
+        <tr><td><code>response.model</code></td><td>str</td><td>实际使用的模型名称（可能与请求的不完全一致）</td></tr>
+        <tr><td><code>response.choices[0].message.role</code></td><td>str</td><td>回复角色，通常为 <code>"assistant"</code></td></tr>
+        <tr><td><code>response.choices[0].message.content</code></td><td>str</td><td><strong>模型的文本回复</strong>——这是你最常需要的字段</td></tr>
+        <tr><td><code>response.usage.prompt_tokens</code></td><td>int</td><td>输入（prompt）消耗的 token 数量</td></tr>
+        <tr><td><code>response.usage.completion_tokens</code></td><td>int</td><td>输出（completion）消耗的 token 数量</td></tr>
+        <tr><td><code>response.usage.total_tokens</code></td><td>int</td><td>总 token 数 = prompt + completion</td></tr>
+        <tr><td><code>response.created</code></td><td>int</td><td>响应生成的 Unix 时间戳</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">流式调用（Streaming）</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+client = <span class="fn">OpenAI</span>(base_url=<span class="str">"..."</span>, api_key=<span class="str">"..."</span>)
+
+stream = client.chat.completions.<span class="fn">create</span>(
+    model=<span class="str">"gpt-4o-mini"</span>,
+    messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"写一首关于春天的短诗"}</span>],
+    stream=<span class="kw">True</span>,     <span class="cmt"><!-- 开启流式模式！关键参数 --></span>
+)
+
+<span class="cmt">// 逐块（chunk）接收并打印回复</span>
+<span class="kw">for</span> chunk <span class="kw">in</span> stream:
+    content = chunk.choices[<span class="num">0</span>].delta.content
+    <span class="kw">if</span> content:
+        <span class="fn">print</span>(content, end=<span class="str">""</span>, flush=<span class="kw">True</span>)  <span class="cmt">// flush=True 实现逐字显示效果</span>
+
+<span class="fn">print</span>()  <span class="cmt">// 换行</span></code></pre>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#128640;</div>
+    <div class="hb-body">
+      <strong>流式 vs 非流式的选择策略：</strong><br>
+      &#x2022 <strong>非流式</strong>（默认）：适合后台任务、批量处理、需要完整结果再处理的场景。代码简单，一次性拿到全部结果。<br>
+      &#x2022 <strong>流式</strong>（<code>stream=True</code>）：适合聊天界面、实时展示、用户体验优先的场景。用户无需等待整段文字生成完毕，可以「打字机效果」逐字看到输出。<br>
+      &#x2022 在 LangChain 中对应的就是 <code>.invoke()</code> vs <code>.stream()</code> 的区别。
+    </div>
+  </div>
+</article>
+
+<!-- S3: Multi-turn Conversation -->
+<article class="section info" id="s3">
+  <h2 class="section-title"><span class="num">3</span> 多轮对话实现</h2>
+
+  <p>真实应用中几乎都是<strong>多轮对话</strong>场景——用户提问、模型回答、用户追问、模型继续回答……SDK 通过 <code>messages</code> 列表来实现这一机制，每次调用都把完整的对话历史传给模型。</p>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">三种消息角色（Role）</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:16%">角色</th><th style="width:12%">role 值</th><th style="width:28%">作用</th><th>出现位置</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>系统消息</strong></td><td><code>"system"</code></td><td>设定模型的行为准则、身份定位、输出约束。相当于给模型下达「总指令」。</td><td>通常在 messages 列表的<strong>第一条</strong></td></tr>
+        <tr><td><strong>用户消息</strong></td><td><code>"user"</code></td><td>用户的实际输入内容——问题、指令、文本等。</td><td>交替出现于对话中</td></tr>
+        <tr><td><strong>助手消息</strong></td><td><code>"assistant"</code></td><td>模型之前的回复。需要手动把上一次的回复追加到 messages 中，模型才能「记住」上下文。</td><td>紧随对应的 user 消息之后</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>System Prompt 最佳实践：</strong><br>
+      &#x2022 <strong>明确身份</strong>：「你是一位资深 Python 开发者」比「你很懂编程」效果好得多<br>
+      &#x2022 <strong>约束格式</strong>：「请用 JSON 格式输出」「每条不超过50字」可大幅提升输出质量<br>
+      &#x2022 <strong>提供范例</strong>：给出期望输出的示例（Few-Shot），让模型模仿<br>
+      &#x2022 <strong>避免矛盾</strong>：不要在 system 和 user 中给出冲突指令
+    </div>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">完整多轮对话循环</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+client = <span class="fn">OpenAI</span>(base_url=<span class="str">"..."</span>, api_key=<span class="str">"..."</span>)
+
+<span class="cmt">// === 初始化对话历史（包含 System Prompt）===</span>
+messages = [
+    {<span class="str">"role"</span>: <span class="str">"system"</span>, <span class="str">"content"</span>: (
+        <span class="str">"你是一个友好的 AI 学习助手。"</span>
+        <span class="str">"你的任务是帮助用户解答编程问题，"</span>
+        <span class="str">"回答要简洁、准确、附带代码示例。"</span>
+        <span class="str">"如果你不确定答案，请诚实地说出来。"</span>
+    )},
+]
+
+<span class="fn">print</span>(<span class="str">"=== AI 助手已启动（输入 quit 退出）==="</span>)
+<span class="fn">print</span>()
+
+<span class="cmt">// === 对话主循环 ===</span>
+<span class="kw">while True</span>:
+    user_input = <span class="fn">input</span>(<span class="str">"\n&#x25b6; 你："</span>).strip()
+
+    <span class="cmt">// 退出条件</span>
+    <span class="kw">if</span> user_input.<span class="fn">lower</span>() <span class="kw">in</span> (<span class="str">"quit"</span>, <span class="str">"exit"</span>, <span class="str">"q"</span>):
+        <span class="fn">print</span>(<span class="str">"再见！"</span>)
+        <span class="kw">break</span>
+
+    <span class="cmt">// 1. 将用户消息加入历史</span>
+    messages.<span class="fn">append</span>({<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: user_input})
+
+    <span class="cmt">// 2. 调用 API 获取回复（传入完整历史！）</span>
+    response = client.chat.completions.<span class="fn">create</span>(
+        model=<span class="str">"gpt-4o-mini"</span>,
+        messages=messages,
+        temperature=<span class="num">0.7</span>,
+    )
+
+    <span class="cmt">// 3. 提取助手回复</span>
+    assistant_msg = response.choices[<span class="num">0</span>].message.content
+
+    <span class="cmt">// 4. 打印回复</span>
+    <span class="fn">print</span>(<span class="str">"\n&#x1f916; 助手："</span>, assistant_msg)
+
+    <span class="cmt">// 5. 将助手回复也加入历史（关键！否则模型会"失忆"）</span>
+    messages.<span class="fn">append</span>({
+        <span class="str">"role"</span>: <span class="str">"assistant"</span>,
+        <span class="str">"content"</span>: assistant_msg
+    })
+
+    <span class="cmt">// 可选：打印当前 token 用量</span>
+    <span class="fn">print</span>(f<span class="str">"   [Token: {response.usage.total_tokens}]"</span>)</code></pre>
+  </div>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#9888;&#65039;</div>
+    <div class="hb-body">
+      <strong>常见陷阱 —— Token 窗口溢出：</strong>随着对话轮次增加，messages 列表越来越长，最终可能超出模型的上下文窗口限制（如 gpt-4o-mini 为 128K tokens）。解决方案：<br>
+      &#x2022 使用 <code>max_tokens</code> 限制单次回复长度<br>
+      &#x2022 实现<strong>滑动窗口</strong>：只保留最近 N 轮对话<br>
+      &#x2022 使用<strong>摘要压缩</strong>：定期将早期对话总结为一句话<br>
+      &#x2022 这正是 LangChain <code>Memory</code> 模块要解决的核心问题！
+    </div>
+  </div>
+</article>
+
+<!-- S4: Platform Switching -->
+<article class="section success" id="s4">
+  <h2 class="section-title"><span class="num">4</span> DeepSeek / 百炼 / Ollama 切换</h2>
+
+  <p>OpenAI SDK 的一个巨大优势是：<strong>它不仅支持 OpenAI 官方 API，还兼容所有遵循 OpenAI API 格式的服务</strong>。这意味着你只需修改 <code>base_url</code> 和 <code>api_key</code> 两个参数，就能无缝切换到 DeepSeek、阿里云百炼、本地 Ollama 等平台。</p>
+
+  <!-- Platform Cards -->
+  <div class="platform-grid">
+    <div class="platform-card">
+      <div class="pc-icon">&#129302;</div>
+      <div class="pc-name">DeepSeek</div>
+      <div class="pc-url">api.deepseek.com</div>
+      <div class="pc-desc">国产大模型标杆，性价比极高，支持 deepseek-chat / deepseek-reasoner 等模型</div>
+    </div>
+    <div class="platform-card">
+      <div class="pc-icon">&#☁️</div>
+      <div class="pc-name">阿里云百炼</div>
+      <div class="pc-url">dashscope.aliyuncs.com</div>
+      <div class="pc-desc">阿里云 AI 平台，集成通义千问系列，企业级稳定性和丰富的模型生态</div>
+    </div>
+    <div class="platform-card">
+      <div class="pc-icon">&#128187;</div>
+      <div class="pc-name">Ollama 本地</div>
+      <div class="pc-url">localhost:11434</div>
+      <div class="pc-desc">本地运行开源大模型（Llama/Qwen/Mistral），隐私安全，免费无限用</div>
+    </div>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">三种平台切换代码对比</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+<span class="cmt">// ========== 方案 A：OpenAI 官方 ==========<span class="kw"></span>
+client_openai = <span class="fn">OpenAI</span>(
+    base_url=<span class="str">"https://api.openai.com/v1"</span>,
+    api_key=<span class="str">"sk-proj-xxxxx"</span>,
+)
+<span class="cmt">// model: "gpt-4o-mini", "gpt-4o", "o3-mini" 等</span>
+
+
+<span class="cmt">// ========== 方案 B：DeepSeek ==========<span class="kw"></span>
+client_deepseek = <span class="fn">OpenAI</span>(
+    base_url=<span class="str">"https://api.deepseek.com/v1"</span>,
+    api_key=<span class="str">"sk-xxxxx"</span>,
+)
+<span class="cmt">// model: "deepseek-chat", "deepseek-reasoner"</span>
+
+
+<span class="cmt">// ========== 方案 C：阿里云百炼 ==========<span class="kw"></span>
+client_bailian = <span class="fn">OpenAI</span>(
+    base_url=<span class="str">"https://dashscope.aliyuncs.com/compatible-mode/v1"</span>,
+    api_key=<span class="sk-xxxxx"</span>,
+)
+<span class="cmt">// model: "qwen-plus", "qwen-turbo", "qwen-max"</span>
+
+
+<span class="cmt">// ========== 方案 D：Ollama 本地 ==========<span class="kw"></span>
+client_ollama = <span class="fn">OpenAI</span>(
+    base_url=<span class="str">"http://localhost:11434/v1"</span>,
+    api_key=<span class="str">"ollama"</span>,          <span class="cmt">// Ollama 不校验 key，随便填</span>
+)
+<span class="cmt">// model: "qwen2.5:7b", "llama3.2:3b", "mistral:7b" 等（需先 ollama pull）</span></code></pre>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">统一工厂函数封装</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">import</span> os
+<span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+<span class="cmt">// === 工厂函数：根据环境变量自动选择平台 ===</span>
+PLATFORMS = {
+    <span class="str">"openai"</span>: {
+        <span class="str">"base_url"</span>: <span class="str">"https://api.openai.com/v1"</span>,
+        <span class="str">"model"</span>: <span class="str">"gpt-4o-mini"</span>,
+    },
+    <span class="str">"deepseek"</span>: {
+        <span class="str">"base_url"</span>: <span class="str">"https://api.deepseek.com/v1"</span>,
+        <span class="str">"model"</span>: <span class="str">"deepseek-chat"</span>,
+    },
+    <span class="str">"bailian"</span>: {
+        <span class="str">"base_url"</span>: <span class="str">"https://dashscope.aliyuncs.com/compatible-mode/v1"</span>,
+        <span class="str">"model"</span>: <span class="str">"qwen-plus"</span>,
+    },
+    <span class="str">"ollama"</span>: {
+        <span class="str">"base_url"</span>: <span class="str">"http://localhost:11434/v1"</span>,
+        <span class="str">"model"</span>: <span class="str">"qwen2.5:7b"</span>,
+    },
+}
+
+<span class="kw">def</span> <span class="fn">create_client</span>(platform=<span class="kw">None</span>):
+    <span class="str">"""根据环境变量或参数创建 OpenAI 兼容客户端"""
+    platform = platform or os.environ.<span class="fn">get</span>(<span class="str">"LLM_PLATFORM"</span>, <span class="str">"deepseek"</span>)
+    config = PLATFORMS[platform]
+
+    <span class="kw">return</span> <span class="fn">OpenAI</span>(
+        base_url=config[<span class="str">"base_url"</span>],
+        api_key=os.environ.<span class="fn">get</span>(<span class="str">"LLM_API_KEY"</span>, <span class="str">""</span>),
+    ), config[<span class="str">"model"</span>]
+
+
+<span class="cmt">// === 使用方式 ===</span>
+<span class="cmt">// 方式 1：通过环境变量切换</span>
+<span class="cmt">// export LLM_PLATFORM=deepseek</span>
+<span class="cmt">// export LLM_API_KEY=sk-xxx</span>
+client, model = <span class="fn">create_client</span>()
+
+<span class="cmt">// 方式 2：直接指定</span>
+client, model = <span class="fn">create_client</span>(<span class="str">"ollama"</span>)
+
+response = client.chat.completions.<span class="fn">create</span>(
+    model=model,
+    messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"你好！"}</span>],
+)
+<span class="fn">print</span>(response.choices[<span class="num">0</span>].message.content)</code></pre>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>设计精髓：</strong>这种「<code>base_url</code> + <code>api_key</code>」驱动的切换模式，正是 LangChain 能够统一抽象数十种模型提供商的底层原理。你在本集学到的每一个概念——Client、messages、streaming——都会在后续 LangChain 章节中以更高层次的 API 重新出现。
+    </div>
+  </div>
+</article>
+
+<!-- S5: Practical Tips -->
+<article class="section accent" id="s5">
+  <h2 class="section-title"><span class="num">5</span> 实用技巧汇总</h2>
+
+  <p>除了基础的调用方式，SDK 还提供了许多高级功能，能显著提升应用的可靠性和可控性。</p>
+
+  <div class="tip-grid">
+
+    <div class="tip-card">
+      <div class="tc-title">JSON Mode <span class="tc-badge">可靠输出</span></div>
+      <div class="tc-desc">强制模型输出合法 JSON 格式，避免解析错误。适用于需要结构化数据的场景（如 API 调用、数据提取）。</div>
+      <code class="tc-code">response = client.chat.completions.create(<br>&nbsp;&nbsp;model="gpt-4o-mini",<br>&nbsp;&nbsp;messages=[...],<br>&nbsp;&nbsp;<strong>response_format={"type": "json_object"}</strong><br>)</code>
+    </div>
+
+    <div class="tip-card">
+      <div class="tc-title">Seed 参数 <span class="tc-badge">可复现性</span></div>
+      <div class="tc-desc">固定随机种子，使相同输入在 temperature > 0 时仍能得到确定性的输出。对测试调试和结果复现至关重要。</div>
+      <code class="tc-code">response = client.chat.completions.create(<br>&nbsp;&nbsp;model="gpt-4o-mini",<br>&nbsp;&nbsp;messages=[...],<br>&nbsp;&nbsp;temperature=0.7,<br>&nbsp;&nbsp;<strong>seed=42</strong><br>)</code>
+    </div>
+
+    <div class="tip-card">
+      <div class="tc-title">Stop 序列 <span class="tc-badge">输出控制</span></div>
+      <div class="tc-desc">指定停止词列表，当模型生成到这些词时立即终止。可用于精确控制输出长度或格式边界。</div>
+      <code class="tc-code">response = client.chat.completions.create(<br>&nbsp;&nbsp;model="gpt-4o-mini",<br>&nbsp;&nbsp;messages=[...],<br>&nbsp;&nbsp;<strong>stop=["\n\n", "---"]</strong><br>)</code>
+    </div>
+
+    <div class="tip-card">
+      <div class="tc-title">Logprobs <span class="tc-badge">概率分析</span></div>
+      <div class="tc-desc">获取每个生成 token 的对数概率分布，用于分析模型置信度、检测幻觉、实现不确定性量化等高级场景。</div>
+      <code class="tc-code">response = client.chat.completions.create(<br>&nbsp;&nbsp;model="gpt-4o-mini",<br>&nbsp;&nbsp;messages=[...],<br>&nbsp;&nbsp;<strong>logprobs=True, top_logprobs=3</strong><br>)</code>
+    </div>
+
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:28px 0 14px;color:var(--text-primary);">响应时间统计</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">import</span> time
+<span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+client = <span class="fn">OpenAI</span>(base_url=<span class="str">"..."</span>, api_key=<span class="str">"..."</span>)
+
+<span class="cmt">// 方式 1：time.perf_counter（推荐，精度最高）</span>
+start = time.<span class="fn">perf_counter</span>()
+response = client.chat.completions.<span class="fn">create</span>(
+    model=<span class="str">"gpt-4o-mini"</span>,
+    messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"你好"}</span>],
+)
+elapsed = time.<span class="fn">perf_counter</span>() - start
+
+<span class="fn">print</span>(f<span class="str">"响应耗时: {elapsed:.2f}s"</span>)
+<span class="fn">print</span>(f<span class="str">"Token 数: {response.usage.total_tokens}"</span>)
+<span class="fn">print</span>(f<span class="str">"吞吐量: {response.usage.total_tokens / elapsed:.1f} tokens/s"</span>)
+
+
+<span class="cmt">// 方式 2：timeit（适合 benchmark 测试）</span>
+<span class="kw">import</span> timeit
+
+setup = <span class="str">'''
+from openai import OpenAI
+client = OpenAI(base_url="...", api_key="...")
+'''</span>
+
+stmt = <span class="str">'''
+client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": "你好"}],
+)
+'''</span>
+
+result = timeit.<span class="fn">timeit</span>(stmt=stmt, setup=setup, number=<span class="num">5</span>)
+<span class="fn">print</span>(f<span class="str">"5次平均耗时: {result/5:.2f}s"</span>)</code></pre>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128202;</div>
+    <div class="hb-body">
+      <strong>性能基准参考（仅供参考，实际因模型和负载而异）：</strong><br>
+      &#x2022 <strong>DeepSeek-Chat</strong>：首字延迟 ~0.3-1s，生成速度 ~50-80 tok/s<br>
+      &#x2022 <strong>GPT-4o-mini</strong>：首字延迟 ~0.5-2s，生成速度 ~80-120 tok/s<br>
+      &#x2022 <strong>Ollama 本地（Qwen2.5-7B）</strong>：首字延迟接近 0，生成速度取决于 GPU 性能，约 ~30-60 tok/s
+    </div>
+  </div>
+</article>
+
+<!-- S6: Error Troubleshooting Table -->
+<article class="section danger" id="s6">
+  <h2 class="section-title"><span class="num">6</span> 常见错误排查表</h2>
+
+  <p>在实际开发中，你会不可避免地遇到各种 API 错误。下面是一份经过实践检验的错误排查速查表，按出现频率排序：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:22%">错误现象</th><th style="width:25%">异常类</th><th style="width:25%">可能原因</th><th>解决方案</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>认证失败</strong><br><code>Incorrect API key</code></td>
+          <td><code>AuthenticationError</code></td>
+          <td>API Key 无效、过期、或复制时多了空格/换行</td>
+          <td>检查 <code>api_key</code> 是否正确；确认环境变量是否加载成功；重新生成 Key</td>
+        </tr>
+        <tr>
+          <td><strong>请求过于频繁</strong><br><code>Rate limit reached</code></td>
+          <td><code>RateLimitError</code></td>
+          <td>短时间内发送了过多请求，触发了平台的频率限制</td>
+          <td>添加 <code>time.sleep(1)</code> 重试间隔；使用指数退避策略；考虑升级套餐</td>
+        </tr>
+        <tr>
+          <td><strong>上下文过长</strong><br><code>Maximum context length</code></td>
+          <td><code>ContextLengthError</code></td>
+          <td>messages 总 token 数超过了模型的上下文窗口上限</td>
+          <td>减少 <code>max_tokens</code>；截断对话历史；使用滑动窗口或摘要压缩</td>
+        </tr>
+        <tr>
+          <td><strong>连接失败</strong><br><code>Connection refused</code></td>
+          <td><code>ConnectionError</code> / <code>APITimeoutError</code></td>
+          <td>网络不通、DNS 解析失败、代理配置错误、VPN 未开启</td>
+          <td>检查网络连接；确认代理设置（<code>HTTP_PROXY</code>）；Ping 目标地址；开启 VPN</td>
+        </tr>
+        <tr>
+          <td><strong>参数无效</strong><br><code>Invalid request</code></td>
+          <td><code>InvalidRequestError</code></td>
+          <td><code>model</code> 名称拼写错误、不支持的参数组合、messages 为空</td>
+          <td>仔细核对 <code>model</code> 名称（区分大小写）；查阅官方文档确认支持的参数</td>
+        </tr>
+        <tr>
+          <td><strong>服务器错误</strong><br><code>500 Internal Server Error</code></td>
+          <td><code>InternalServerError</code></td>
+          <td>平台服务端暂时不可用（维护、过载、Bug）</td>
+          <td>等待几秒后重试；查看平台状态页（Status Page）；联系技术支持</td>
+        </tr>
+        <tr>
+          <td><strong>余额不足</strong><br><code>Insufficient quota</code></td>
+          <td><code>AuthenticationError</code></td>
+          <td>账户余额耗尽或免费额度用完</td>
+          <td>充值账户；切换到免费模型（如 Ollama 本地部署）；申请免费额度</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#128737;&#65039;</div>
+    <div class="hb-body">
+      <strong>健壮的错误处理模板：</strong>在生产环境中，永远不要假设 API 调用一定会成功。建议使用 <code>try/except</code> 包裹所有调用，针对不同的异常类型采取不同的重试策略——<code>RateLimitError</code> 应退避重试，<code>AuthenticationError</code> 应立即报错，<code>ConnectionError</code> 可有限次重试后降级。
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">import</span> time
+<span class="kw">from</span> openai <span class="kw">import</span> OpenAI, <span class="cls">AuthenticationError</span>, <span class="cls">RateLimitError</span>, \
+    <span class="cls">ConnectionError</span> <span class="kw">as</span> OpenAIConnectionError, <span class="cls">APITimeoutError</span>
+
+client = <span class="fn">OpenAI</span>(base_url=<span class="str">"..."</span>, api_key=<span class="str">"..."</span>)
+
+MAX_RETRIES = 3
+BASE_DELAY = 1  <span class="cmt">// 秒</span>
+
+<span class="kw">def</span> <span class="fn">call_with_retry</span>(**kwargs):
+    <span class="str">"""带重试和退避机制的稳健调用"""
+    <span class="kw">for</span> attempt <span class="kw">in</span> <span class="fn">range</span>(MAX_RETRIES):
+        <span class="kw">try</span>:
+            <span class="kw">return</span> client.chat.completions.<span class="fn">create</span>(**kwargs)
+        <span class="kw">except</span> <span class="cls">RateLimitError</span>:
+            delay = BASE_DELAY * (<span class="num">2</span> ** attempt)  <span class="cmt">// 指数退避</span>
+            <span class="fn">print</span>(f<span class="str">"限流中，{delay}s 后重试... (第{attempt+1}次)"</span>)
+            time.<span class="fn">sleep</span>(delay)
+        <span class="kw">except</span> (OpenAIConnectionError, <span class="cls">APITimeoutError</span>) <span class="kw">as</span> e:
+            <span class="kw">if</span> attempt < MAX_RETRIES - <span class="num">1</span>:
+                <span class="fn">print</span>(f<span class="str">"网络异常，重试中... ({e})"</span>)
+                time.<span class="fn">sleep</span>(BASE_DELAY)
+            <span class="kw">else</span>:
+                <span class="kw">raise</span>
+        <span class="kw">except</span> <span class="cls">AuthenticationError</span>:
+            <span class="kw">raise</span> <span class="cls">Exception</span>(<span class="str">"API Key 无效，请检查配置！"</span>)  <span class="cmt">// 认证错误不重试</span>
+    <span class="kw">raise</span> <span class="cls">Exception</span>(<span class="str">"达到最大重试次数"</span>)
+
+
+<span class="cmt">// 使用</span>
+response = <span class="fn">call_with_retry</span>(
+    model=<span class="str">"gpt-4o-mini"</span>,
+    messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"你好"}</span>],
+)</code></pre>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#128170;</div>
+    <div class="hb-body">
+      <strong>本集小结：</strong>通过本集学习，你已经掌握了从零调用大模型的完整技能链——SDK 安装与初始化、同步/异步/流式三种调用模式、多轮对话的消息管理机制、多平台一键切换、以及生产级错误处理。这些知识构成了后续 LangChain 学习的<strong>地基</strong>。下一集我们将正式进入 LangChain 世界，看看框架是如何将这些底层操作封装成优雅的开发体验的。
+    </div>
+  </div>
+</article>
+
+</main>
+
+<!-- Footer Nav -->
+<nav class="footer-nav">
+  <a href="11-开发环境搭建.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 11 集 - 开发环境搭建</div>
+    </div>
+  </a>
+  <a href="13-认识LangChain.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 13 集 - 认识LangChain</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="footer-ref">
+  参考来源：<a href="https://platform.openai.com/docs/api-reference/chat/create" target="_blank">OpenAI API Reference</a> &middot;
+  视频来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">B站 黑马程序员 BV178w1z7EHQ</a>
+</div>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+  <button class="tweaks-toggle" onclick="toggleTweaks()" title="调节面板">&#9881;</button>
+  <div class="tweaks-body" id="tweaksBody">
+    <div class="tweaks-title">
+      Tweaks
+      <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">字体大小</label>
+      <input type="range" class="tweaks-slider" min="0.85" max="1.25" step="0.05" value="1" oninput="setFontSize(this.value)">
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">行距</label>
+      <input type="range" class="tweaks-slider" min="0.9" max="1.4" step="0.05" value="1" oninput="setLineHeight(this.value)">
+    </div>
+  </div>
+</div>
+
+<script>
+// Scroll header effect
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => {
+  hdr.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// Intersection Observer for fade-up animations
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+
+// Copy code button
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '已复制!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// Tweaks Panel
+function toggleTweaks() {
+  document.getElementById('tweaksBody').classList.toggle('open');
+}
+
+function setFontSize(val) {
+  document.documentElement.style.setProperty('--font-scale', val);
+}
+
+function setLineHeight(val) {
+  document.documentElement.style.setProperty('--line-height-scale', val);
+}
+</script>
+</body>
+</html>

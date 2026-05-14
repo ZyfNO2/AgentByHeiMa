@@ -1,0 +1,866 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第16集 - 调用模型 | LangChain学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f8f9fc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f8;
+    --bg-code: #1a1d26;
+    --text-primary: #1a1d26;
+    --text-secondary: #5a6072;
+    --text-muted: #949aad;
+    --primary: oklch(0.55 0.22 250);
+    --primary-light: oklch(0.75 0.15 250);
+    --accent: oklch(0.70 0.18 85);
+    --success: oklch(0.55 0.16 155);
+    --danger: oklch(0.55 0.20 25);
+    --info: oklch(0.55 0.15 230);
+    --border: #e2e4ea;
+    --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+    --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 6px rgba(26,29,38,0.04);
+    --shadow-lg: 0 8px 30px rgba(26,29,38,0.10), 0 4px 12px rgba(26,29,38,0.06);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --font-scale: 1;
+    --line-height-scale: 1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page); color: var(--text-primary);
+    line-height: 1.7; font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    transition: font-size .3s ease, line-height .3s ease;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(248,249,252,0.78);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--border); transition: box-shadow .3s ease;
+  }
+  .header.scrolled { box-shadow: var(--shadow-sm); }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; padding: 0 24px;
+  }
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px;
+    color: var(--primary); text-decoration: none; letter-spacing: -0.02em;
+  }
+  .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .header-nav { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 600px; }
+  .header-nav a {
+    text-decoration: none; color: var(--text-secondary);
+    font-size: 12px; font-weight: 500; padding: 5px 10px;
+    border-radius: 20px; transition: all .2s; white-space: nowrap;
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .header-nav a:hover, .header-nav a.active { background: var(--primary-light); color: var(--primary); }
+
+  /* ===== Hero ===== */
+  .hero { padding: 120px 24px 56px; max-width: 1200px; margin: 0 auto; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--bg-subtle));
+    border: 1px solid oklch(0.85 0.05 250);
+    padding: 6px 16px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 24px;
+  }
+  .hero-badge::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--danger); animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 16px;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero-desc { font-size: 17px; color: var(--text-secondary); max-width: 720px; margin: 0 auto 28px; line-height: 1.65; }
+  .hero-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+  .meta-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: var(--radius-xs);
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .meta-tag svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+  /* ===== Content Sections ===== */
+  .content { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+  .section {
+    background: var(--bg-surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 36px 40px; margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .section::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary); border-radius: 4px 0 0 4px;
+  }
+  .section.accent::before { background: var(--accent); }
+  .section.success::before { background: var(--success); }
+  .section.info::before { background: var(--info); }
+  .section.danger::before { background: var(--danger); }
+  .section.visible { opacity: 1; transform: translateY(0); }
+  .section:hover { box-shadow: var(--shadow-md); }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--primary); color: #fff;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .section p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* ===== Highlight Box ===== */
+  .highlight-box {
+    display: flex; gap: 16px;
+    background: linear-gradient(135deg, oklch(0.97 0.01 250), var(--bg-surface));
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 20px 22px; margin: 20px 0;
+  }
+  .highlight-box.accent { background: linear-gradient(135deg, oklch(0.98 0.015 85), var(--bg-surface)); border-left-color: var(--accent); }
+  .highlight-box.success { background: linear-gradient(135deg, oklch(0.97 0.01 155), var(--bg-surface)); border-left-color: var(--success); }
+  .highlight-box.danger { background: linear-gradient(135deg, oklch(0.98 0.015 25), var(--bg-surface)); border-left-color: var(--danger); }
+  .highlight-box.info { background: linear-gradient(135deg, oklch(0.97 0.01 230), var(--bg-surface)); border-left-color: var(--info); }
+  .hb-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-top: 2px; }
+  .hb-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.7; }
+  .hb-body strong { color: var(--text-primary); }
+  .hb-body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-subtle); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: var(--primary);
+  }
+
+  /* ===== Tables ===== */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--primary); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 13px; text-align: left;
+    padding: 12px 16px; color: #fff;
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  tbody td {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text-secondary); vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--bg-subtle); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.97 0.005 250); }
+  table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; background: var(--bg-subtle);
+    padding: 1px 6px; border-radius: 4px; color: var(--primary);
+  }
+
+  /* ===== Code Blocks ===== */
+  .code-block {
+    position: relative; margin: 20px 0; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border); background: var(--bg-code);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: oklch(0.75 0.08 250);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .code-copy-btn {
+    cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+    color: oklch(0.7 0.03 250); font-family: 'Outfit', sans-serif;
+    font-size: 12px; padding: 4px 12px; border-radius: 6px; transition: all .2s;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); }
+  .code-copy-btn.copied { color: var(--success); border-color: oklch(0.55 0.16 155); }
+  pre {
+    margin: 0; padding: 20px 20px 20px 0;
+    overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; line-height: 1.7; color: #e0e2e8; tab-size: 2;
+  }
+  pre .kw { color: #c792ea; }
+  pre .fn { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .cmt { color: rgba(255,255,255,0.35); font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .op { color: #89ddff; }
+
+  /* ===== Method Comparison Cards ===== */
+  .method-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0;
+  }
+  @media (max-width: 768px) { .method-grid { grid-template-columns: 1fr; } }
+  .method-card {
+    background: var(--bg-surface); border: 2px solid var(--border);
+    border-radius: var(--radius-sm); padding: 22px 20px;
+    transition: all .25s ease; text-align: center;
+  }
+  .method-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+  .method-card.primary { border-color: var(--primary); background: linear-gradient(135deg, oklch(0.98 0.01 250), var(--bg-surface)); }
+  .method-card .mc-method {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px; font-weight: 700; color: var(--primary);
+    margin-bottom: 8px;
+  }
+  .mc-type {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;
+  }
+  .mc-type.sync { background: oklch(0.95 0.03 155); color: oklch(0.45 0.15 155); }
+  .mc-type.stream { background: oklch(0.95 0.04 85); color: oklch(0.50 0.18 85); }
+  .mc-type.async { background: oklch(0.95 0.05 250); color: oklch(0.45 0.22 250); }
+  .method-card .mc-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .method-card .mc-use { font-size: 12px; color: var(--secondary); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+
+  /* ===== Footer Nav ===== */
+  .footer-nav {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 60px;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link-card {
+    flex: 1; display: flex; align-items: center; gap: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit; transition: all .25s ease;
+  }
+  .nav-link-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .nav-link-card.disabled { opacity: .45; pointer-events: none; }
+  .nl-dir { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .nl-label { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .nl-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; }
+
+  .footer-ref {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 40px;
+    text-align: center; font-size: 12.5px; color: var(--text-muted);
+  }
+  .footer-ref a { color: var(--primary); text-decoration: none; }
+
+  /* ===== Tweaks Panel ===== */
+  .tweaks-panel { position: fixed; right: 20px; bottom: 20px; z-index: 999; }
+  .tweaks-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-md); transition: all .25s ease;
+  }
+  .tweaks-toggle:hover { transform: scale(1.08); box-shadow: var(--shadow-lg); }
+  .tweaks-body {
+    position: absolute; bottom: 54px; right: 0;
+    width: 280px; background: var(--bg-surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 20px; display: none;
+    animation: tweaksIn .2s ease;
+  }
+  .tweaks-body.open { display: block; }
+  @keyframes tweaksIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .tweaks-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tweaks-close { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 2px; }
+  .tweaks-group { margin-bottom: 14px; }
+  .tweaks-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tweaks-slider {
+    width: 100%; height: 4px; border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--bg-subtle); outline: none;
+  }
+  .tweaks-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--primary); cursor: pointer;
+    border: 2px solid #fff; box-shadow: var(--shadow-sm);
+  }
+
+  @media (max-width: 768px) {
+    .section { padding: 24px 20px; }
+    .hero { padding: 100px 16px 40px; }
+    .header-inner { padding: 0 16px; }
+    .content { padding: 0 16px 60px; }
+    .table-wrap { margin: 16px -20px; border-radius: 0; border-left: none; border-right: none; }
+    .header-nav { display: none; }
+  }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="hdr">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">LC Notes <span>LangChain</span></a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 三种调用方式总览</a>
+      <a href="#s2" class="nav-anchor">&sect;2 .invoke() 同步...</a>
+      <a href="#s3" class="nav-anchor">&sect;3 .stream() 流式...</a>
+      <a href="#s4" class="nav-anchor">&sect;4 结构化输出 with_s...</a>
+      <a href="#s5" class="nav-anchor">&sect;5 多模态模型调用（图像理解...</a>
+      <a href="#s6" class="nav-anchor">&sect;6 错误处理与重试机制</a>
+      <a href="#s7" class="nav-anchor">&sect;7 并发调用：batch /...</a>
+
+      <a href="13-认识LangChain.html">P13</a>
+      <a href="14-快速入门和Agent原理.html">P14</a>
+      <a href="15-初始化模型.html">P15</a>
+      <a href="16-调用模型.html" class="active">P16</a>
+      <a href="17-消息Message.html">P17</a>
+      <a href="21-短期记忆.html">P21</a>
+      <a href="24-需求分析与功能验证.html">P24</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">第 16 集 &middot; 实战调用</div>
+  <h1>调用 <span class="highlight">模型</span></h1>
+  <p class="hero-desc">掌握 invoke / stream / ainvoke 三种核心调用方式，学会结构化输出、多模态理解、Token 统计、错误重试与并发批处理，构建生产级的 LLM 调用代码。</p>
+  <div class="hero-meta">
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 时长 25:42</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 实战篇</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg> 调用方式</span>
+  </div>
+</section>
+
+<!-- Content -->
+<main class="content">
+
+<!-- S1: Three Methods Overview -->
+<article class="section" id="s1">
+  <h2 class="section-title"><span class="num">1</span> 三种调用方式总览</h2>
+
+  <p>LangChain 的所有 Runnable 组件（包括 ChatModel）都统一实现了三种调用方法。它们适用于不同的使用场景：</p>
+
+  <div class="method-grid">
+    <div class="method-card primary">
+      <div class="mc-method">.invoke()</div>
+      <div class="mc-type sync">同步调用</div>
+      <div class="mc-desc">一次性获取完整响应。最简单直接的方式，适合脚本、批量处理和不需要实时反馈的场景。</div>
+      <div class="mc-use">适用：数据处理、后端 API、Agent 内部调用</div>
+    </div>
+    <div class="method-card">
+      <div class="mc-method">.stream()</div>
+      <div class="mc-type stream">流式调用</div>
+      <div class="mc-desc">逐 token 返回生成内容。用户可以实时看到输出过程，大幅降低感知延迟。</div>
+      <div class="mc-use">适用：聊天界面、CLI 工具、长文本生成</div>
+    </div>
+    <div class="method-card">
+      <div class="mc-method">.ainvoke()</div>
+      <div class="mc-type async">异步调用</div>
+      <div class="mc-desc">非阻塞的异步版本。在等待模型响应期间可以处理其他任务，适合高并发 Web 服务。</div>
+      <div class="mc-use">适用：FastAPI / Django、高并发服务、WebSocket</div>
+    </div>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>设计哲学：</strong>这三种方法构成了 LangChain 的<strong>Runnable 统一接口</strong>的核心。不仅是 ChatModel，Chains、Agents、Retrievers 等所有组件都支持这三种调用方式。你学会了其中一个，就等于学会了全部。
+    </div>
+  </div>
+</article>
+
+<!-- S2: invoke() Deep Dive -->
+<article class="section" id="s2">
+  <h2 class="section-title"><span class="num">2</span>.invoke() 同步调用详解</h2>
+
+  <p><code>.invoke()</code> 是最基本的调用方式，传入输入，等待返回完整结果：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain_core.messages <span class="kw">import</span> HumanMessage, SystemMessage
+
+llm = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+
+<span class="cmt"># ========== 基础用法：传入字符串 ==========</span>
+response = llm.<span class="fn">invoke</span>(<span class="str">"什么是机器学习？用三句话解释"</span>)
+<span class="fn">print</span>(response.content)
+<span class="cmt"># 输出: "机器学习是人工智能的一个子领域..."</span>
+
+
+<span class="cmt"># ========== 进阶用法：传入 Message 列表 ==========</span>
+messages = [
+    <span class="fn">SystemMessage</span>(content=<span class="str">"你是一个专业的技术文档翻译官，只输出翻译结果"</span>),
+    <span class="fn">HumanMessage</span>(content=<span class="str">"Translate the following to Chinese:\n\nMachine learning is a subset of artificial intelligence..."</span>),
+]
+
+response = llm.<span class="fn">invoke</span>(messages)
+<span class="fn">print</span>(response.content)
+
+
+<span class="cmt"># ========== 访问元数据（Token 用量等）==========</span>
+response = llm.<span class="fn">invoke</span>(<span class="str">"写一首关于 Python 的诗"</span>)
+<span class="fn">print</span>(<span class="str">"=== 回答内容 ==="</span>)
+<span class="fn">print</span>(response.content)
+<span class="fn">print</span>(<span class="str">"\n=== Token 使用量 ==="</span>)
+<span class="fn">print</span>(response.response_metadata)   <span class="cmt">// 包含 token_usage、finish_reason、model_name 等</span>
+<span class="fn">print</span>(<span class="str">"\n=== Token 详情 ==="</span>)
+<span class="fn">print</span>(response.usage_metadata)     <span class="cmt">// 标准化的 token 统计信息</span></code></pre>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>invoke() 返回的 AIMessage 对象包含三个关键属性：</strong><br>
+      &#x2022; <code>response.content</code> —— 模型生成的文本内容（字符串）<br>
+      &#x2022; <code>response.response_metadata</code> —— 原始 API 返回的元数据字典<br>
+      &#x2022; <code>response.usage_metadata</code> —— 标准化的 token 使用量 <code>{'input_tokens': 20, 'output_tokens': 150, 'total_tokens': 170}</code>
+    </div>
+  </div>
+</article>
+
+<!-- S3: stream() -->
+<article class="section accent" id="s3">
+  <h2 class="section-title"><span class="num">3</span>.stream() 流式调用</h2>
+
+  <p>流式调用让模型「边想边说」，每个 chunk 包含一个或多个 token。这是构建交互式应用的关键技术：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">import</span> sys
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+
+llm = <span class="fn">ChatOpenAI</span>(
+    model=<span class="str">"gpt-4o-mini"</span>,
+    temperature=<span class="num">0.7</span>,
+    streaming=<span class="kw">True</span>,   <span class="cmt">// 必须开启 streaming 参数</span>
+)
+
+
+<span class="cmt"># ========== 方式一：逐 chunk 迭代 ==========</span>
+<span class="fn">print</span>(<span class="str">"Assistant: "</span>, end=<span class="str">""</span>, flush=<span class="kw">True</span>)
+
+full_content = []
+<span class="kw">for</span> chunk <span class="kw">in</span> llm.<span class="fn">stream</span>(<span class="str">"用生动的语言描述一下春天的公园"</span>):
+    <span class="kw">if</span> chunk.content:
+        full_content.append(chunk.content)
+        <span class="fn">print</span>(chunk.content, end=<span class="str">""</span>, flush=<span class="kw">True</span>)  <span class="cmt">// 实时打印到终端</span>
+
+result = <span class="str">""</span>.join(full_content)
+<span class="fn">print</span>(<span class="str">f"\n\n[共生成 {len(result)} 个字符]"</span>)
+
+
+<span class="cmt"># ========== 方式二：收集所有 chunks 后统一处理 ==========</span>
+chunks = list(llm.<span class="fn">stream</span>(<span class="str">"列出 Python 的三大优点"</span>))
+combined = <span class="str">""</span>.join([c.content <span class="kw">for</span> c <span class="kw">in</span> chunks <span class="kw">if</span> c.content])
+<span class="fn">print</span>(combined)</code></pre>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:22%">特性</th><th>invoke()</th><th>stream()</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>返回类型</strong></td><td><code>AIMessage</code>（单个对象）</td><td><code>Iterator[AIMessageChunk]</code>（迭代器）</td></tr>
+        <tr><td><strong>阻塞行为</strong></td><td>完全阻塞直到完成</td><td>逐 chunk 返回，可并行处理 UI 更新</td></tr>
+        <tr><td><strong>首字延迟</strong></td><td>需等待全部生成完毕</td><td>通常 100~500ms 即可获得首个 token</td></tr>
+        <tr><td><strong>内存占用</strong></td><td>需要缓存完整响应</td><td>流式处理，峰值内存更低</td></tr>
+        <tr><td><strong>中断能力</strong></td><td>无法中途取消</td><td>可随时 break 中断生成</td></tr>
+        <tr><td><strong>适用场景</strong></td><td>后端处理、数据管道</td><td>聊天界面、CLI 工具、实时展示</td></tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+
+<!-- S4: Structured Output -->
+<article class="section success" id="s4">
+  <h2 class="section-title"><span class="num">4</span> 结构化输出 with_structured_output</h2>
+
+  <p>很多时候我们需要的不是自由文本，而是<strong>结构化的 JSON 数据</strong>——比如从一段文字中提取实体、将非结构化文本转为表格等。<code>with_structured_output()</code> 让 LLM 直接输出符合 Pydantic 模型的结构化数据：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, Field
+<span class="kw">from</span> typing <span class="kw">import</span> List
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+
+llm = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+
+
+<span class="cmt"># === 定义输出的数据结构 ===</span>
+<span class="kw">class</span> <span class="cls">MovieReview</span>(BaseModel):
+    <span class="str">"""电影评论的结构化提取结果"""</span>
+    title: <span class="str">str</span> = Field(description=<span class="str">"电影名称"</span>)
+    rating: <span class="float</span> = Field(description=<span class="str">"评分 (0-10)"</span>, ge=<span class="num">0</span>, le=<span class="num">10</span>)
+    genre: <span class="str">str</span> = Field(description=<span class="str">"电影类型"</span>)
+    pros: List[<span class="str">str</span>] = Field(description=<span class="str">"影片优点列表"</span>)
+    cons: List[<span class="str">str</span>] = Field(description=<span class="str">"影片缺点列表"</span>)
+    summary: <span class="str">str</span> = Field(description=<span class="str">"一句话总结"</span>)
+
+
+<span class="cmt># === 包装为结构化输出模型 ===</span>
+structured_llm = llm.<span class="fn">with_structured_output</span>(MovieReview)
+
+
+<span class="cmt"># === 调用 —— 直接得到 Pydantic 对象！===</span>
+review = structured_llm.<span class="fn">invoke</span>(<span class="str">"""
+最近看了《星际穿越》，诺兰真的太会拍了。
+画面震撼，汉斯季默的配乐简直神了，尤其是那个管风琴的旋律。
+不过剧情有些地方确实有点难懂，时间膨胀那段我看了两遍才明白。
+马修麦康纳西的表演很到位，父女情那块看哭了。
+整体给个9分吧，科幻片里的天花板。
+"""</span>)
+
+<span class="cmt"># review 现在是 MovieReview 类型，可以直接访问属性</span>
+<span class="fn">print</span>(<span class="str">f"电影: {review.title}"</span>)
+<span class="fn">print</span>(<span class="str">f"评分: {review.rating}/10"</span>)
+<span class="fn">print</span>(<span class="str">f"类型: {review.genre}"</span>)
+<span class="fn">print</span>(<span class="str">f"优点: {' | '.join(review.pros)}"</span>)
+<span class="fn">print</span>(<span class="str">f"缺点: {' | '.join(review.cons)}"</span>)
+<span class="fn">print</span>(<span class="str">f"总结: {review.summary}"</span>)
+
+<span class="cmt"># 还可以直接转成 JSON 或 Dict</span>
+<span class="fn">print</span>(review.model_dump_json())  <span class="cmt">// JSON 字符串</span>
+<span class="fn">print</span>(review.model_dump())     <span class="cmt">// Python 字典</span></code></pre>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#9989;</div>
+    <div class="hb-body">
+      <strong>为什么 with_structured_output 这么好用？</strong>它底层利用了 LLM 原生的 Function Calling / JSON Mode 能力，让模型直接输出符合 schema 的 JSON，然后自动反序列化为 Pydantic 对象。你得到的不再是需要自己解析的字符串，而是<strong>有类型约束、可直接编程操作的数据对象</strong>。这在信息抽取、数据清洗、表单填充等场景下极为强大。
+    </div>
+  </div>
+</article>
+
+<!-- S5: Multimodal -->
+<article class="section info" id="s5">
+  <h2 class="section-title"><span class="num">5</span> 多模态模型调用（图像理解）</h2>
+
+  <p>GPT-4o、Claude 3.5、Gemini 等现代多模态模型原生支持图像输入。LangChain 通过 <code>HumanMessage</code> 的 <code>content</code> 多模态格式轻松实现：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain_core.messages <span class="kw">import</span> HumanMessage
+<span class="kw">import</span> base64
+
+llm = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4o"</span>)  <span class="cmt">// 注意：必须用支持视觉的模型</span>
+
+
+<span class="cmt"># ========== 方式一：通过 URL 传入图片 ==========</span>
+message = <span class="fn">HumanMessage</span>(content=[
+    {<span class="str">"type"</span>: <span class="str">"text"</span>, <span class="str">"text"</span>: <span class="str">"这张图片里有什么？请详细描述。"</span>},
+    {<span class="str">"type"</span>: <span class="str">"image_url"</span>, <span class="str">"image_url"</span>: {<span class="str">"url"</span>: <span class="str">"https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/280px-PNG_transparency_demonstration_1.png"</span>}},
+])
+
+response = llm.<span class="fn">invoke</span>([message])
+<span class="fn">print</span>(response.content)
+
+
+<span class="cmt"># ========== 方式二：通过本地文件 Base64 传入 ==========</span>
+<span class="kw">def</span> <span class="fn">image_to_base64</span>(image_path: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""读取图片文件并转换为 base64 编码"""</span>
+    <span class="kw">with</span> <span class="fn">open</span>(image_path, <span class="str">"rb"</span>) as f:
+        data = base64.b64encode(f.read()).decode(<span class="str">"utf-8"</span>)
+    <span class="kw">return</span> data
+
+
+image_b64 = <span class="fn">image_to_base64</span>(<span class="str">"./photo.jpg"</span>)
+
+message = <span class="fn">HumanMessage</span>(content=[
+    {<span class="str">"type"</span>: <span class="str">"text"</span>, <span class="str">"text"</span>: <span class="str">"分析这张图片中的物体数量和位置关系"</span>},
+    {<span class="str">"type"</span>: <span class="str">"image_url"</span>, <span class="str">"image_url"</span>: {<span class="str">"url"</span>: <span class="str">f"data:image/jpeg;base64,{image_b64}"</span>}},
+])
+
+response = llm.<span class="fn">invoke</span>([message])
+<span class="fn">print</span>(response.content)</code></pre>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>多模态支持的模型列表：</strong><br>
+      &#x2022; <strong>GPT-4o / GPT-4o-mini</strong>：图片 + 文本，支持 URL 和 Base64<br>
+      &#x2022; <strong>Claude 3.5 Sonnet</strong>：图片 + 文本，支持最高 20MB 图片<br>
+      &#x2022; <strong>Gemini 2.0 Pro</strong>：图片 + 视频 + 音频 + 文本，原生多模态<br>
+      &#x2022; <strong>Qwen-VL</strong>：开源中文多模态模型，可通过 Ollama 本地运行
+    </div>
+  </div>
+</article>
+
+<!-- S6: Error Handling & Retry -->
+<article class="section danger" id="s6">
+  <h2 class="section-title"><span class="num">6</span> 错误处理与重试机制</h2>
+
+  <p>调用 LLM API 时可能遇到各种错误：网络超时、限流（Rate Limit）、服务不可用等。良好的错误处理是生产级代码的基本要求：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">import</span> time
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain_core.exceptions <span class="kw">import</span> OutputParserException
+
+llm = <span class="fn">ChatOpenAI</span>(
+    model=<span class="str">"gpt-4o-mini"</span>,
+    temperature=<span class="num">0</span>,
+    max_retries=<span class="num">3</span>,          <span class="cmt">// LangChain 内置的重试次数</span>
+    request_timeout=<span class="num">30.0</span>,       <span class="cmt">// 单次请求超时（秒）</span>
+)
+
+
+<span class="cmt"># ========== 方式一：try-except 捕获异常 ==========</span>
+<span class="kw">def</span> <span class="fn">safe_invoke</span>(prompt: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""带异常捕获的安全调用封装"""</span>
+    <span class="kw">try</span>:
+        response = llm.<span class="fn">invoke</span>(prompt)
+        <span class="kw">return</span> response.content
+    <span class="kw">except</span> OutputParserException as e:
+        <span class="fn">print</span>(<span class="str">f"[解析错误] {e}"</span>)
+        <span class="kw">return</span> <span class="str">"抱歉，回答格式出现异常，请重试。"</span>
+    <span class="kw">except</span> Exception as e:
+        error_type = type(e).__name__
+        <span class="fn">print</span>(<span class="str">f"[{error_type}] {e}"</span>)
+        <span class="kw">return</span> <span class="str">"服务暂时不可用，请稍后再试。"</span>
+
+
+<span class="cmt"># ========== 方式二：指数退避重试 ==========</span>
+<span class="kw">def</span> <span class="fn">invoke_with_retry</span>(prompt: <span class="str">str</span>, max_retries: int = <span class="num">3</span>) -> <span class="str">str</span>:
+    <span class="str">"""带指数退避的重试逻辑"""</span>
+    <span class="kw">for</span> attempt <span class="kw">in</span> <span class="fn">range</span>(max_retries):
+        <span class="kw">try</span>:
+            response = llm.<span class="fn">invoke</span>(prompt)
+            <span class="kw">return</span> response.content
+        <span class="kw">except</span> Exception as e:
+            <span class="kw">if</span> attempt == max_retries - <span class="num">1</span>:
+                <span class="kw">raise</span>  <span class="cmt">// 最后一次重试仍然失败，抛出异常</span>
+            wait_time = (<span class="num">2</span> ** attempt)  <span class="cmt">// 1s -> 2s -> 4s</span>
+            <span class="fn">print</span>(<span class="str">f"第 {attempt+1} 次失败，{wait_time}秒后重试... ({e})"</span>)
+            time.sleep(wait_time)</code></pre>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:22%">常见错误类型</th><th>HTTP 状态码</th><th>原因与处理建议</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>RateLimitError</code></td><td>429</td><td>API 调用频率超限。解决方案：降低并发数、增加重试间隔、考虑升级套餐。</td></tr>
+        <tr><td><code>APITimeoutError</code></td><td>Timeout</td><td>请求超时。对于 o1/o3 等推理模型，建议增大 timeout 到 300s+。</td></tr>
+        <tr><td><code>AuthenticationError</code></td><td>401</td><td>API Key 无效或过期。检查 .env 文件和环境变量配置。</td></tr>
+        <tr><td><code>BadRequestError</code></td><td>400</td><td>请求参数错误。检查 model 名称是否正确、消息格式是否符合要求。</td></tr>
+        <tr><td><code>InternalServerError</code></td><td>500</td><td>服务商内部故障。通常是临时性的，重试即可恢复。</td></tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+
+<!-- S7: Batch & Concurrent -->
+<article class="section" id="s7">
+  <h2 class="section-title"><span class="num">7</span> 并发调用：batch / abatch</h2>
+
+  <p>当需要对大量输入进行批量处理时，逐个 invoke 效率太低。LangChain 提供了 <code>.batch()</code> 和 <code>.abatch()</code> 方法用于批量并发调用：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">import</span> asyncio
+<span class="kw">import</span> time
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+
+llm = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+
+prompts = [
+    <span class="str">"用一句话解释什么是 AI"</span>,
+    <span class="str">"用一句话解释什么是 ML"</span>,
+    <span class="str">"用一句话解释什么是 DL"</span>,
+    <span class="str">"用一句话解释什么是 NLP"</span>,
+    <span class="str">"用一句话解释什么是 CV"</span>,
+]
+
+
+<span class="cmt"># ========== batch(): 同步批量调用 ==========</span>
+<span class="cmt"># 内部使用线程池并发执行，但对外仍是同步阻塞的</span>
+start = time.time()
+results = llm.<span class="fn">batch</span>(prompts)
+elapsed = time.time() - start
+
+<span class="kw">for</span> i, result in <span class="fn">enumerate</span>(results):
+    <span class="fn">print</span>(<span class="str">f"[{i+1}] {result.content[:60]}..."</span>)
+<span class="fn">print</span>(<span class="str">f"\nbatch() 总耗时: {elapsed:.2f}s (串行约需 {elapsed*5:.2f}s)"</span>)
+
+
+<span class="cmt"># ========== abatch(): 异步批量调用 ==========</span>
+<span class="cmt"># 使用 asyncio 并发，效率更高，适合 I/O 密集场景</span>
+<span class="kw">async def</span> <span class="fn">batch_demo</span>():
+    start = time.time()
+    results = <span class="kw">await</span> llm.<span class="fn">abatch</span>(prompts)
+    elapsed = time.time() - start
+
+    <span class="kw">for</span> i, result in <span class="fn">enumerate</span>(results):
+        <span class="fn">print</span>(<span class="str">f"[{i+1}] {result.content[:60]}..."</span>)
+    <span class="fn">print</span>(<span class="str">f"\nabatch() 总耗时: {elapsed:.2f}s"</span>)
+
+asyncio.<span class="fn">run</span>(<span class="fn">batch_demo</span>())</code></pre>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:18%">方法</th><th style="width:15%">并发模型</th><th>特点</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>invoke()</code> x N</td><td>串行</td><td>最简单但最慢，一个接一个执行，总耗时 = 所有请求之和</td></tr>
+        <tr><td><code>batch()</code></td><td>线程池</td><td>内部用 ThreadPoolExecutor 并发，适合 CPU 密集型后处理</td></tr>
+        <tr><td><code>abatch()</code></td><td>asyncio</td><td>基于事件循环的真正并发，I/O 等待时不阻塞，效率最优</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#127881;</div>
+    <div class="hb-body">
+      <strong>恭喜完成第 13~16 集的学习！</strong> 你现在已经掌握了 LangChain 的核心基础：<strong>框架认知 -> Agent 原理 -> 模型初始化 -> 模型调用</strong>。接下来可以去学习 Message 系统（P17）、Memory 记忆管理（P21）以及完整的项目实战（P24）。记住——最好的学习方式就是动手写代码，去创造一些有趣的东西吧！Spinning~♪
+    </div>
+  </div>
+</article>
+
+</main>
+
+<!-- Footer Nav -->
+<nav class="footer-nav">
+  <a href="15-初始化模型.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 15 集 - 初始化模型</div>
+    </div>
+  </a>
+  <a href="17-消息Message.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 17 集 - 消息Message</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="footer-ref">
+  参考来源：<a href="https://www.langchain.com.cn/docs/how_to/chat/" target="_blank">LangChain Chat Model 调用指南</a> &middot;
+  视频来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">B站 黑马程序员 BV178w1z7EHQ</a>
+</div>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+  <button class="tweaks-toggle" onclick="toggleTweaks()" title="调节面板">&#9881;</button>
+  <div class="tweaks-body" id="tweaksBody">
+    <div class="tweaks-title">
+      Tweaks
+      <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">字体大小</label>
+      <input type="range" class="tweaks-slider" min="0.85" max="1.25" step="0.05" value="1" oninput="setFontSize(this.value)">
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">行距</label>
+      <input type="range" class="tweaks-slider" min="0.9" max="1.4" step="0.05" value="1" oninput="setLineHeight(this.value)">
+    </div>
+  </div>
+</div>
+
+<script>
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => { hdr.classList.toggle('scrolled', window.scrollY > 20); });
+
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) setTimeout(() => entry.target.classList.add('visible'), i * 80);
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = '已复制!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function toggleTweaks() { document.getElementById('tweaksBody').classList.toggle('open'); }
+function setFontSize(val) { document.documentElement.style.setProperty('--font-scale', val); }
+function setLineHeight(val) { document.documentElement.style.setProperty('--line-height-scale', val); }
+</script>
+</body>
+</html>

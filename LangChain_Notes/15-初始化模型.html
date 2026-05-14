@@ -1,0 +1,879 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第15集 - 初始化模型 | LangChain学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f8f9fc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f8;
+    --bg-code: #1a1d26;
+    --text-primary: #1a1d26;
+    --text-secondary: #5a6072;
+    --text-muted: #949aad;
+    --primary: oklch(0.55 0.22 250);
+    --primary-light: oklch(0.75 0.15 250);
+    --accent: oklch(0.70 0.18 85);
+    --success: oklch(0.55 0.16 155);
+    --danger: oklch(0.55 0.20 25);
+    --info: oklch(0.55 0.15 230);
+    --border: #e2e4ea;
+    --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+    --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 6px rgba(26,29,38,0.04);
+    --shadow-lg: 0 8px 30px rgba(26,29,38,0.10), 0 4px 12px rgba(26,29,38,0.06);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --font-scale: 1;
+    --line-height-scale: 1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page); color: var(--text-primary);
+    line-height: 1.7; font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    transition: font-size .3s ease, line-height .3s ease;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(248,249,252,0.78);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--border); transition: box-shadow .3s ease;
+  }
+  .header.scrolled { box-shadow: var(--shadow-sm); }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; padding: 0 24px;
+  }
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px;
+    color: var(--primary); text-decoration: none; letter-spacing: -0.02em;
+  }
+  .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .header-nav { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 600px; }
+  .header-nav a {
+    text-decoration: none; color: var(--text-secondary);
+    font-size: 12px; font-weight: 500; padding: 5px 10px;
+    border-radius: 20px; transition: all .2s; white-space: nowrap;
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .header-nav a:hover, .header-nav a.active { background: var(--primary-light); color: var(--primary); }
+
+  /* ===== Hero ===== */
+  .hero { padding: 120px 24px 56px; max-width: 1200px; margin: 0 auto; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--bg-subtle));
+    border: 1px solid oklch(0.85 0.05 250);
+    padding: 6px 16px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 24px;
+  }
+  .hero-badge::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success); animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 16px;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero-desc { font-size: 17px; color: var(--text-secondary); max-width: 720px; margin: 0 auto 28px; line-height: 1.65; }
+  .hero-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+  .meta-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: var(--radius-xs);
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .meta-tag svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+  /* ===== Content Sections ===== */
+  .content { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+  .section {
+    background: var(--bg-surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 36px 40px; margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .section::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary); border-radius: 4px 0 0 4px;
+  }
+  .section.accent::before { background: var(--accent); }
+  .section.success::before { background: var(--success); }
+  .section.info::before { background: var(--info); }
+  .section.danger::before { background: var(--danger); }
+  .section.visible { opacity: 1; transform: translateY(0); }
+  .section:hover { box-shadow: var(--shadow-md); }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--primary); color: #fff;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .section p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* ===== Highlight Box ===== */
+  .highlight-box {
+    display: flex; gap: 16px;
+    background: linear-gradient(135deg, oklch(0.97 0.01 250), var(--bg-surface));
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 20px 22px; margin: 20px 0;
+  }
+  .highlight-box.accent { background: linear-gradient(135deg, oklch(0.98 0.015 85), var(--bg-surface)); border-left-color: var(--accent); }
+  .highlight-box.success { background: linear-gradient(135deg, oklch(0.97 0.01 155), var(--bg-surface)); border-left-color: var(--success); }
+  .highlight-box.danger { background: linear-gradient(135deg, oklch(0.98 0.015 25), var(--bg-surface)); border-left-color: var(--danger); }
+  .highlight-box.info { background: linear-gradient(135deg, oklch(0.97 0.01 230), var(--bg-surface)); border-left-color: var(--info); }
+  .hb-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-top: 2px; }
+  .hb-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.7; }
+  .hb-body strong { color: var(--text-primary); }
+  .hb-body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-subtle); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: var(--primary);
+  }
+
+  /* ===== Tables ===== */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--primary); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 13px; text-align: left;
+    padding: 12px 16px; color: #fff;
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  tbody td {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text-secondary); vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--bg-subtle); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.97 0.005 250); }
+  table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; background: var(--bg-subtle);
+    padding: 1px 6px; border-radius: 4px; color: var(--primary);
+  }
+
+  /* ===== Code Blocks ===== */
+  .code-block {
+    position: relative; margin: 20px 0; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border); background: var(--bg-code);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: oklch(0.75 0.08 250);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .code-copy-btn {
+    cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+    color: oklch(0.7 0.03 250); font-family: 'Outfit', sans-serif;
+    font-size: 12px; padding: 4px 12px; border-radius: 6px; transition: all .2s;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); }
+  .code-copy-btn.copied { color: var(--success); border-color: oklch(0.55 0.16 155); }
+  pre {
+    margin: 0; padding: 20px 20px 20px 0;
+    overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; line-height: 1.7; color: #e0e2e8; tab-size: 2;
+  }
+  pre .kw { color: #c792ea; }
+  pre .fn { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .cmt { color: rgba(255,255,255,0.35); font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .op { color: #89ddff; }
+
+  /* ===== Provider Cards ===== */
+  .provider-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0;
+  }
+  @media (max-width: 768px) { .provider-grid { grid-template-columns: 1fr; } }
+  .provider-card {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 22px 20px;
+    transition: all .25s ease;
+  }
+  .provider-card:hover { background: var(--bg-surface); box-shadow: var(--shadow-sm); border-color: var(--primary-light); transform: translateY(-2px); }
+  .provider-card .pc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .provider-card .pc-logo {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; flex-shrink: 0;
+  }
+  .provider-card .pc-logo.openai { background: linear-gradient(135deg, #10a37f, #1a7f64); color: #fff; }
+  .provider-card .pc-logo.anthropic { background: linear-gradient(135deg, #cc785c, #d97757); color: #fff; }
+  .provider-card .pc-logo.google { background: linear-gradient(135deg, #4285f4, #3367d6); color: #fff; }
+  .provider-card .pc-logo.deepseek { background: linear-gradient(135deg, #4d6bfe, #3651d4); color: #fff; }
+  .provider-card .pc-logo.local { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; }
+  .provider-card .pc-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 15px; color: var(--text-primary);
+  }
+  .provider-card .pc-pkg {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px; color: var(--text-muted); background: var(--bg-surface);
+    padding: 2px 8px; border-radius: 4px;
+  }
+  .provider-card .pc-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-top: 8px; }
+
+  /* ===== Param Table Special ===== */
+  .param-type {
+    display: inline-block; font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px; padding: 2px 8px; border-radius: 4px;
+    background: var(--bg-subtle); color: var(--primary);
+  }
+  .param-default { color: var(--text-muted); font-size: 13px; }
+
+  /* ===== Footer Nav ===== */
+  .footer-nav {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 60px;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link-card {
+    flex: 1; display: flex; align-items: center; gap: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit; transition: all .25s ease;
+  }
+  .nav-link-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .nav-link-card.disabled { opacity: .45; pointer-events: none; }
+  .nl-dir { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .nl-label { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .nl-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; }
+
+  .footer-ref {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 40px;
+    text-align: center; font-size: 12.5px; color: var(--text-muted);
+  }
+  .footer-ref a { color: var(--primary); text-decoration: none; }
+
+  /* ===== Tweaks Panel ===== */
+  .tweaks-panel { position: fixed; right: 20px; bottom: 20px; z-index: 999; }
+  .tweaks-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-md); transition: all .25s ease;
+  }
+  .tweaks-toggle:hover { transform: scale(1.08); box-shadow: var(--shadow-lg); }
+  .tweaks-body {
+    position: absolute; bottom: 54px; right: 0;
+    width: 280px; background: var(--bg-surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 20px; display: none;
+    animation: tweaksIn .2s ease;
+  }
+  .tweaks-body.open { display: block; }
+  @keyframes tweaksIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .tweaks-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tweaks-close { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 2px; }
+  .tweaks-group { margin-bottom: 14px; }
+  .tweaks-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tweaks-slider {
+    width: 100%; height: 4px; border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--bg-subtle); outline: none;
+  }
+  .tweaks-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--primary); cursor: pointer;
+    border: 2px solid #fff; box-shadow: var(--shadow-sm);
+  }
+
+  @media (max-width: 768px) {
+    .section { padding: 24px 20px; }
+    .hero { padding: 100px 16px 40px; }
+    .header-inner { padding: 0 16px; }
+    .content { padding: 0 16px 60px; }
+    .table-wrap { margin: 16px -20px; border-radius: 0; border-left: none; border-right: none; }
+    .header-nav { display: none; }
+  }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="hdr">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">LC Notes <span>LangChain</span></a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 安装依赖包</a>
+      <a href="#s2" class="nav-anchor">&sect;2 支持的模型提供商一览</a>
+      <a href="#s3" class="nav-anchor">&sect;3 ChatOpenAI 参...</a>
+      <a href="#s4" class="nav-anchor">&sect;4 多模型切换策略</a>
+      <a href="#s5" class="nav-anchor">&sect;5 DeepSeek 与 O...</a>
+      <a href="#s6" class="nav-anchor">&sect;6 API Key 安全管理</a>
+      <a href="#s7" class="nav-anchor">&sect;7 流式输出配置</a>
+
+      <a href="13-认识LangChain.html">P13</a>
+      <a href="14-快速入门和Agent原理.html">P14</a>
+      <a href="15-初始化模型.html" class="active">P15</a>
+      <a href="16-调用模型.html">P16</a>
+      <a href="17-消息Message.html">P17</a>
+      <a href="21-短期记忆.html">P21</a>
+      <a href="24-需求分析与功能验证.html">P24</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">第 15 集 &middot; 模型配置</div>
+  <h1>初始化 <span class="highlight">模型</span></h1>
+  <p class="hero-desc">掌握 ChatOpenAI 的完整初始化参数，学会接入 OpenAI / Anthropic / Google / DeepSeek / Ollama 等多种模型提供商，理解 API Key 安全管理与流式输出配置。</p>
+  <div class="hero-meta">
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 时长 22:18</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 配置篇</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg> 多模型接入</span>
+  </div>
+</section>
+
+<!-- Content -->
+<main class="content">
+
+<!-- S1: Install Packages -->
+<article class="section" id="s1">
+  <h2 class="section-title"><span class="num">1</span> 安装依赖包</h2>
+
+  <p>LangChain 采用模块化包设计，不同模型提供商对应不同的安装包。按需安装即可，无需一次性装全部依赖：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Bash / Terminal</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt"># === 核心框架（必装）===</span>
+pip install langchain langchain-core
+
+<span class="cmt"># === 模型提供商（按需选择）===</span>
+pip install langchain-openai        <span class="cmt"># OpenAI (GPT-4o / GPT-4o-mini / o1 / o3)</span>
+pip install langchain-anthropic     <span class="cmt"># Anthropic (Claude 3.5 Sonnet / Claude 3 Opus)</span>
+pip install langchain-google-genai  <span class="cmt"># Google (Gemini 2.0 Flash / Pro)</span>
+
+<span class="cmt"># === 辅助工具 ===</span>
+pip install python-dotenv           <span class="cmt"># .env 文件加载环境变量</span>
+pip install langchain-community     <span class="cmt"># 社区工具和集成</span></code></pre>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>为什么分这么多包？</strong>LangChain v0.3+ 将核心抽象与具体实现彻底分离。<code>langchain-core</code> 只包含接口定义（零第三方依赖），而具体的模型/工具/向量库实现都在各自的独立包中。这样你可以只安装需要的组件，避免不必要的依赖膨胀。
+    </div>
+  </div>
+</article>
+
+<!-- S2: Provider Overview -->
+<article class="section accent" id="s2">
+  <h2 class="section-title"><span class="num">2</span> 支持的模型提供商一览</h2>
+
+  <p>LangChain 通过统一的 ChatModel 接口屏蔽了各厂商 API 的差异。以下是目前主流的模型提供商及其 LangChain 集成方式：</p>
+
+  <div class="provider-grid">
+    <div class="provider-card">
+      <div class="pc-header">
+        <div class="pc-logo openai">O</div>
+        <div><div class="pc-name">OpenAI</div><span class="pc-pkg">langchain-openai</span></div>
+      </div>
+      <div class="pc-desc">GPT-4o、GPT-4o-mini、o1、o3 等全系列模型。生态最成熟，Tool Calling 支持最好，是开发 Agent 的首选。</div>
+    </div>
+    <div class="provider-card">
+      <div class="pc-header">
+        <div class="pc-logo anthropic">A</div>
+        <div><div class="pc-name">Anthropic</div><span class="pc-pkg">langchain-anthropic</span></div>
+      </div>
+      <div class="pc-desc">Claude 3.5 Sonnet / Opus。长上下文优势明显（200K tokens），代码能力强，安全性设计出色。</div>
+    </div>
+    <div class="provider-card">
+      <div class="pc-header">
+        <div class="pc-logo google">G</div>
+        <div><div class="pc-name">Google</div><span class="pc-pkg">langchain-google-genai</span></div>
+      </div>
+      <div class="pc-desc">Gemini 2.0 Flash / Pro。原生多模态支持（文本+图像+视频+音频），Google 生态深度整合。</div>
+    </div>
+    <div class="provider-card">
+      <div class="pc-header">
+        <div class="pc-logo deepseek">D</div>
+        <div><div class="pc-name">DeepSeek</div><span class="pc-pkg">langchain-openai</span></div>
+      </div>
+      <div class="pc-desc">DeepSeek-V3 / R1。OpenAI 兼容 API，性价比极高，推理能力强劲。使用 OpenAI SDK 即可接入。</div>
+    </div>
+    <div class="provider-card">
+      <div class="pc-header">
+        <div class="pc-logo local">L</div>
+        <div><div class="pc-name">Ollama 本地</div><span class="pc-pkg">langchain-ollama</span></div>
+      </div>
+      <div class="pc-desc">本地运行 Llama 3 / Qwen / Mistral 等开源模型。完全离线运行，数据隐私有保障，适合敏感场景。</div>
+    </div>
+    <div class="provider-card">
+      <div class="pc-header">
+        <div class="pc-logo local">&#8734;</div>
+        <div><div class="pc-name">其他兼容</div><span class="pc-pkg">langchain-openai</span></div>
+      </div>
+      <div class="pc-desc">任何兼容 OpenAI API 格式的服务（如 vLLM、Together AI、Groq 等），均可通过 base_url 参数接入。</div>
+    </div>
+  </div>
+</article>
+
+<!-- S3: ChatOpenAI Params -->
+<article class="section" id="s3">
+  <h2 class="section-title"><span class="num">3</span> ChatOpenAI 参数详解</h2>
+
+  <p><code>ChatOpenAI</code> 是最常用的模型类，以下是其完整参数说明。理解每个参数的含义是写出高质量代码的基础：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:16%">参数名</th><th style="width:12%">类型</th><th style="width:14%">默认值</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>model</code></td>
+          <td><span class="param-type">str</span></td>
+          <td><span class="param-default">"gpt-4o"</span></td>
+          <td>指定使用的模型名称。常用值：<code>gpt-4o</code>、<code>gpt-4o-mini</code>、<code>o1-mini</code>、<code>o3-mini</code>。</td>
+        </tr>
+        <tr>
+          <td><code>temperature</code></td>
+          <td><span class="param-type">float</span></td>
+          <td><span class="param-default">0.7</span></td>
+          <td>控制输出随机性。<strong>0 = 确定性输出</strong>（适合 Agent/代码生成），<strong>1.0 = 高创造性</strong>（适合创意写作）。Agent 场景推荐设为 0。</td>
+        </tr>
+        <tr>
+          <td><code>max_tokens</code></td>
+          <td><span class="param-type">int</span></td>
+          <td><span class="param-default">None</span></td>
+          <td>单次响应的最大 token 数。不设置则由模型自行决定。建议根据任务复杂度合理限制以控制成本。</td>
+        </tr>
+        <tr>
+          <td><code>api_key</code></td>
+          <td><span class="param-type">str</span></td>
+          <td><span class="param-default">None</span></td>
+          <td>API 密钥。优先从 <code>OPENAI_API_KEY</code> 环境变量读取，也可显式传入（不推荐硬编码）。</td>
+        </tr>
+        <tr>
+          <td><code>base_url</code></td>
+          <td><span class="param-type">str</span></td>
+          <td><span class="param-default">None</span></td>
+          <td>自定义 API 端点。用于接入 OpenAI 兼容服务（DeepSeek / vLLM / Groq）。例：<code>"https://api.deepseek.com/v1"</code></td>
+        </tr>
+        <tr>
+          <td><code>streaming</code></td>
+          <td><span class="param-type">bool</span></td>
+          <td><span class="param-default">False</span></td>
+          <td>是否启用流式输出。开启后可逐 token 获取响应，显著改善用户体验（下一集详解）。</td>
+        </tr>
+        <tr>
+          <td><code>timeout</code></td>
+          <td><span class="param-type">float</span></td>
+          <td><span class="param-default">120.0</span></td>
+          <td>请求超时时间（秒）。对于需要长时间推理的模型（如 o1/o3），建议适当增大此值。</td>
+        </tr>
+        <tr>
+          <td><code>max_retries</code></td>
+          <td><span class="param-type">int</span></td>
+          <td><span class="param-default">2</span></td>
+          <td>自动重试次数。当 API 返回限流错误（429）或临时故障时自动重试。</td>
+        </tr>
+        <tr>
+          <td><code>model_kwargs</code></td>
+          <td><span class="param-type">dict</span></td>
+          <td><span class="param-default">{}</span></td>
+          <td>传递给底层 API 的额外参数。如 <code>{"top_p": 0.95, "frequency_penalty": 0}</code> 等模型特有参数。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>temperature 选择指南：</strong><br>
+      &#x2022; <strong>0 ~ 0.3</strong>：Agent 推理、代码生成、数据提取、事实问答 —— 要求精确稳定<br>
+      &#x2022; <strong>0.4 ~ 0.7</strong>：通用对话、翻译、摘要、分析 —— 平衡创造性与准确性<br>
+      &#x2022; <strong>0.8 ~ 1.2</strong>：创意写作、头脑风暴、角色扮演 —— 追求多样性和新颖性
+    </div>
+  </div>
+</article>
+
+<!-- S4: Multi-model Strategy -->
+<article class="section info" id="s4">
+  <h2 class="section-title"><span class="num">4</span> 多模型切换策略</h2>
+
+  <p>在实际项目中，你可能需要在不同场景下使用不同的模型。以下是几种常见的多模型切换模式：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">import</span> os
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain_anthropic <span class="kw">import</span> ChatAnthropic
+
+<span class="cmt"># ========== 方式一：环境变量切换 ==========</span>
+<span class="cmt"># 在 .env 中设置 MODEL_PROVIDER=openai 或 anthropic</span>
+provider = os.getenv(<span class="str">"MODEL_PROVIDER"</span>, <span class="str">"openai"</span>)
+
+<span class="kw">if</span> provider == <span class="str">"openai"</span>:
+    llm = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+<span class="kw">elif</span> provider == <span class="str">"anthropic"</span>:
+    llm = <span class="fn">ChatAnthropic</span>(model=<span class="str">"claude-sonnet-4-20250514"</span>, temperature=<span class="num">0</span>)
+
+
+<span class="cmt"># ========== 方式二：工厂函数模式 ==========</span>
+<span class="kw">def</span> <span class="fn">get_llm</span>(model_name: <span class="str">str</span> = <span class="str">"default"</span>, temperature: <span class="float</span> = <span class="num">0</span>):
+    <span class="str">"""根据模型名称返回对应的 LLM 实例"""</span>
+    models = {
+        <span class="str">"gpt4o"</span>:       {<span class="str">"cls"</span>: ChatOpenAI,   <span class="str">"model"</span>: <span class="str">"gpt-4o"</span>},
+        <span class="str">"gpt4o-mini"</span>:  {<span class="str">"cls"</span>: ChatOpenAI,   <span class="str">"model"</span>: <span class="str">"gpt-4o-mini"</span>},
+        <span class="str">"claude"</span>:      {<span class="str">"cls"</span>: ChatAnthropic,<span class="str">"model"</span>: <span class="str">"claude-sonnet-4-20250514"</span>},
+        <span class="str">"deepseek"</span>:    {<span class="str">"cls"</span>: ChatOpenAI,
+                              <span class="str">"model"</span>: <span class="str">"deepseek-chat"</span>,
+                              <span class="str">"base_url"</span>: <span class="str">"https://api.deepseek.com/v1"</span>},
+    }
+    cfg = models.get(model_name, models[<span class="str">"gpt4o-mini"</span>])
+    <span class="kw">return</span> cfg[<span class="str">"cls"</span>](
+        model=cfg[<span class="str">"model"</span>],
+        temperature=temperature,
+        **{k: v <span class="kw">for</span> k, v <span class="kw">in</span> cfg.items() <span class="kw">if</span> k <span class="kw">not in</span> (<span class="str">"cls"</span>, <span class="str">"model"</span>)}
+    )
+
+
+<span class="cmt"># ========== 方式三：轻量任务用小模型，重任务用大模型 ==========</span>
+light_llm = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)    <span class="cmt">// 快速、便宜</span>
+heavy_llm = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4o"</span>, temperature=<span class="num">0</span>)           <span class="cmt">// 强力、较贵</span>
+
+<span class="cmt"># 使用示例</span>
+simple_response = light_llm.<span class="fn">invoke</span>(<span class="str">"把这句话翻译成英文"</span>)
+complex_analysis = heavy_llm.<span class="fn">invoke</span>(<span class="str">"分析这段代码的性能瓶颈..."</span>)</code></pre>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#9989;</div>
+    <div class="hb-body">
+      <strong>成本优化建议：</strong>日常开发和简单任务用 <code>gpt-4o-mini</code>（价格约为 gpt-4o 的 1/10），正式环境和复杂推理用 <code>gpt-4o</code> 或 <code>claude-sonnet</code>。通过工厂函数统一管理，切换模型只需改一个字符串。
+    </div>
+  </div>
+</article>
+
+<!-- S5: Local Models -->
+<article class="section" id="s5">
+  <h2 class="section-title"><span class="num">5</span> DeepSeek 与 Ollama 本地模型</h2>
+
+  <p>除了云端 API，LangChain 也完美支持本地运行的模型。这对于<strong>数据隐私敏感</strong>、<strong>离线场景</strong>或<strong>成本控制</strong>需求尤为重要：</p>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">DeepSeek（OpenAI 兼容 API）</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+
+<span class="cmt"># DeepSeek 完全兼容 OpenAI SDK，只需修改 base_url 和 model 名称</span>
+deepseek_chat = <span class="fn">ChatOpenAI</span>(
+    model=<span class="str">"deepseek-chat"</span>,         <span class="cmt">// V3 对话模型</span>
+    base_url=<span class="str">"https://api.deepseek.com/v1"</span>,
+    api_key=os.getenv(<span class="str">"DEEPSEEK_API_KEY"</span>),
+    temperature=<span class="num">0</span>,
+)
+
+<span class="cmt"># DeepSeek-R1 推理模型（自带思维链）</span>
+deepseek_reasoner = <span class="fn">ChatOpenAI</span>(
+    model=<span class="str">"deepseek-reasoner"</span>,      <span class="cmt">// R1 推理模型</span>
+    base_url=<span class="str">"https://api.deepseek.com/v1"</span>,
+    api_key=os.getenv(<span class="str">"DEEPSEEK_API_KEY"</span>),
+    temperature=<span class="num">0</span>,
+)
+
+response = deepseek_chat.<span class="fn">invoke</span>(<span class="str">"解释量子纠缠现象"</span>)
+<span class="fn">print</span>(response.content)</code></pre>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:28px 0 14px;color:var(--text-primary);">Ollama 本地部署</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python + Bash</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt"># === Step 1: 安装 Ollama 并下载模型 ===</span>
+<span class="cmt"># 访问 https://ollama.com 下载安装 Ollama</span>
+<span class="cmt"># 终端执行：ollama pull llama3.2</span>
+<span class="cmt"># 终端执行：ollama pull qwen2.5:7b</span>
+
+<span class="cmt"># === Step 2: Python 中使用 ===</span>
+pip install langchain-ollama
+
+<span class="kw">from</span> langchain_ollama <span class="kw">import</span> ChatOllama
+
+<span class="cmt"># 连接本地运行的 Ollama 服务</span>
+local_llm = <span class="fn">ChatOllama</span>(
+    model=<span class="str">"llama3.2"</span>,            <span class="cmt">// 已通过 ollama pull 下载的模型</span>
+    base_url=<span class="str">"http://localhost:11434"</span>,  <span class="cmt">// Ollama 默认端口</span>
+    temperature=<span class="num">0</span>,
+)
+
+<span class="cmt"># 完全离线运行，数据不出本机</span>
+response = local_llm.<span class="fn">invoke</span>(<span class="str">"用中文介绍一下你自己"</span>)
+<span class="fn">print</span>(response.content)</code></pre>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>Ollama 常用命令速查：</strong><br>
+      <code>ollama list</code> &mdash; 查看已安装的模型 &nbsp;|&nbsp;
+      <code>ollama pull &lt;model&gt;</code> &mdash; 下载新模型<br>
+      <code>ollama run &lt;model&gt;</code> &mdash; 交互式对话 &nbsp;|&nbsp;
+      <code>ollama ps</code> &mdash; 查看正在运行的模型
+    </div>
+  </div>
+</article>
+
+<!-- S6: API Key Security -->
+<article class="section danger" id="s6">
+  <h2 class="section-title"><span class="num">6</span> API Key 安全管理</h2>
+
+  <p>API Key 安全是生产环境的红线问题。一旦泄露，可能导致严重的财务损失和安全风险。请务必遵守以下规范：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">.env 文件 + python-dotenv</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt"># === .env 文件内容（放在项目根目录）===</span>
+<span class="cmt"># 注意：.env 文件必须加入 .gitignore！绝对不能提交到 Git！</span>
+
+OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxxxxx
+ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxxxxxx
+DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python 加载方式</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
+<span class="kw">import</span> os
+
+<span class="cmt"># 自动从 .env 文件加载所有环境变量</span>
+<span class="fn">load_dotenv</span>()  <span class="cmt">// 在程序最开始调用一次即可</span>
+
+<span class="cmt"># 之后所有使用 os.getenv() 或直接实例化的地方都会自动读取</span>
+<span class="cmt"># LangChain 的 ChatOpenAI 会自动读取 OPENAI_API_KEY 环境变量</span>
+llm = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4o-mini"</span>)  <span class="cmt">// 无需手动传入 api_key！</span>
+
+
+<span class="cmt"># === .gitignore 必须包含以下内容 ===</span>
+<span class="cmt"># .env</span>
+<span class="cmt"># .env.local</span>
+<span class="cmt"># *.key</span>
+<span class="cmt"># credentials.json</span></code></pre>
+  </div>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#9888;&#65039;</div>
+    <div class="hb-body">
+      <strong>安全检查清单：</strong><br>
+      &#x2022; <code>.env</code> 文件已添加到 <code>.gitignore</code>？<br>
+      &#x2022; 代码中没有任何硬编码的 API Key？<br>
+      &#x2022; 日志中不会打印出 API Key？<br>
+      &#x2022; 生产环境使用了密钥管理服务（如 AWS Secrets Manager / Vault）而非 .env 文件？
+    </div>
+  </div>
+</article>
+
+<!-- S7: Streaming -->
+<article class="section success" id="s7">
+  <h2 class="section-title"><span class="num">7</span> 流式输出配置</h2>
+
+  <p>流式输出（Streaming）让用户能够实时看到模型的生成过程，而不是等待整个响应完成。这对用户体验至关重要——特别是生成长文本时：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">import</span> sys
+
+<span class="cmt"># 创建启用流式的 LLM 实例</span>
+llm = <span class="fn">ChatOpenAI</span>(
+    model=<span class="str">"gpt-4o-mini"</span>,
+    temperature=<span class="num">0.7</span>,
+    streaming=<span class="kw">True</span>,    <span class="cmt">// 开启流式输出</span>
+)
+
+
+<span class="cmt"># ========== 方式一：使用 stream() 方法（推荐）==========</span>
+<span class="fn">print</span>(<span class="str">"AI: "</span>, end=<span class="str">""</span>, flush=<span class="kw">True</span>)
+
+<span class="kw">for</span> chunk <span class="kw">in</span> llm.<span class="fn">stream</span>(<span class="str">"用生动的语言描述一下春天的公园"</span>):
+    <span class="cmt"># 每个 chunk 包含一个或多个 token</span>
+    <span class="fn">print</span>(chunk.content, end=<span class="str">""</span>, flush=<span class="kw">True</span>)
+
+<span class="fn">print</span>()  <span class="cmt">// 换行</span>
+
+
+<span class="cmt"># ========== 方式二：使用 Callback 实现流式 ==========</span>
+<span class="kw">from</span> langchain_core.callbacks <span class="kw">import</span> StreamingStdOutCallbackHandler
+
+llm_with_callback = <span class="fn">ChatOpenAI</span>(
+    model=<span class="str">"gpt-4o-mini"</span>,
+    streaming=<span class="kw">True</span>,
+    callbacks=[<span class="fn">StreamingStdOutCallbackHandler</span>()],  <span class="cmt">// 自动打印流式输出</span>
+)
+
+response = llm_with_callback.<span class="fn">invoke</span>(<span class="str">"写一首关于编程的诗"</span>)</code></pre>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#127881;</div>
+    <div class="hb-body">
+      <strong>到这里，你已经掌握了模型初始化的全部关键知识！</strong> 从安装依赖、选择模型、配置参数，到多模型切换、本地部署、安全管理、流式输出——这些都是构建实际应用的基础设施。下一集我们将深入学习模型的<strong>三种调用方式</strong>以及更多高级特性，敬请期待～
+    </div>
+  </div>
+</article>
+
+</main>
+
+<!-- Footer Nav -->
+<nav class="footer-nav">
+  <a href="14-快速入门和Agent原理.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 14 集 - 快速入门和Agent原理</div>
+    </div>
+  </a>
+  <a href="16-调用模型.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 16 集 - 调用模型</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="footer-ref">
+  参考来源：<a href="https://www.langchain.com.cn/docs/integrations/chat/" target="_blank">LangChain Chat Models 文档</a> &middot;
+  视频来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">B站 黑马程序员 BV178w1z7EHQ</a>
+</div>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+  <button class="tweaks-toggle" onclick="toggleTweaks()" title="调节面板">&#9881;</button>
+  <div class="tweaks-body" id="tweaksBody">
+    <div class="tweaks-title">
+      Tweaks
+      <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">字体大小</label>
+      <input type="range" class="tweaks-slider" min="0.85" max="1.25" step="0.05" value="1" oninput="setFontSize(this.value)">
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">行距</label>
+      <input type="range" class="tweaks-slider" min="0.9" max="1.4" step="0.05" value="1" oninput="setLineHeight(this.value)">
+    </div>
+  </div>
+</div>
+
+<script>
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => { hdr.classList.toggle('scrolled', window.scrollY > 20); });
+
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) setTimeout(() => entry.target.classList.add('visible'), i * 80);
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = '已复制!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function toggleTweaks() { document.getElementById('tweaksBody').classList.toggle('open'); }
+function setFontSize(val) { document.documentElement.style.setProperty('--font-scale', val); }
+function setLineHeight(val) { document.documentElement.style.setProperty('--line-height-scale', val); }
+</script>
+</body>
+</html>

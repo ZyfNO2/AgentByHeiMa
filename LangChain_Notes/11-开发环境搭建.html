@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 11 集 - 开发环境搭建 | LangChain 学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f8f9fc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f8;
+    --bg-code: #1a1d26;
+    --text-primary: #1a1d26;
+    --text-secondary: #5a6072;
+    --text-muted: #949aad;
+    --primary: oklch(0.55 0.22 250);
+    --primary-light: oklch(0.75 0.15 250);
+    --accent: oklch(0.70 0.18 85);
+    --success: oklch(0.55 0.16 155);
+    --danger: oklch(0.55 0.20 25);
+    --info: oklch(0.55 0.15 230);
+    --border: #e2e4ea;
+    --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+    --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 6px rgba(26,29,38,0.04);
+    --shadow-lg: 0 8px 30px rgba(26,29,38,0.10), 0 4px 12px rgba(26,29,38,0.06);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --font-scale: 1;
+    --line-height-scale: 1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page); color: var(--text-primary);
+    line-height: 1.7; font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    transition: font-size .3s ease, line-height .3s ease;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(248,249,252,0.78);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--border); transition: box-shadow .3s ease;
+  }
+  .header.scrolled { box-shadow: var(--shadow-sm); }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; padding: 0 24px;
+  }
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px;
+    color: var(--primary); text-decoration: none; letter-spacing: -0.02em;
+  }
+  .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .header-nav { display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 720px; }
+  .header-nav a {
+    text-decoration: none; color: var(--text-secondary);
+    font-size: 11.5px; font-weight: 500; padding: 5px 9px;
+    border-radius: 20px; transition: all .2s; white-space: nowrap;
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .header-nav a:hover, .header-nav a.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+
+  /* ===== Hero ===== */
+  .hero { padding: 120px 24px 56px; max-width: 1200px; margin: 0 auto; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--bg-subtle));
+    border: 1px solid oklch(0.85 0.05 250);
+    padding: 6px 16px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 24px;
+  }
+  .hero-badge::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success); animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 16px;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero-desc { font-size: 17px; color: var(--text-secondary); max-width: 720px; margin: 0 auto 28px; line-height: 1.65; }
+  .hero-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+  .meta-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: var(--radius-xs);
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .meta-tag svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+  /* ===== Content Sections ===== */
+  .content { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+  .section {
+    background: var(--bg-surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 36px 40px; margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .section::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary); border-radius: 4px 0 0 4px;
+  }
+  .section.accent::before { background: var(--accent); }
+  .section.success::before { background: var(--success); }
+  .section.info::before { background: var(--info); }
+  .section.danger::before { background: var(--danger); }
+  .section.visible { opacity: 1; transform: translateY(0); }
+  .section:hover { box-shadow: var(--shadow-md); }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--primary); color: #fff;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .section p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* ===== Highlight Box ===== */
+  .highlight-box {
+    display: flex; gap: 16px;
+    background: linear-gradient(135deg, oklch(0.97 0.01 250), var(--bg-surface));
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 20px 22px; margin: 20px 0;
+  }
+  .highlight-box.accent { background: linear-gradient(135deg, oklch(0.98 0.015 85), var(--bg-surface)); border-left-color: var(--accent); }
+  .highlight-box.success { background: linear-gradient(135deg, oklch(0.97 0.01 155), var(--bg-surface)); border-left-color: var(--success); }
+  .highlight-box.danger { background: linear-gradient(135deg, oklch(0.98 0.015 25), var(--bg-surface)); border-left-color: var(--danger); }
+  .highlight-box.info { background: linear-gradient(135deg, oklch(0.97 0.01 230), var(--bg-surface)); border-left-color: var(--info); }
+  .hb-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-top: 2px; }
+  .hb-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.7; }
+  .hb-body strong { color: var(--text-primary); }
+  .hb-body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-subtle); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: var(--primary);
+  }
+
+  /* ===== Tables ===== */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--primary); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 13px; text-align: left;
+    padding: 12px 16px; color: #fff;
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  tbody td {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text-secondary); vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--bg-subtle); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.97 0.005 250); }
+  table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; background: var(--bg-subtle);
+    padding: 1px 6px; border-radius: 4px; color: var(--primary);
+  }
+
+  /* ===== Code Blocks ===== */
+  .code-block {
+    position: relative; margin: 20px 0; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border); background: var(--bg-code);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: oklch(0.75 0.08 250);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .code-copy-btn {
+    cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+    color: oklch(0.7 0.03 250); font-family: 'Outfit', sans-serif;
+    font-size: 12px; padding: 4px 12px; border-radius: 6px; transition: all .2s;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); }
+  .code-copy-btn.copied { color: var(--success); border-color: oklch(0.55 0.16 155); }
+  pre {
+    margin: 0; padding: 20px 20px 20px 0;
+    overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; line-height: 1.7; color: #e0e2e8; tab-size: 2;
+  }
+  pre .kw { color: #c792ea; }
+  pre .fn { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .cmt { color: rgba(255,255,255,0.35); font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .op { color: #89ddff; }
+
+  /* ===== Tool Comparison Cards ===== */
+  .tool-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0;
+  }
+  @media (max-width: 800px) { .tool-grid { grid-template-columns: 1fr; } }
+  .tool-card {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 22px 20px;
+    transition: all .25s ease; position: relative;
+  }
+  .tool-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--primary-light); }
+  .tool-card.recommended { border-color: var(--success); }
+  .tool-card.recommended::after {
+    content: 'RECOMMENDED'; position: absolute; top: -1px; right: 16px;
+    background: var(--success); color: #fff; font-size: 9px; font-weight: 700;
+    padding: 2px 8px; border-radius: 0 0 6px 6px; letter-spacing: 0.05em;
+  }
+  .tool-icon { font-size: 28px; margin-bottom: 10px; }
+  .tool-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 17px; font-weight: 700; color: var(--text-primary);
+  }
+  .tool-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .tool-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.65; margin-top: 12px; }
+  .tool-pros { margin-top: 12px; }
+  .tool-pros li { font-size: 12.5px; color: var(--text-secondary); padding: 3px 0 3px 16px; position: relative; }
+  .tool-pros li::before { content: '\2713'; position: absolute; left: 0; color: var(--success); font-weight: 700; font-size: 11px; }
+
+  /* ===== IDE Cards ===== */
+  .ide-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin: 20px 0; }
+  .ide-card {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px; transition: all .25s ease;
+  }
+  .ide-card:hover { background: var(--bg-surface); box-shadow: var(--shadow-sm); border-color: var(--primary-light); }
+  .ide-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .ide-logo {
+    width: 38px; height: 38px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .ide-logo.vscode { background: linear-gradient(135deg, #007acc, #0066b8); }
+  .ide-logo.pycharm { background: linear-gradient(135deg, #21d789, #077b3e); }
+  .ide-logo.cursor { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+  .ide-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .ide-tag { font-size: 11px; color: var(--text-muted); }
+  .ide-features { list-style: none; padding: 0; }
+  .ide-features li { font-size: 12.5px; color: var(--text-secondary); padding: 3px 0; }
+  .ide-price { font-size: 12px; font-weight: 600; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+
+  /* ===== File Tree ===== */
+  .file-tree {
+    background: var(--bg-code); border-radius: var(--radius-sm);
+    padding: 20px 24px; margin: 20px 0; font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; line-height: 1.9;
+  }
+  .ft-dir { color: #82aaff; }
+  .ft-file { color: #c3e88d; }
+  .ft-ignore { color: rgba(255,255,255,0.30); font-style: italic; }
+  .ft-comment { color: rgba(255,255,255,0.30); font-style: italic; }
+  .ft-indent { color: rgba(255,255,255,0.18); }
+
+  /* ===== Step Flow ===== */
+  .step-flow { display: flex; flex-direction: column; gap: 0; margin: 20px 0; }
+  .step-item {
+    display: flex; align-items: stretch; gap: 0;
+  }
+  .step-num-col {
+    display: flex; flex-direction: column; align-items: center;
+    width: 40px; flex-shrink: 0;
+  }
+  .step-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; flex-shrink: 0;
+    z-index: 1;
+  }
+  .step-line { flex: 1; width: 2px; background: var(--border); min-height: 20px; }
+  .step-item:last-child .step-line { display: none; }
+  .step-content {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 16px 20px; flex: 1; margin-bottom: 16px;
+  }
+  .step-title { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); margin-bottom: 6px; }
+  .step-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+  /* ===== Footer Nav ===== */
+  .footer-nav {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 60px;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link-card {
+    flex: 1; display: flex; align-items: center; gap: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit; transition: all .25s ease;
+  }
+  .nav-link-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .nav-link-card.disabled { opacity: .45; pointer-events: none; }
+  .nl-dir { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .nl-label { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .nl-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; }
+
+  .footer-ref {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 40px;
+    text-align: center; font-size: 12.5px; color: var(--text-muted);
+  }
+  .footer-ref a { color: var(--primary); text-decoration: none; }
+
+  /* ===== Tweaks Panel ===== */
+  .tweaks-panel { position: fixed; right: 20px; bottom: 20px; z-index: 999; }
+  .tweaks-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-md); transition: all .25s ease;
+  }
+  .tweaks-toggle:hover { transform: scale(1.08); box-shadow: var(--shadow-lg); }
+  .tweaks-body {
+    position: absolute; bottom: 54px; right: 0;
+    width: 280px; background: var(--bg-surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 20px; display: none;
+    animation: tweaksIn .2s ease;
+  }
+  .tweaks-body.open { display: block; }
+  @keyframes tweaksIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .tweaks-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tweaks-close { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 2px; }
+  .tweaks-group { margin-bottom: 14px; }
+  .tweaks-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tweaks-slider {
+    width: 100%; height: 4px; border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--bg-subtle); outline: none;
+  }
+  .tweaks-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--primary); cursor: pointer;
+    border: 2px solid #fff; box-shadow: var(--shadow-sm);
+  }
+
+  @media (max-width: 768px) {
+    .section { padding: 24px 20px; }
+    .hero { padding: 100px 16px 40px; }
+    .header-inner { padding: 0 16px; }
+    .content { padding: 0 16px 60px; }
+    .table-wrap { margin: 16px -20px; border-radius: 0; border-left: none; border-right: none; }
+    .header-nav { display: none; }
+    .tool-grid { grid-template-columns: 1fr; }
+    .ide-grid { grid-template-columns: 1fr; }
+  }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="hdr">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">LC Notes <span>LangChain</span></a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 Python 版本要求</a>
+      <a href="#s2" class="nav-anchor">&sect;2 虚拟环境管理</a>
+      <a href="#s3" class="nav-anchor">&sect;3 项目初始化步骤</a>
+      <a href="#s4" class="nav-anchor">&sect;4 IDE 推荐</a>
+      <a href="#s5" class="nav-anchor">&sect;5 .env 文件安全规范</a>
+      <a href="#s6" class="nav-anchor">&sect;6 基础项目结构</a>
+      <a href="#s7" class="nav-anchor">&sect;7 第一个 LangChai...</a>
+
+      <a href="#">P00</a><a href="#">P01</a><a href="#">P02</a><a href="#">P03</a><a href="#">P04</a><a href="#">P05</a><a href="#">P06</a><a href="#">P07</a>
+      <a href="08-Ollama本地部署.html">P08</a><a href="09-大模型API接口规范.html">P09</a><a href="10-会话记忆.html">P10</a>
+      <a href="11-开发环境搭建.html" class="active">P11</a><a href="#">P12</a>
+      <a href="13-认识LangChain.html">P13</a><a href="14-快速入门和Agent原理.html">P14</a><a href="15-初始化模型.html">P15</a><a href="16-调用模型.html">P16</a>
+      <a href="17-消息Message.html">P17</a><a href="18-提示词工程.html">P18</a><a href="19-工具Tools.html">P19</a><a href="20-预定义工具Tavily.html">P20</a>
+      <a href="21-短期记忆.html">P21</a><a href="22-短期记忆-持久存储.html">P22</a><a href="23-记忆管理策略.html">P23</a><a href="24-需求分析与功能验证.html">P24</a>
+      <a href="25-对接LangSmith.html">P25</a><a href="26-搭建服务端并对接OSS.html">P26</a><a href="27-AI私厨完成Agent开发.html">P27</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">第 11 集 &middot; 环境准备</div>
+  <h1><span class="highlight">开发环境</span>搭建</h1>
+  <p class="hero-desc">从零搭建 LangChain 开发环境：Python 版本选择、虚拟环境管理（venv / conda / uv）、项目结构规范化、IDE 配置、.env 安全管理，以及你的第一个 Hello World 程序。</p>
+  <div class="hero-meta">
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 时长 12:53</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 1.11 开发环境</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg> Python 工程化</span>
+  </div>
+</section>
+
+<!-- Content -->
+<main class="content">
+
+<!-- S1: Python Version -->
+<article class="section" id="s1">
+  <h2 class="section-title"><span class="num">1</span> Python 版本要求</h2>
+
+  <p>选择正确的 Python 版本是项目成功的第一步。不同版本的兼容性差异会直接影响后续开发体验：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th style="width:20%">Python 版本</th><th style="width:18%">状态</th><th style="width:22%">LangChain 兼容性</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Python 3.10</strong></td>
+          <td><span style="color:var(--success);font-weight:600;">推荐</span></td>
+          <td><span style="color:var(--success);">&#10003; 完美支持</span></td>
+          <td>最稳定的选择，所有依赖库均已验证，社区使用量最大</td>
+        </tr>
+        <tr>
+          <td><strong>Python 3.11</strong></td>
+          <td><span style="color:var(--success);font-weight:600;">推荐</span></td>
+          <td><span style="color:var(--success);">&#10003; 完美支持</span></td>
+          <td>性能提升明显（~10-25%），异常信息更清晰，同样稳定</td>
+        </tr>
+        <tr>
+          <td><strong>Python 3.12</strong></td>
+          <td><span style="color:var(--primary);font-weight:600;">可用</span></td>
+          <td><span style="color:var(--success);">&#10003; 支持</span></td>
+          <td>最新特性，大部分库已适配，适合追求新特性的开发者</td>
+        </tr>
+        <tr>
+          <td><strong>Python 3.13+</strong></td>
+          <td><span style="color:var(--danger);font-weight:600;">暂不推荐</span></td>
+          <td><span style="color:var(--danger);">&#10007; 部分库不兼容</span></td>
+          <td>部分第三方库（如 numpy 的某些版本）可能尚未完全适配</td>
+        </tr>
+        <tr>
+          <td><strong>Python 3.8/3.9</strong></td>
+          <td><span style="color:var(--accent);font-weight:600;">可运行但即将淘汰</span></td>
+          <td><span style="color:var(--accent);">&#9888; 基本支持</span></td>
+          <td>能跑但缺少新语法特性，部分最新版依赖不再支持</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>本教程统一使用 Python 3.11</strong>作为演示版本。如果你还没有安装，推荐从 <a href="https://www.python.org/downloads/" style="color:var(--primary);text-decoration:none;" target="_blank">python.org</a> 下载安装，安装时务必勾选 <code>"Add Python to PATH"</code> 选项。
+    </div>
+  </div>
+</article>
+
+<!-- S2: Virtual Environment -->
+<article class="section accent" id="s2">
+  <h2 class="section-title"><span class="num">2</span> 虚拟环境管理</h2>
+
+  <p><strong>为什么必须用虚拟环境？</strong>因为不同的项目需要不同版本的依赖。如果不隔离，全局的 pip install 会导致包冲突噩梦 —— 项目 A 需要 requests==2.28，项目 B 需要 requests==2.31，直接炸裂。</p>
+
+  <div class="tool-grid">
+    <!-- venv -->
+    <div class="tool-card">
+      <div class="tool-icon">&#128290;</div>
+      <div class="tool-name">venv</div>
+      <div class="tool-sub">Python 内置 &middot; 零依赖</div>
+      <div class="tool-desc">Python 自带的虚拟环境工具，无需额外安装任何东西。轻量、简单、开箱即用。</div>
+      <ul class="tool-pros">
+        <li>Python 内置，无需安装</li>
+        <li>跨平台一致的行为</li>
+        <li>足够应对大多数场景</li>
+      </ul>
+    </div>
+    <!-- conda -->
+    <div class="tool-card recommended">
+      <div class="tool-icon">&#127775;</div>
+      <div class="tool-name">Conda / Miniconda</div>
+      <div class="tool-sub">AI 开发首选 &middot; 强烈推荐</div>
+      <div class="tool-desc">Anaconda 生态的核心工具。不仅能管理 Python 包，还能管理非 Python 依赖（CUDA、cuDNN 等），是 AI/ML 开发的黄金标准。</div>
+      <ul class="tool-pros">
+        <li>自动处理 C/C++ 依赖</li>
+        <li>PyTorch/TensorFlow 一键安装</li>
+        <li>支持多语言环境 (R, Julia)</li>
+        <li>环境导出/导入方便迁移</li>
+      </ul>
+    </div>
+    <!-- uv -->
+    <div class="tool-card">
+      <div class="tool-icon">&#9889;</div>
+      <div class="tool-name">uv</div>
+      <div class="tool-sub">新一代 &middot; 极速包管理</div>
+      <div class="tool-desc">由 Astral 团队（Ruff 作者）开发的新一代 Python 包管理器。速度比 pip 快 10~100 倍，正在快速获得社区认可。</div>
+      <ul class="tool-pros">
+        <li>Rust 编写，极速安装</li>
+        <li>内置虚拟环境管理</li>
+        <li>pip + venv + poetry 替代品</li>
+        <li>锁文件保证可复现性</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Bash - 三种方式对比</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt"># ========== 方式一：venv（Python 内置）==========</span>
+<span class="cmt"># 创建虚拟环境（只需执行一次）</span>
+python -m venv .venv
+
+<span class="cmt"># 激活虚拟环境</span>
+<span class="cmt"># Windows:</span>
+.venv\Scripts\activate
+<span class="cmt"># Linux/Mac:</span>
+<span class="cmt"># source .venv/bin/activate</span>
+
+<span class="cmt"># 退出虚拟环境</span>
+deactivate
+
+
+<span class="cmt"># ========== 方式二：conda（推荐 AI 开发）==========</span>
+<span class="cmt"># 创建新环境并指定 Python 版本</span>
+conda create -n langchain python=3.11 -y
+
+<span class="cmt"># 激活环境</span>
+conda activate langchain
+
+<span class="cmt"># 查看所有环境</span>
+conda env list
+
+
+<span class="cmt"># ========== 方式三：uv（新一代超快方案）==========</span>
+<span class="cmt"># 安装 uv（如果还没装）</span>
+<span class="cmt"># curl -LsSf https://astral.sh/uv/install.sh | sh   # Linux/Mac</span>
+<span class="cmt"># powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"  # Windows</span>
+
+<span class="cmt"># 创建虚拟环境（自动激活）</span>
+uv venv
+source .venv/bin/activate  <span class="cmt">// Linux/Mac</span>
+<span class="cmt">// .venv\Scripts\activate       // Windows</span>
+
+<span class="cmt">// uv 会自动使用 uv.lock 锁文件，保证依赖一致性</span></code></pre>
+  </div>
+</article>
+
+<!-- S3: Project Init -->
+<article class="section success" id="s3">
+  <h2 class="section-title"><span class="num">3</span> 项目初始化步骤</h2>
+
+  <p>以下是从零开始创建一个 LangChain 项目的完整流程，按顺序执行即可：</p>
+
+  <div class="step-flow">
+    <!-- Step 1 -->
+    <div class="step-item">
+      <div class="step-num-col">
+        <div class="step-circle">1</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-content">
+        <div class="step-title">创建项目目录</div>
+        <div class="step-desc">在合适的位置创建项目文件夹，建议使用有意义的名称：</div>
+        <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--bg-code);padding:8px 12px;border-radius:6px;color:#e0e2e8;">
+          mkdir langchain-project && cd langchain-project
+        </div>
+      </div>
+    </div>
+    <!-- Step 2 -->
+    <div class="step-item">
+      <div class="step-num-col">
+        <div class="step-circle">2</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-content">
+        <div class="step-title">创建虚拟环境</div>
+        <div class="step-desc">在项目目录下创建独立的虚拟环境，隔离依赖：</div>
+        <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--bg-code);padding:8px 12px;border-radius:6px;color:#e0e2e8;">
+          python -m venv .venv<br>
+          .venv\Scripts\activate <span style="color:rgba(255,255,255,0.35);"># Windows</span>
+        </div>
+      </div>
+    </div>
+    <!-- Step 3 -->
+    <div class="step-item">
+      <div class="step-num-col">
+        <div class="step-circle">3</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-content">
+        <div class="step-title">安装核心依赖</div>
+        <div class="step-desc">安装 LangChain 核心框架和 OpenAI 集成包：</div>
+        <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--bg-code);padding:8px 12px;border-radius:6px;color:#e0e2e8;">
+          pip install langchain langchain-openai python-dotenv
+        </div>
+      </div>
+    </div>
+    <!-- Step 4 -->
+    <div class="step-item">
+      <div class="step-num-col">
+        <div class="step-circle">4</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-content">
+        <div class="step-title">创建 .env 文件</div>
+        <div class="step-desc">将 API Key 存入环境变量文件（绝不能硬编码到代码中！）：</div>
+        <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--bg-code);padding:8px 12px;border-radius:6px;color:#e0e2e8;">
+          echo OPENAI_API_KEY=sk-xxx > .env<br>
+          echo DEEPSEEK_API_KEY=sk-xxx >> .env
+        </div>
+      </div>
+    </div>
+    <!-- Step 5 -->
+    <div class="step-item">
+      <div class="step-num-col">
+        <div class="step-circle">5</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-content">
+        <div class="step-title">创建入口文件 main.py</div>
+        <div class="step-desc">编写第一个 LangChain Hello World 程序（详见下一节）</div>
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- S4: IDE Recommendation -->
+<article class="section info" id="s4">
+  <h2 class="section-title"><span class="num">4</span> IDE 推荐</h2>
+
+  <p>好的开发工具能显著提升编码效率。以下是针对 LangChain/Python AI 开发场景推荐的编辑器与 IDE：</p>
+
+  <div class="ide-grid">
+    <div class="ide-card">
+      <div class="ide-header">
+        <div class="ide-logo vscode">&lt;/&gt;</div>
+        <div>
+          <div class="ide-name">VS Code</div>
+          <div class="ide-tag">免费首选</div>
+        </div>
+      </div>
+      <ul class="ide-features">
+        <li>&#10003; 轻量级但功能强大</li>
+        <li>&#10003; 丰富的 Python 扩展生态</li>
+        <li>&#10003; 内置终端 + Jupyter 支持</li>
+        <li>&#10003; Git 集成完善</li>
+      </ul>
+      <div class="ide-price" style="color:var(--success);">免费开源</div>
+    </div>
+    <div class="ide-card">
+      <div class="ide-header">
+        <div class="ide-logo pycharm">&#9670;</div>
+        <div>
+          <div class="ide-name">PyCharm Professional</div>
+          <div class="ide-tag">重量级 IDE</div>
+        </div>
+      </div>
+      <ul class="ide-features">
+        <li>&#10003; 最强 Python IDE</li>
+        <li>&#10003; 数据库/ Docker 集成</li>
+        <li>&#10003; 科学模式（DataFrame 查看）</li>
+        <li>&#10003; 远程开发支持</li>
+      </ul>
+      <div class="ide-price" style="color:var(--accent);">免费（学生）/ $89/月</div>
+    </div>
+    <div class="ide-card">
+      <div class="ide-header">
+        <div class="ide-logo cursor">&#x2728;</div>
+        <div>
+          <div class="ide-name">Cursor</div>
+          <div class="ide-tag">AI 增强编辑器</div>
+        </div>
+      </div>
+      <ul class="ide-features">
+        <li>&#10003; 基于 VS Code Fork</li>
+        <li>&#10003; 内置 AI 代码补全</li>
+        <li>&#10003; Chat 功能可直接问代码</li>
+        <li>&#10003; 对 AI 开发场景特别优化</li>
+      </ul>
+      <div class="ide-price" style="color:var(--info);">免费版可用 / Pro $20/月</div>
+    </div>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>VS Code 必装插件清单：</strong><br>
+      &#x2022; <strong>Python</strong> (Microsoft) —— 基础 Python 支持，含调试、IntelliSense<br>
+      &#x2022; <strong>Pylance</strong> (Microsoft) —— 高性能语言服务器，类型检查+自动补全<br>
+      &#x2022; <strong>Environment Variables (.env)</strong> —— .env 文件高亮与补全<br>
+      &#x2022; <strong>Error Lens</strong> —— 行内错误提示，不用等鼠标悬停
+    </div>
+  </div>
+</article>
+
+<!-- S5: .env Security -->
+<article class="section danger" id="s5">
+  <h2 class="section-title"><span class="num">5</span> .env 文件安全规范</h2>
+
+  <p><code>.env</code> 文件用于存储敏感配置信息（API Key、数据库密码等）。它的安全管理是生产环境的红线问题：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">.env 文件示例</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt"># ============================================</span>
+<span class="cmt"># LangChain 项目环境变量</span>
+<span class="cmt"># 注意：此文件包含敏感信息，绝对不能提交到 Git！</span>
+<span class="cmt"># ============================================</span>
+
+<span class="cmt"># === OpenAI API ===</span>
+OPENAI_API_KEY=sk-proj-your-api-key-here
+
+<span class="cmt"># === DeepSeek API（可选）===</span>
+DEEPSEEK_API_KEY=sk-your-deepseek-key-here
+
+<span class="cmt"># === Anthropic API（可选）===</span>
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
+
+<span class="cmt"># === Ollama 本地服务地址（可选）===</span>
+OLLAMA_BASE_URL=http://localhost:11434</code></pre>
+  </div>
+
+  <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin:24px 0 14px;color:var(--text-primary);">安全铁律</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th style="width:30%">规则</th><th style="width:15%">优先级</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>.gitignore</code> 必须包含 <code>.env</code></td>
+          <td><span style="color:var(--danger);font-weight:700;">CRITICAL</span></td>
+          <td>这是第一道防线。一旦 .env 被 commit 并 push 到公开仓库，Key 就等于泄露了</td>
+        </tr>
+        <tr>
+          <td>提供 <code>.env.example</code> 模板</td>
+          <td><span style="color:var(--success);font-weight:600;">重要</span></td>
+          <td>.env.example 只包含键名不含值，提交到仓库供其他开发者参考格式</td>
+        </tr>
+        <tr>
+          <td>代码中禁止硬编码 Key</td>
+          <td><span style="color:var(--danger);font-weight:700;">CRITICAL</span></td>
+          <td>永远不要写 <code>api_key = "sk-xxx"</code> 在源码中，用 <code>os.getenv()</code> 或 <code>load_dotenv()</code></td>
+        </tr>
+        <tr>
+          <td>定期轮换 API Key</td>
+          <td><span style="color:var(--accent);font-weight:600;">建议</span></td>
+          <td>怀疑泄露时立即在厂商后台撤销旧 Key 并生成新的</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#9888;&#65039;</div>
+    <div class="hb-body">
+      <strong>.gitignore 必须包含：</strong><br>
+      <code>.env</code> &nbsp; <code>.env.local</code> &nbsp; <code>.env.*.local</code> &nbsp; <code>*.key</code> &nbsp; <code>credentials.json</code> &nbsp; <code>secrets.yaml</code>
+    </div>
+  </div>
+</article>
+
+<!-- S6: Project Structure -->
+<article class="section" id="s6">
+  <h2 class="section-title"><span class="num">6</span> 基础项目结构</h2>
+
+  <p>一个规范的 LangChain 项目应该遵循清晰的目录结构。以下是推荐的基础模板：</p>
+
+  <div class="file-tree">
+<span class="ft-comment"># 项目根目录</span>
+<span class="ft-dir">langchain-project/</span>
+<span class="ft-indent">|</span>
+<span class="ft-indent">+- <span class="ft-file">.env</span>                    <span class="ft-comment"># 环境变量（不入库！）</span>
+<span class="ft-indent">+- <span class="ft-file">.env.example</span>            <span class="ft-comment"># 环境变量模板（入库）</span>
+<span class="ft-indent">+- <span class="ft-file">.gitignore</span>              <span class="ft-comment"># Git 忽略规则</span>
+<span class="ft-indent">+- <span class="ft-file">requirements.txt</span>        <span class="ft-comment"># Python 依赖列表</span>
+<span class="ft-indent">+- <span class="ft-file">main.py</span>                 <span class="ft-comment"># 入口文件</span>
+<span class="ft-indent">+- <span class="ft-dir">agents/</span>                  <span class="ft-comment"># Agent 定义</span>
+<span class="ft-indent">|   +- <span class="ft-file">__init__.py</span>
+<span class="ft-indent">|   +- <span class="ft-file">research_agent.py</span>
+<span class="ft-indent">+- <span class="ft-dir">tools/</span>                   <span class="ft-comment"># 自定义工具</span>
+<span class="ft-indent">|   +- <span class="ft-file">__init__.py</span>
+<span class="ft-indent">|   +- <span class="ft-file">search_tool.py</span>
+<span class="ft-indent">+- <span class="ft-dir">prompts/</span>                 <span class="ft-comment"># 提示词模板</span>
+<span class="ft-indent">|   +- <span class="ft-file">system_prompt.txt</span>
+<span class="ft-indent">+- <span class="ft-dir">utils/</span>                    <span class="ft-comment"># 工具函数</span>
+<span class="ft-indent">|   +- <span class="ft-file">__init__.py</span>
+<span class="ft-indent">|   +- <span class="ft-file">helpers.py</span>
+<span class="ft-indent">+- <span class="ft-dir">tests/</span>                    <span class="ft-comment"># 测试文件</span>
+<span class="ft-indent">|   +- <span class="ft-file">test_main.py</span>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">requirements.txt 示例</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt"># ============================================</span>
+<span class="cmt"># LangChain 核心依赖</span>
+<span class="cmt"># ============================================</span>
+langchain>=0.3,<0.4
+langchain-core>=0.3,<0.4
+langchain-openai>=0.3,<0.4
+python-dotenv>=1.0,<2.0
+
+<span class="cmt"># 可选：Anthropic 支持</span>
+<span class="cmt"># langchain-anthropic>=0.3,<0.4</span>
+
+<span class="cmt"># 可选：Ollama 本地模型</span>
+<span class="cmt"># langchain-ollama>=0.2,<0.4</span>
+
+<span class="cmt"># 可选：搜索工具</span>
+<span class="cmt"># tavily-python>=0.4</span></code></pre>
+  </div>
+</article>
+
+<!-- S7: Hello World -->
+<article class="section" id="s7">
+  <h2 class="section-title"><span class="num">7</span> 第一个 LangChain 程序</h2>
+
+  <p>一切准备就绪后，让我们编写第一个 LangChain Hello World 程序来验证环境是否正确搭建：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python - main.py</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt">"""
+LangChain Hello World
+===================
+第一个 LangChain 程序 —— 验证开发环境是否正确搭建。
+"""</span>
+
+<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+
+<span class="cmt"># 加载 .env 文件中的环境变量</span>
+<span class="fn">load_dotenv</span>()
+
+<span class="cmt"># 创建 LLM 实例</span>
+<span class="cmt"># ChatOpenAI 会自动从环境变量读取 OPENAI_API_KEY</span>
+llm = <span class="fn">ChatOpenAI</span>(
+    model=<span class="str">"gpt-4o-mini"</span>,     <span class="cmt">// 使用性价比最高的小模型做测试</span>
+    temperature=<span class="num">0.7</span>,
+)
+
+<span class="cmt"># 发起调用</span>
+response = llm.<span class="fn">invoke</span>(<span class="str">"你好！请用一句话介绍你自己。"</span>)
+
+<span class="cmt"># 打印结果</span>
+<span class="fn">print</span>(<span class="str">"="</span> * <span class="num">50</span>)
+<span class="fn">print</span>(<span class="str">"LangChain Hello World!"</span>)
+<span class="fn">print</span>(<span class="str">"="</span> * <span class="num">50</span>)
+<span class="fn">print</span>(<span class="str">f"模型回复: {response.content}"</span>)
+<span class="fn">print</span>(<span class="str">f"消息类型: {type(response)}"</span>)
+<span class="fn">print</span>(<span class="str">"="</span> * <span class="num">50</span>)
+<span class="fn">print</span>(<span class="str">"环境验证通过！可以开始学习 LangChain 了 ~"</span>)</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Terminal - 运行命令</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt"># 确保虚拟环境已激活（提示符前有 (.venv) 字样）</span>
+<span class="cmt"># 运行程序：</span>
+python main.py
+
+<span class="cmt"># 预期输出：</span>
+<span class="cmt"># ==================================================</span>
+<span class="cmt"># LangChain Hello World!</span>
+<span class="cmt"># ==================================================</span>
+<span class="cmt"># 模型回复: 你好！我是由Z.ai训练的大语言模型...</span>
+<span class="cmt"># 消息类型: &lt;class 'langchain_core.messages.ai.AIMessage'&gt;</span>
+<span class="cmt"># ==================================================</span>
+<span class="cmt"># 环境验证通过！可以开始学习 LangChain 了 ~</span></code></pre>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#127881;</div>
+    <div class="hb-body">
+      <strong>恭喜你！</strong>如果看到了模型的回复输出，说明你的 LangChain 开发环境已经完美搭建好了。接下来就可以正式进入 LangChain 的核心模块学习了——从第 13 集《认识 LangChain》开始，让我们一起探索 Agent 的奇妙世界吧~
+    </div>
+  </div>
+</article>
+
+</main>
+
+<!-- Footer Nav -->
+<nav class="footer-nav">
+  <a href="10-会话记忆.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 10 集 - 会话记忆</div>
+    </div>
+  </a>
+  <a href="12-编程调用大模型.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 12 集 - 编程调用大模型</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="footer-ref">
+  参考来源：<a href="https://python.langchain.com/docs/setup/" target="_blank">LangChain Installation Guide</a> &middot;
+  视频来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">B站 黑马程序员 BV178w1z7EHQ</a>
+</div>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+  <button class="tweaks-toggle" onclick="toggleTweaks()" title="调节面板">&#9881;</button>
+  <div class="tweaks-body" id="tweaksBody">
+    <div class="tweaks-title">
+      Tweaks
+      <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">字体大小</label>
+      <input type="range" class="tweaks-slider" min="0.85" max="1.25" step="0.05" value="1" oninput="setFontSize(this.value)">
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">行距</label>
+      <input type="range" class="tweaks-slider" min="0.9" max="1.4" step="0.05" value="1" oninput="setLineHeight(this.value)">
+    </div>
+  </div>
+</div>
+
+<script>
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => { hdr.classList.toggle('scrolled', window.scrollY > 20); });
+
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) setTimeout(() => entry.target.classList.add('visible'), i * 80);
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = '已复制!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function toggleTweaks() { document.getElementById('tweaksBody').classList.toggle('open'); }
+function setFontSize(val) { document.documentElement.style.setProperty('--font-scale', val); }
+function setLineHeight(val) { document.documentElement.style.setProperty('--line-height-scale', val); }
+</script>
+</body>
+</html>

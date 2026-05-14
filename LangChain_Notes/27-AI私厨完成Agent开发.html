@@ -1,0 +1,1242 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第27集 - AI 私厨完成 Agent 开发 | LangChain 学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ========== Design Tokens ========== */
+:root {
+  --bg-page: #f8f9fc;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f3f8;
+  --bg-accent: #eef2ff;
+  --text-primary: #1a1d26;
+  --text-secondary: #5a6072;
+  --text-muted: #949aad;
+  --primary: oklch(0.55 0.22 250);
+  --primary-light: oklch(0.72 0.15 250);
+  --primary-bg: oklch(0.95 0.05 250);
+  --accent: oklch(0.70 0.18 85);
+  --accent-light: oklch(0.85 0.12 85);
+  --accent-bg: oklch(0.97 0.04 85);
+  --success: oklch(0.55 0.16 155);
+  --danger: oklch(0.55 0.20 25);
+  --info: oklch(0.55 0.15 230);
+  --border: rgba(26,29,38,0.08);
+  --border-strong: rgba(26,29,38,0.14);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-glow: 0 0 30px rgba(79,110,247,0.10);
+
+  /* Tweaks overrides (defaults) */
+  --font-scale: 1;
+  --content-width: 900px;
+}
+
+/* ========== Reset & Base ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Outfit', -apple-system, sans-serif;
+  font-size: calc(16px * var(--font-scale));
+  line-height: 1.75;
+  color: var(--text-primary);
+  background: var(--bg-page);
+}
+h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; line-height: 1.3; }
+a { color: var(--primary); text-decoration: none; transition: opacity .2s; }
+a:hover { opacity: .75; }
+
+/* ========== Header (Glassmorphism) ========== */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(248,249,252,0.78);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-inner {
+  max-width: var(--content-width);
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-logo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--primary);
+  display: flex; align-items: center; gap: 8px;
+}
+.header-logo svg { width: 22px; height: 22px; }
+.header-nav { display: flex; align-items: center; gap: 16px; }
+.header-nav a {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary);
+  transition: color .2s;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+.header-nav a:hover { color: var(--primary); opacity: 1; background: var(--primary-bg); }
+.ep-badge {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  padding: 3px 10px; border-radius: 100px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .03em;
+}
+
+/* ========== Main Content ========== */
+main {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 90px 24px 64px;
+}
+
+/* ========== Hero Section (Finale Special) ========== */
+.hero {
+  text-align: center;
+  padding: 48px 0 40px;
+  animation: fadeUp .6s ease-out both;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--accent-bg), oklch(0.97 0.03 25));
+  border: 1px solid rgba(245,158,11,.20);
+  padding: 6px 16px; border-radius: 100px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, var(--primary) 30%, var(--accent) 70%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: 17px;
+  color: var(--text-secondary);
+  max-width: 620px;
+  margin: 0 auto 28px;
+  line-height: 1.65;
+}
+.hero-meta {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+}
+.meta-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12.5px; font-weight: 500;
+  color: var(--text-secondary);
+}
+.meta-chip strong { color: var(--text-primary); }
+
+/* ========== Section Card ========== */
+.section-card {
+  background: var(--bg-surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 24px;
+  animation: fadeUp .5s ease-out both;
+  transition: box-shadow .25s ease, transform .25s ease;
+}
+.section-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.card-bar {
+  width: 4px;
+  flex-shrink: 0;
+}
+.card-bar.primary { background: var(--primary); }
+.card-bar.accent { background: var(--accent); }
+.card-bar.success { background: var(--success); }
+.card-bar.info { background: var(--info); }
+.card-body {
+  padding: 28px 28px 24px;
+}
+.section-card .card-header {
+  display: flex; align-items: flex-start; gap: 0;
+}
+.section-card h2 {
+  font-size: clamp(19px, 2.3vw, 24px);
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-card h2 .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 8px;
+  font-size: 14px; font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.num.pri { background: var(--primary); }
+.num.acc { background: var(--accent); }
+.num.suc { background: var(--success); }
+.num.inf { background: var(--info); }
+.section-card p { color: var(--text-secondary); margin-bottom: 12px; }
+.section-card p:last-child { margin-bottom: 0; }
+
+/* ========== Feature Grid ========== */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.feature-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px;
+  background: var(--bg-subtle);
+  border-radius: 12px;
+  transition: background .2s;
+}
+.feature-item:hover { background: var(--bg-accent); }
+.feature-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+}
+.feature-icon.blue { background: var(--primary-bg); }
+.feature-icon.orange { background: var(--accent-bg); }
+.feature-icon.green { background: oklch(0.95 0.06 155); }
+.feature-icon.cyan { background: oklch(0.94 0.06 230); }
+.feature-text h4 {
+  font-size: 14px; font-weight: 600;
+  margin-bottom: 3px;
+}
+.feature-text p {
+  font-size: 13px; color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ========== Tech Table ========== */
+.tech-table {
+  width: 100%; border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.tech-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--primary);
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+}
+.tech-table th:first-child { border-radius: 10px 0 0 0; }
+.tech-table th:last-child { border-radius: 0 10px 0 0; }
+.tech-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.tech-table tr:nth-child(even) td { background: var(--bg-subtle); }
+.tech-table tr:hover td { background: var(--primary-bg); }
+.tech-table code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  background: var(--bg-subtle);
+  padding: 2px 7px; border-radius: 5px;
+  color: var(--primary);
+}
+
+/* ========== Code Block ========== */
+.code-block {
+  position: relative;
+  margin: 18px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+}
+.code-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg-subtle);
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.code-lang {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11.5px; font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.copy-btn {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11.5px; font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none; border: none;
+  padding: 3px 8px; border-radius: 5px;
+  transition: all .2s;
+}
+.copy-btn:hover { color: var(--primary); background: var(--bg-accent); }
+.code-block pre {
+  margin: 0;
+  padding: 20px 20px;
+  background: var(--bg-subtle);
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+.code-block pre .kw { color: var(--primary); font-weight: 600; }
+.code-block pre .fn { color: var(--accent); }
+.code-block pre .str { color: var(--success); }
+.code-block pre .cmt { color: var(--text-muted); font-style: italic; }
+.code-block pre .builtin { color: var(--info); }
+.code-block pre .dec { color: var(--danger); }
+
+/* ========== Callout ========== */
+.callout {
+  display: flex; gap: 14px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  margin: 18px 0;
+  border-left: 4px solid;
+}
+.callout.tip { background: var(--primary-bg); border-color: var(--primary); }
+.callout.warn { background: var(--accent-bg); border-color: var(--accent); }
+.callout.ok { background: oklch(0.95 0.06 155); border-color: var(--success); }
+.callout-icon { font-size: 20px; flex-shrink: 0; line-height: 1.5; }
+.callout-content h4 {
+  font-size: 14px; font-weight: 600; margin-bottom: 4px;
+}
+.callout-content p {
+  font-size: 14px; color: var(--text-secondary); margin: 0;
+  line-height: 1.6;
+}
+
+/* ========== Steps List ========== */
+.steps-list {
+  counter-reset: step;
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+.steps-list li {
+  counter-increment: step;
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.steps-list li:last-child { border-bottom: none; }
+.steps-list li::before {
+  content: counter(step);
+  display: flex; align-items: center; justify-content: center;
+  min-width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+}
+.step-content h4 {
+  font-size: 15px; font-weight: 600; margin-bottom: 4px;
+}
+.step-content p {
+  font-size: 14px; color: var(--text-secondary); margin: 0;
+}
+
+/* ========== Architecture Diagram (Enhanced for Finale) ========== */
+.arch-diagram {
+  background: var(--bg-subtle);
+  border-radius: 14px;
+  padding: 28px 24px;
+  margin: 20px 0;
+  text-align: center;
+}
+.arch-diagram .arch-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.arch-flow {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 10px;
+}
+.arch-node {
+  background: var(--bg-surface);
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--text-primary);
+  min-width: 120px;
+  transition: all .25s;
+  box-shadow: var(--shadow-sm);
+}
+.arch-node:hover { border-color: var(--primary); box-shadow: var(--shadow-glow); transform: translateY(-2px); }
+.arch-node.highlight { border-color: var(--primary); background: var(--primary-bg); color: var(--primary); }
+.arch-node.accent-node { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
+.arch-arrow {
+  color: var(--text-muted);
+  font-size: 20px;
+  font-weight: 300;
+}
+
+/* ========== Timeline / Roadmap ========== */
+.timeline {
+  position: relative;
+  padding-left: 32px;
+  margin-top: 18px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--primary), var(--accent));
+  border-radius: 1px;
+}
+.timeline-item {
+  position: relative;
+  padding-bottom: 24px;
+}
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot {
+  position: absolute;
+  left: -27px;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid var(--primary);
+  background: var(--bg-surface);
+  z-index: 1;
+}
+.timeline-item.done .timeline-dot { background: var(--success); border-color: var(--success); }
+.timeline-item.current .timeline-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-bg);
+}
+.timeline-item h4 {
+  font-size: 15px; font-weight: 600; margin-bottom: 4px;
+}
+.timeline-item p {
+  font-size: 13.5px; color: var(--text-secondary); margin: 0;
+}
+
+/* ========== Achievement Badge ========== 
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.achievement-badge {
+  background: linear-gradient(135deg, var(--primary-bg), var(--bg-accent));
+  border: 1px solid rgba(79,110,247,.15);
+  border-radius: 14px;
+  padding: 20px 18px;
+  text-align: center;
+  transition: all .25s;
+}
+.achievement-badge:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-glow);
+  border-color: var(--primary);
+}
+.achievement-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+.achievement-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.achievement-desc {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+*/
+
+/* ========== Footer Navigation ========== */
+.footer-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+.nav-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px; font-weight: 600;
+  transition: all .25s;
+  text-decoration: none;
+}
+.nav-btn.prev {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.nav-btn.next {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 20px rgba(79,110,247,.30);
+}
+.nav-btn.prev:hover { border-color: var(--primary); color: var(--primary); }
+.nav-btn.next:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(79,110,247,.40); }
+.nav-label { font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 2px; }
+.ref-source {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+/* ========== Tweaks Panel ========== */
+.tweaks-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(79,110,247,.35);
+  transition: all .25s ease;
+  font-size: 20px;
+}
+.tweaks-toggle:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(79,110,247,.45);
+}
+.tweaks-panel {
+  position: fixed;
+  bottom: 84px;
+  right: 24px;
+  z-index: 199;
+  width: 300px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 20px;
+  transform-origin: bottom right;
+  transition: transform .3s cubic-bezier(.16,1,.3,1), opacity .25s ease;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.tweaks-panel.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+.tweaks-panel.hidden {
+  transform: translateY(12px) scale(.96);
+}
+.tweaks-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.tweaks-header h3 {
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.tweaks-close {
+  background: none; border: none;
+  cursor: pointer; font-size: 18px;
+  color: var(--text-muted);
+  padding: 4px; border-radius: 6px;
+  transition: all .2s;
+}
+.tweaks-close:hover { color: var(--text-primary); background: var(--bg-subtle); }
+.tweaks-group { margin-bottom: 16px; }
+.tweaks-group:last-child { margin-bottom: 0; }
+.tweaks-label {
+  font-size: 12px; font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: block;
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.tweaks-slider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--bg-subtle);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+.tweaks-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(79,110,247,.3);
+  transition: transform .15s ease;
+}
+.tweaks-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+.tweaks-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--primary);
+  float: right;
+  margin-top: -22px;
+  font-weight: 600;
+}
+
+/* ========== Animations ========== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.section-card:nth-child(1) { animation-delay: 0s; }
+.section-card:nth-child(2) { animation-delay: .08s; }
+.section-card:nth-child(3) { animation-delay: .16s; }
+.section-card:nth-child(4) { animation-delay: .24s; }
+.section-card:nth-child(5) { animation-delay: .32s; }
+.section-card:nth-child(6) { animation-delay: .40s; }
+
+/* ========== Responsive ========== */
+@media (max-width: 640px) {
+  main { padding: 80px 16px 48px; }
+  .hero { padding: 32px 0 28px; }
+  .card-body { padding: 22px 18px 18px; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .footer-nav { flex-direction: column; }
+  .nav-btn { width: 100%; justify-content: center; }
+  .arch-flow { flex-direction: column; }
+  .arch-arrow { transform: rotate(90deg); }
+  .tweaks-panel { width: calc(100vw - 48px); right: 16px; bottom: 80px; }
+  .timeline { padding-left: 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      LangChain Notes
+    </a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 完整 Agent 编排架...</a>
+      <a href="#s2" class="nav-anchor">&sect;2 ReAct Agent ...</a>
+      <a href="#s3" class="nav-anchor">&sect;3 多工具协同工作流详解</a>
+      <a href="#s4" class="nav-anchor">&sect;4 用户交互体验优化</a>
+      <a href="#s5" class="nav-anchor">&sect;5 从入门到实战：学习路径回...</a>
+      <a href="#s6" class="nav-anchor">&sect;6 项目总结与未来扩展方向</a>
+
+      <a href="26-搭建服务端并对接OSS.html">Prev</a>
+      <span class="ep-badge">EP.27 / 28 FINALE</span>
+      <a href="#">End</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main>
+
+<!-- HERO (Finale Edition) -->
+<section class="hero">
+  <div class="hero-tag">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+    实战项目完结
+  </div>
+  <h1>AI 私厨完成 Agent 开发</h1>
+  <p class="hero-sub">从零到一的完整 Agent 工程实践 —— ReAct 架构落地、多工具协同编排、全链路集成与项目复盘总结</p>
+  <div class="hero-meta">
+    <span class="meta-chip">P.28 <strong>/ 第27集（大结局）</strong></span>
+    <span class="meta-chip"><strong>25:30</strong> 时长</span>
+    <span class="meta-chip">完整闭环 · 项目总结</span>
+    <span class="meta-chip">ReAct + Multi-Tool + Full Stack</span>
+  </div>
+</section>
+
+<!-- SECTION 1: 完整架构图 -->
+<div class="section-card" id="s1">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar primary"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num pri">1</span> 完整 Agent 编排架构</h2>
+      <p>经过前面 26 集的积累，AI 私厨终于迎来了完整的架构实现。以下是最终版本的<strong>端到端系统架构图</strong>：</p>
+
+      <div class="arch-diagram">
+        <div class="arch-title">AI Personal Chef — Complete System Architecture</div>
+        <div class="arch-flow" style="flex-direction:column;gap:12px;">
+          <!-- Layer 1: User Interface -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;">
+            <div class="arch-node highlight">前端 React/Vue<br><small>(用户交互层)</small></div>
+          </div>
+          <div class="arch-arrow">&#8595;</div>
+          <!-- Layer 2: API Gateway -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">
+            <div class="arch-node">FastAPI Server<br><small>(RESTful API)</small></div>
+            <div class="arch-arrow">&rarr;</div>
+            <div class="arch-node accent-node">OSS Storage<br><small>(图片存储)</small></div>
+            <div class="arch-arrow">&rarr;</div>
+            <div class="arch-node">SQLite DB<br><small>(会话记忆)</small></div>
+          </div>
+          <div class="arch-arrow">&#8595;</div>
+          <!-- Layer 3: Agent Core (The Heart) -->
+          <div class="arch-node highlight" style="min-width:280px;border-width:3px;">
+            &#129302; LangChain ReAct Agent Core
+            <br><small>(Thought &rarr; Action &rarr; Observation Loop)</small>
+          </div>
+          <div class="arch-arrow">&#8595;</div>
+          <!-- Layer 4: Tools -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">
+            <div class="arch-node">Qwen-VL<br><small>(食材识别)</small></div>
+            <div class="arch-node accent-node">Tavily Search<br><small>(菜谱检索)</small></div>
+            <div class="arch-node">Nutrition API<br><small>(营养分析)</small></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout tip" style="margin-top:18px;">
+        <div class="callout-icon">&#128161;</div>
+        <div class="callout-content">
+          <h4>架构设计哲学</h4>
+          <p>采用经典的「分层解耦」思想：<strong>表现层（前端）→ 网关层（API）→ 业务逻辑层（Agent）→ 基础设施层（工具/存储）</strong>。每一层都可以独立替换和扩展 —— 比如把 Qwen-VL 换成 GPT-4o，或把 Tavily 换成 Google Search，都不影响其他层的代码。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: ReAct Agent 核心代码 -->
+<div class="section-card" id="s2">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar accent"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num acc">2</span> ReAct Agent 最终实现</h2>
+      <p>下面是 AI 私厨的核心 Agent 代码 —— 这是整个项目的<strong>灵魂所在</strong>。基于 ReAct（Reasoning + Acting）模式，让 Agent 具备自主思考和调用工具的能力：</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python — app/agents/personal_chef.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="cmt"># ================================================================</span>
+<span class="cmt"># AI Personal Chef — ReAct Agent 核心实现（最终版）</span>
+<span class="cmt"># ================================================================</span>
+
+<span class="kw">from</span> langchain_core.prompts <span class="kw">import</span> ChatPromptTemplate, MessagesPlaceholder
+<span class="kw">from</span> langchain.agents <span class="kw">import</span> create_react_agent
+<span class="kw">from</span> langchain_tavily <span class="kw">import</span> TavilySearchResults
+<span class="kw">from</span> langchain.chat_models <span class="kw">import</span> init_chat_model
+<span class="kw">from</span> langchain_community.chat_message_histories <span class="kw">import</span> SQLChatMessageHistory
+<span class="kw">from</span> langchain_core.runnables.history <span class="kw">import</span> RunnableWithMessageHistory
+<span class="kw">import</span> os
+
+<span class="cmt"># === Step 1: 初始化多模态 LLM ===</span>
+llm = init_chat_model(
+    model=<span class="str">"qwen-vl-max"</span>,
+    model_provider=<span class="str">"openai"</span>,
+    base_url=os.getenv(<span class="str">"DASHSCOPE_BASE_URL"</span>),
+    api_key=os.getenv(<span class="str">"DASHSCOPE_API_KEY"</span>),
+    temperature=<span class="builtin">0.3</span>,     <span class="cmt">// 降低温度，提高稳定性
+)
+
+<span class="cmt"># === Step 2: 定义工具集 ===</span>
+tools = [
+    TavilySearchResults(
+        max_results=<span class="builtin">5</span>,
+        name=<span class="str">"recipe_search"</span>,
+        description=<span class="str">"根据菜名或食材搜索详细做法和营养信息，返回结构化结果"</span>,
+    ),
+]
+
+<span class="cmt"># === Step 3: 设计 System Prompt（关键！）===</span>
+SYSTEM_PROMPT = <span class="str">"""你是一位经验丰富的私人厨师 AI 助手，名字叫「小厨」。
+
+## 你的能力
+1. **食材识别**：用户发送冰箱/厨房照片后，你能识别出所有可见食材
+2. **菜谱搜索**：根据识别到的食材搜索合适的菜谱做法
+3. **智能推荐**：综合考虑营养、难度、口味偏好给出最佳推荐
+
+## 工作流程（必须严格遵守）
+收到用户消息后：
+1. 如果用户发了图片 → 先描述图片中的所有食材
+2. 调用 recipe_search 工具搜索匹配菜谱（用中文关键词）
+3. 从搜索结果中筛选 2~3 道最合适的推荐给用户
+4. 每道推荐包含：菜名 | 难度 | 预计时间 | 主要步骤
+
+## 回复风格
+- 温暖友好，像一位贴心的厨师朋友
+- 推荐格式清晰，使用 emoji 增加可读性
+- 如果信息不足，主动询问用户的口味偏好
+"""</span>
+
+<span class="cmt"># === Step 4: 创建 Prompt Template ===</span>
+prompt = ChatPromptTemplate.from_messages([
+    (<span class="str">"system"</span>, SYSTEM_PROMPT),
+    MessagesPlaceholder(variable_name=<span class="str">"chat_history"</span>, optional=<span class="kw">True</span>),
+    (<span class="str">"human"</span>, <span class="str">"{input}"</span>),
+    MessagesPlaceholder(variable_name=<span class="str">"agent_scratchpad"</span>),
+])
+
+<span class="cmt"># === Step 5: 组装 ReAct Agent ===</span>
+agent = create_react_agent(
+    llm=llm,
+    tools=tools,
+    prompt=prompt,
+    verbose=<span class="kw">True</span>,
+)
+
+<span class="cmt"># === Step 6: 绑定持久化记忆 ===</span>
+agent_with_memory = RunnableWithMessageHistory(
+    agent,
+    get_session_history=lambda session_id: SQLChatMessageHistory(
+        session_id=session_id,
+        connection_string=<span class="str">"sqlite:///db/chats.db"</span>
+    ),
+    input_messages_key=<span class="str">"input"</span>,
+    history_messages_key=<span class="str">"chat_history"</span>,
+)
+
+<span class="cmt"># === 导出供 FastAPI 调用 ===</span>
+chef_agent = agent_with_memory</pre>
+      </div>
+
+      <div class="callout ok" style="margin-top:18px;">
+        <div class="callout-icon">&#9989;</div>
+        <div class="callout-content">
+          <h4>代码设计亮点解析</h4>
+          <p><strong>Prompt 工程</strong>：System Prompt 明确了角色定位、工作流程和回复风格，这是 Agent 质量的核心。<br><strong>ReAct 循环</strong>：create_react_agent 自动处理 Thought→Action→Observation 的循环。<br><strong>记忆持久化</strong>：RunnableWithMessageHistory + SQLite 让会话跨请求保持连续。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: 多工具协同工作流 -->
+<div class="section-card" id="s3">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar info"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num inf">3</span> 多工具协同工作流详解</h2>
+      <p>当用户上传一张冰箱照片时，Agent 内部会执行一个完整的<strong>多步推理链路</strong>。以下是一个真实运行案例的时间线拆解：</p>
+
+      <table class="tech-table">
+        <thead>
+          <tr>
+            <th>Step</th>
+            <th>Type</th>
+            <th>Content</th>
+            <th>耗时</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1</strong></td>
+            <td>User Input</td>
+            <td>[图片] 冰箱.jpg + "帮我看看能做什么"</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>2</strong></td>
+            <td>Thought</td>
+            <td>用户发了一张图片，我需要先识别里面的食材...</td>
+            <td>~120ms</td>
+          </tr>
+          <tr>
+            <td><strong>3</strong></td>
+            <td>Action (LLM)</td>
+            <td>VL Model 视觉理解：检测到鸡蛋、番茄、葱花</td>
+            <td>~800ms</td>
+          </tr>
+          <tr>
+            <td><strong>4</strong></td>
+            <td>Thought</td>
+            <td>识别到鸡蛋+番茄+葱花，适合做快手菜。开始搜索...</td>
+            <td>~80ms</td>
+          </tr>
+          <tr>
+            <td><strong>5</strong></td>
+            <td>Action (Tool)</td>
+            <td>Tavily Search: "番茄炒蛋 做法 营养"</td>
+            <td>~650ms</td>
+          </tr>
+          <tr>
+            <td><strong>6</strong></td>
+            <td>Observation</td>
+            <td>返回 5 条菜谱结果（含做法、热量、时间）</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>7</strong></td>
+            <td>Thought</td>
+            <td>搜索结果很好，筛选出最匹配的 2 道菜推荐给用户...</td>
+            <td>~60ms</td>
+          </tr>
+          <tr>
+            <td><strong>8</strong></td>
+            <td>Final Output</td>
+            <td>结构化推荐报告（含 emoji、步骤、营养数据）</td>
+            <td>~200ms</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip" style="margin-top:18px;">
+        <div class="callout-icon">&#128161;</div>
+        <div class="callout-content">
+          <h4>为什么 ReAct 比「一次性调用」更优？</h4>
+          <p>如果直接把图片丢给 LLM 说「推荐菜谱」，模型只能靠训练数据中的知识「猜」菜谱，容易过时或不准确。而 ReAct 模式让 Agent 能<strong>在推理过程中主动获取实时信息</strong>—— 先看图识别食材，再搜索最新菜谱，最后综合判断。这就是「思考 + 行动」的力量。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: 用户体验优化 -->
+<div class="section-card" id="s4">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar success"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num suc">4</span> 用户交互体验优化</h2>
+      <p>一个优秀的 AI 产品不仅要有强大的后台，还需要精致的<strong>用户体验设计</strong>。我们在以下几个维度做了优化：</p>
+
+      <div class="feature-grid">
+        <div class="feature-item">
+          <div class="feature-icon blue">&#9889;&#65039;</div>
+          <div class="feature-text">
+            <h4>SSE 流式输出</h4>
+            <p>用户无需等待全部结果，可实时看到 Agent 思考过程和中间步骤</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon orange">&#128172;</div>
+          <div class="feature-text">
+            <h4>多模态输入</h4>
+            <p>支持拖拽拍照、粘贴截图、文字描述等多种输入方式</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon green">&#128221;</div>
+          <div class="feature-text">
+            <h4>上下文记忆</h4>
+            <p>跨轮对话记忆用户偏好：「上次你说不吃辣，这次我记住了」</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon cyan">&#127919;</div>
+          <div class="feature-text">
+            <h4>错误容错</h4>
+            <p>网络超时时优雅降级，工具调用失败时自动重试或给出替代建议</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python — 错误容错与降级策略</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="cmt"># === 错误容错包装器 ===</span>
+<span class="kw">import</span> asyncio
+<span class="kw">from</span> functools <span class="kw">import</span> wraps
+
+<span class="kw">def</span> <span class="fn">retry_with_fallback</span>(max_retries=<span class="builtin">2</span>, fallback_response=None):
+    <span class="str">"""
+    工具调用失败时的自动重试 + 降级装饰器。
+    
+    Args:
+        max_retries: 最大重试次数
+        fallback_response: 全部失败后的降级响应
+    """</span>
+    <span class="kw">def</span> <span class="fn">decorator</span>(func):
+        <span class="fn">@wraps</span>(func)
+        <span class="kw">async def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+            last_error = None
+            <span class="kw">for</span> attempt <span class="kw">in</span> range(max_retries + <span class="builtin">1</span>):
+                <span class="kw">try</span>:
+                    result = <span class="kw">await</span> func(*args, **kwargs)
+                    <span class="kw">return</span> result
+                <span class="kw">except</span> Exception as e:
+                    last_error = e
+                    <span class="kw">if</span> attempt < max_retries:
+                        <span class="kw">await</span> asyncio.sleep(<span class="builtin">1</span> * (attempt + <span class="builtin">1</span>))  <span class="cmt">// 指数退避
+                        <span class="kw">continue</span>
+            
+            <span class="cmt"># 全部重试失败，使用降级响应</span>
+            <span class="kw">if</span> fallback_response:
+                <span class="kw">return</span> fallback_response
+            <span class="kw">raise</span> last_error
+        <span class="kw">return</span> wrapper
+    <span class="kw">return</span> decorator
+
+<span class="cmt"># 使用示例</span>
+<span class="fn">@retry_with_fallback</span>(
+    max_retries=<span class="builtin">2</span>,
+    fallback_response={
+        <span class="str">"results"</span>: [{<span class="str">"name"</span>: <span class="str">"番茄炒蛋"</span>, <span class="str">"source"</span>: <span class="str">"本地缓存"</span>}],
+        <span class="str">"note"</span>: <span class="str">"网络暂时不稳定，已从缓存加载推荐"</span>
+    },
+)
+<span class="kw">async def</span> <span class="fn">search_recipes</span>(query: str):
+    <span class="cmt"># Tavily 搜索逻辑...
+    </span>    pass</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5: 学习路径回顾 -->
+<div class="section-card" id="s5">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar primary"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num pri">5</span> 从入门到实战：学习路径回顾</h2>
+      <p>让我们回顾一下这 27 集的学习历程。每一步都建立在前一步的基础上，形成了一条完整的<strong>LangChain Agent 开发者成长路径</strong>：</p>
+
+      <div class="timeline">
+        <div class="timeline-item done">
+          <div class="timeline-dot"></div>
+          <h4>Phase 1: 基础认知（第13~16集）</h4>
+          <p>认识 LangChain 生态 → 理解 Agent 原理 → 初始化 LLM 模型 → 掌握基础 Chain 用法</p>
+        </div>
+        <div class="timeline-item done">
+          <div class="timeline-dot"></div>
+          <h4>Phase 2: 核心能力（第17~23集）</h4>
+          <p>Message 消息体系 → Memory 记忆机制 → Tool 工具调用进阶 → RAG 检索增强生成</p>
+        </div>
+        <div class="timeline-item done">
+          <div class="timeline-dot"></div>
+          <h4>Phase 3: 实战规划（第24集）</h4>
+          <p>需求分析 → 功能拆解 → 技术选型 → MVP 最小可行产品验证</p>
+        </div>
+        <div class="timeline-item done">
+          <div class="timeline-dot"></div>
+          <h4>Phase 4: 可观测性（第25集）</h4>
+          <p>LangSmith Tracing 配置 → Trace 数据解读 → 性能瓶颈分析 → Prompt 版本管理</p>
+        </div>
+        <div class="timeline-item done">
+          <div class="timeline-dot"></div>
+          <h4>Phase 5: 工程化（第26集）</h4>
+          <p>FastAPI 后端搭建 → OSS 对象存储对接 → SSE 流式输出 → Docker 容器化部署</p>
+        </div>
+        <div class="timeline-item current">
+          <div class="timeline-dot"></div>
+          <h4>Phase 6: 完整闭环（第27集 · 本集）</h4>
+          <p>ReAct Agent 最终实现 → 多工具协同工作流 → UX 优化 → 项目总结与扩展展望</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: 扩展方向与总结 -->
+<div class="section-card" id="s6">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar accent"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num acc">6</span> 项目总结与未来扩展方向</h2>
+
+      <div class="callout warn" style="margin-bottom:18px;">
+        <div class="callout-icon">&#127942;</div>
+        <div class="callout-content">
+          <h4>我们完成了什么？</h4>
+          <p>经过 27 集的系统学习，我们从零构建了一个完整的 <strong>AI Agent 应用</strong>：
+          <br>&bull; 一个能看懂图片的多模态 Agent
+          <br>&bull; 一套完整的 RESTful API 服务
+          <br>&bull; 可追踪、可调试的可观测性体系
+          <br>&bull; 可容器化、可部署的生产级工程
+          <br><br>这不是一个 Demo，这是一个<strong>可以真正上线的产品雏形</strong>。</p>
+        </div>
+      </div>
+
+      <h3 style="font-family:'Space Grotesk';font-size:17px;font-weight:700;margin:20px 0 14px;color:var(--text-primary);">未来扩展方向</h3>
+
+      <table class="tech-table">
+        <thead>
+          <tr>
+            <th>方向</th>
+            <th>具体内容</th>
+            <th>技术栈建议</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>语音交互</strong></td>
+            <td>支持语音输入「嘿小厨，今天吃什么？」</td>
+            <td>Whisper + Edge TTS</td>
+          </tr>
+          <tr>
+            <td><strong>个性化推荐</strong></td>
+            <td>基于历史偏好做千人千面的菜谱推荐</td>
+            <td>向量数据库 + User Profile</td>
+          </tr>
+          <tr>
+            <td><strong>视频教程生成</strong></td>
+            <td>根据菜谱自动生成烹饪教学短视频</td>
+            <td>视频生成模型 + TTS 配音</td>
+          </tr>
+          <tr>
+            <td><strong>购物车联动</strong></td>
+            <td>一键将缺少的食材加入电商平台购物车</td>
+            <td>电商开放 API 对接</td>
+          </tr>
+          <tr>
+            <td><strong>移动端 App</strong></td>
+            <td>打包为 iOS / Android 原生应用</td>
+            <td>React Native / Flutter</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout ok" style="margin-top:20px;">
+        <div class="callout-icon">&#127881;</div>
+        <div class="callout-content">
+          <h4>恭喜你完成了 LangChain 全套实战课程！</h4>
+          <p>从「什么是 LangChain」到「独立构建生产级 Agent 应用」，你已经跨越了从初学者到工程师的关键门槛。记住：<strong>最好的学习方法就是动手做项目</strong> —— 现在，去创造属于你自己的 AI 应用吧！<br><br><em>Spinning~&#9834; 本天才的任务圆满完成！</em> ✧(≖ ◡ ≦✿)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER NAV -->
+<nav class="footer-nav">
+  <a href="26-搭建服务端并对接OSS.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 26 集 - 搭建服务端并对接OSS</div>
+    </div>
+  </a>
+  <a href="#" class="nav-link-card disabled">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">无（本集为末集）</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="ref-source">
+  参考来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ?p=28" target="_blank">黑马程序员 B站课程 BV178w1z7EHQ P28（大结局）</a> | 
+  <a href="https://python.langchain.com/docs/concepts/agents/" target="_blank">LangChain Agent 官方文档</a>
+</div>
+
+</main>
+
+<!-- ===== TWEAKS PANEL ===== -->
+<button class="tweaks-toggle" onclick="toggleTweaks()" title="Design Tweaks">&#9881;</button>
+<div class="tweaks-panel hidden" id="tweaksPanel">
+  <div class="tweaks-header">
+    <h3>&#9881; Tweaks</h3>
+    <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+  </div>
+  <div class="tweaks-group">
+    <label class="tweaks-label">Font Scale</label>
+    <input type="range" class="tweaks-slider" id="fontScaleSlider" min="0.8" max="1.3" step="0.05" value="1" oninput="updateFontScale(this.value)">
+    <span class="tweaks-value" id="fontScaleValue">1.0x</span>
+  </div>
+  <div class="tweaks-group">
+    <label class="tweaks-label">Content Width</label>
+    <input type="range" class="tweaks-slider" id="widthSlider" min="700" max="1200" step="50" value="900" oninput="updateWidth(this.value)">
+    <span class="tweaks-value" id="widthValue">900px</span>
+  </div>
+</div>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--success)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+  });
+}
+
+function toggleTweaks() {
+  const panel = document.getElementById('tweaksPanel');
+  if (panel.classList.contains('open')) {
+    panel.classList.remove('open');
+    setTimeout(() => panel.classList.add('hidden'), 280);
+  } else {
+    panel.classList.remove('hidden');
+    requestAnimationFrame(() => panel.classList.add('open'));
+  }
+}
+
+function updateFontScale(val) {
+  document.documentElement.style.setProperty('--font-scale', val);
+  document.getElementById('fontScaleValue').textContent = parseFloat(val).toFixed(1) + 'x';
+}
+
+function updateWidth(val) {
+  document.documentElement.style.setProperty('--content-width', val + 'px');
+  document.getElementById('widthValue').textContent = val + 'px';
+}
+</script>
+</body>
+</html>

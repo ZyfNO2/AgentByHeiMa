@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第20集 - 预定义工具Tavily | LangChain 学习笔记</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8f9fc;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f1f3f8;
+            --text-primary: #1a1d26;
+            --text-secondary: #5a6072;
+            --text-muted: #949aad;
+            --primary: oklch(0.55 0.22 250);
+            --primary-light: oklch(0.75 0.15 250);
+            --primary-dark: oklch(0.40 0.20 250);
+            --accent: oklch(0.70 0.18 85);
+            --accent-light: oklch(0.85 0.12 85);
+            --success: oklch(0.55 0.16 155);
+            --danger: oklch(0.55 0.20 25);
+            --info: oklch(0.55 0.15 230);
+            --border-color: #e2e4ec;
+            --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+            --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 4px rgba(26,29,38,0.04);
+            --shadow-lg: 0 8px 24px rgba(26,29,38,0.10), 0 4px 8px rgba(26,29,38,0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --font-scale: 1;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: calc(16px * var(--font-scale));
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== Header Navigation ===== */
+        .header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            background: rgba(248, 249, 252, 0.78);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 28px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+        }
+
+        .header-logo-icon {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-size: 14px; font-weight: 700;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .header-nav a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+
+        .header-nav a:hover { color: var(--primary); background: var(--bg-subtle); }
+        .header-nav a.active { color: var(--primary); background: oklch(0.55 0.22 250 / 0.10); font-weight: 600; }
+
+        /* ===== Hero Section ===== */
+        .hero {
+            padding-top: 112px;
+            padding-bottom: 48px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, oklch(0.55 0.22 250 / 0.08), oklch(0.70 0.18 85 / 0.08));
+            border: 1px solid oklch(0.55 0.22 250 / 0.15);
+            padding: 6px 18px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 22px;
+        }
+
+        .hero-badge-dot {
+            width: 7px; height: 7px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-desc {
+            font-size: 17px;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin: 0 auto 28px;
+            line-height: 1.65;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .meta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .meta-tag svg { width: 14px; height: 14px; opacity: 0.65; }
+
+        /* ===== Main Content ===== */
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 28px 80px;
+        }
+
+        /* ===== Section Cards with Left Border ===== */
+        .section-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            animation: fadeUp 0.6s ease both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-3px);
+            border-color: oklch(0.55 0.22 250 / 0.25);
+        }
+
+        .section-card.type-orange { border-left-color: var(--accent); }
+        .section-card.type-green { border-left-color: var(--success); }
+        .section-card.type-red { border-left-color: var(--danger); }
+        .section-card.type-purple { border-left-color: #7c3aed; }
+        .section-card.type-info { border-left-color: var(--info); }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-card:nth-child(1) { animation-delay: 0.05s; }
+        .section-card:nth-child(2) { animation-delay: 0.1s; }
+        .section-card:nth-child(3) { animation-delay: 0.15s; }
+        .section-card:nth-child(4) { animation-delay: 0.2s; }
+        .section-card:nth-child(5) { animation-delay: 0.25s; }
+        .section-card:nth-child(6) { animation-delay: 0.3s; }
+        .section-card:nth-child(7) { animation-delay: 0.35s; }
+        .section-card:nth-child(8) { animation-delay: 0.4s; }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .section-icon {
+            width: 46px; height: 46px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 21px;
+            flex-shrink: 0;
+        }
+
+        .section-icon.blue { background: oklch(0.55 0.22 250 / 0.10); color: var(--primary); }
+        .section-icon.orange { background: oklch(0.70 0.18 85 / 0.10); color: #c47a00; }
+        .section-icon.green { background: oklch(0.55 0.16 155 / 0.10); color: #0d8a5e; }
+        .section-icon.red { background: oklch(0.55 0.20 25 / 0.10); color: #d94a3a; }
+        .section-icon.purple { background: oklch(0.50 0.18 300 / 0.10); color: #7c3aed; }
+        .section-icon.info { background: oklch(0.55 0.15 230 / 0.10); color: #2563eb; }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .section-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        /* ===== Text Content ===== */
+        .section-body p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 15px;
+            line-height: 1.75;
+        }
+
+        .section-body p:last-child { margin-bottom: 0; }
+        .section-body strong { color: var(--text-primary); font-weight: 600; }
+
+        .section-body ul, .section-body ol {
+            padding-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        .section-body li {
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-size: 15px;
+            line-height: 1.65;
+        }
+
+        .section-body h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 22px 0 12px;
+            color: var(--text-primary);
+        }
+
+        /* ===== Code Blocks ===== */
+        .code-block {
+            position: relative;
+            margin: 20px 0;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: #1a1d26;
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 18px;
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .code-lang {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .code-dots { display: flex; gap: 6px; }
+        .code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+        .code-dots span:nth-child(1) { background: #ff5f57; }
+        .code-dots span:nth-child(2) { background: #febc2e; }
+        .code-dots span:nth-child(3) { background: #28c840; }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 72px;
+            background: rgba(255,255,255,0.08);
+            border: none;
+            color: rgba(255,255,255,0.5);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .copy-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .copy-btn.copied { color: var(--success); }
+
+        pre {
+            margin: 0;
+            padding: 20px 20px 20px 0;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.68;
+        }
+
+        pre code { color: #e2e4ec; font-family: inherit; }
+
+        /* Syntax Highlighting */
+        .kw { color: #c792ea; }
+        .str { color: #c3e88d; }
+        .cmt { color: #546e7a; font-style: italic; }
+        .fn { color: #82aaff; }
+        .cls { color: #ffcb6b; }
+        .num { color: #f78c6c; }
+        .param { color: #89ddff; }
+        .op { color: #89ddff; }
+
+        /* ===== Tables ===== */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead { background: var(--primary); }
+
+        th {
+            padding: 13px 18px;
+            text-align: left;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 12.5px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        td {
+            padding: 12px 18px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        tbody tr { transition: all 0.2s ease; }
+        tbody tr:nth-child(even) { background: oklch(0.55 0.22 250 / 0.02); }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: oklch(0.55 0.22 250 / 0.05); }
+        tbody tr:hover td { color: var(--text-primary); }
+
+        table code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: var(--bg-subtle);
+            padding: 2px 7px;
+            border-radius: 5px;
+            color: var(--primary-dark);
+        }
+
+        /* ===== Callout Boxes ===== */
+        .callout {
+            display: flex;
+            gap: 14px;
+            padding: 18px 20px;
+            border-radius: var(--radius-md);
+            margin: 20px 0;
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .callout-info {
+            background: oklch(0.55 0.15 230 / 0.07);
+            border: 1px solid oklch(0.55 0.15 230 / 0.15);
+            border-left: 3px solid var(--info);
+        }
+
+        .callout-tip {
+            background: oklch(0.55 0.16 155 / 0.07);
+            border: 1px solid oklch(0.55 0.16 155 / 0.15);
+            border-left: 3px solid var(--success);
+        }
+
+        .callout-warn {
+            background: oklch(0.70 0.18 85 / 0.07);
+            border: 1px solid oklch(0.70 0.18 85 / 0.15);
+            border-left: 3px solid var(--accent);
+        }
+
+        .callout-danger {
+            background: oklch(0.55 0.20 25 / 0.07);
+            border: 1px solid oklch(0.55 0.20 25 / 0.15);
+            border-left: 3px solid var(--danger);
+        }
+
+        .callout-key {
+            background: oklch(0.55 0.22 250 / 0.06);
+            border: 1px solid oklch(0.55 0.22 250 / 0.12);
+            border-left: 3px solid var(--primary);
+        }
+
+        .callout-icon { font-size: 19px; flex-shrink: 0; margin-top: 1px; }
+        .callout-body { flex: 1; }
+        .callout-title { font-weight: 600; color: var(--text-primary); margin-bottom: 4px; font-size: 13.5px; }
+        .callout-text { color: var(--text-secondary); line-height: 1.6; }
+        .callout-text code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: rgba(0,0,0,0.04);
+            padding: 1px 5px;
+            border-radius: 4px;
+            color: var(--primary-dark);
+        }
+
+        /* ===== Flow Diagram ===== */
+        .flow-diagram {
+            margin: 28px 0;
+            padding: 28px;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-lg);
+        }
+
+        .flow-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: wrap;
+        }
+
+        .flow-node {
+            background: var(--bg-surface);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px 20px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            min-width: 130px;
+            transition: all 0.25s ease;
+            cursor: default;
+        }
+
+        .flow-node:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .flow-node.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-color: transparent;
+        }
+
+        .flow-node.accent {
+            background: linear-gradient(135deg, var(--accent), oklch(0.60 0.16 85));
+            color: white;
+            border-color: transparent;
+        }
+
+        .flow-arrow {
+            color: var(--text-muted);
+            font-size: 22px;
+            padding: 0 8px;
+            font-weight: 300;
+        }
+
+        /* ===== Comparison Grid ===== */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .compare-item {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 22px;
+            transition: all 0.25s ease;
+        }
+
+        .compare-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .compare-item-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .compare-item-desc {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.58;
+        }
+
+        /* ===== Tool Ecosystem Grid ===== */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .tool-card {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .tool-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tool-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .tool-card-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .tool-card-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tool-card-pkg {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .tool-card-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .tool-card-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10.5px;
+            font-weight: 600;
+            margin-top: 10px;
+            letter-spacing: 0.02em;
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 28px 48px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 11px 24px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            transition: all 0.25s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-1px);
+        }
+
+        .footer-link.prev::before { content: '\2190'; font-size: 16px; margin-right: 4px; }
+        .footer-link.next::after { content: '\2192'; font-size: 16px; margin-left: 4px; }
+
+        .footer-ref {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .footer-ref a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer-ref a:hover { text-decoration: underline; }
+
+        /* ===== TOC Sidebar ===== */
+        .toc {
+            position: fixed;
+            right: 40px;
+            top: 120px;
+            width: 200px;
+            z-index: 99;
+            display: none;
+        }
+
+        @media (min-width: 1200px) { .toc { display: block; } }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            position: sticky;
+            top: 120px;
+        }
+
+        .toc-list li { margin-bottom: 5px; }
+
+        .toc-list a {
+            display: block;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            padding: 5px 12px;
+            border-left: 2px solid transparent;
+            transition: all 0.2s ease;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .toc-list a:hover,
+        .toc-list a.active {
+            color: var(--primary);
+            border-left-color: var(--primary);
+            background: oklch(0.55 0.22 250 / 0.04);
+        }
+
+        /* ===== Tweaks Panel ===== */
+        .tweaks-panel {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
+        }
+
+        .tweaks-toggle {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+        }
+
+        .tweaks-toggle:hover {
+            transform: scale(1.08) rotate(15deg);
+            box-shadow: 0 8px 30px rgba(79,110,247,0.3);
+        }
+
+        .tweaks-content {
+            position: absolute;
+            bottom: 60px;
+            right: 0;
+            width: 280px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+            display: none;
+            animation: slideUp 0.25s ease;
+        }
+
+        .tweaks-content.open { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tweaks-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tweaks-row {
+            margin-bottom: 14px;
+        }
+
+        .tweaks-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tweaks-label span:last-child {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary);
+            font-size: 11px;
+        }
+
+        .tweaks-slider {
+            width: 100%;
+            height: 5px;
+            border-radius: 3px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--bg-subtle);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(79,110,247,0.3);
+            transition: transform 0.15s ease;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .header-inner { padding: 0 16px; }
+            .header-nav { display: none; }
+            .hero { padding-top: 96px; padding-bottom: 32px; }
+            .main { padding: 0 16px 60px; }
+            .section-card { padding: 24px 20px; border-radius: var(--radius-md); }
+            .section-header { gap: 10px; }
+            .section-icon { width: 40px; height: 40px; font-size: 18px; border-radius: 10px; }
+            .section-title { font-size: 17px; }
+            th, td { padding: 10px 12px; font-size: 13px; }
+            .compare-grid { grid-template-columns: 1fr; }
+            .tool-grid { grid-template-columns: 1fr; }
+            .flow-container { flex-direction: column; }
+            .flow-arrow { transform: rotate(90deg); padding: 4px 0; }
+            .meta-tag { font-size: 11px; padding: 5px 10px; }
+            .tweaks-panel { bottom: 16px; right: 16px; }
+            .tweaks-content { width: 260px; right: -8px; }
+        }
+
+        /* ===== Scrollbar ===== */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <div class="header-inner">
+        <a href="index.html" class="header-logo">
+            <div class="header-logo-icon">LC</div>
+            LangChain Notes
+        </a>
+        <nav class="header-nav">
+      <a href="#tavily-intro" class="nav-anchor">&sect;1 Tavily 搜索引擎介...</a>
+
+            <a href="13-认识LangChain.html">P13</a>
+            <a href="14-快速入门和Agent原理.html">P14</a>
+            <a href="15-初始化模型.html">P15</a>
+            <a href="16-调用模型.html">P16</a>
+            <a href="17-消息Message.html">P17</a>
+            <a href="18-提示词工程.html">P18</a>
+            <a href="19-工具Tools.html">P19</a>
+            <a href="20-预定义工具Tavily.html" class="active">P20</a>
+            <a href="21-短期记忆.html">P21</a>
+            <a href="22-短期记忆-持久存储.html">P22</a>
+            <a href="23-记忆管理策略.html">P23</a>
+            <a href="24-需求分析与功能验证.html">P24</a>
+            <a href="25-对接LangSmith.html">P25</a>
+            <a href="26-搭建服务端并对接OSS.html">P26</a>
+            <a href="27-AI私厨完成Agent开发.html">P27</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        第 20 集 / Tools 模块
+    </div>
+    <h1><span>预定义工具 Tavily</span> Predefined Tools</h1>
+    <p class="hero-desc">掌握 LangChain 预定义工具生态，从 Tavily 搜索引擎入手，了解内置工具的使用方法、参数配置与多工具编排策略。</p>
+    <div class="hero-meta">
+        <span class="meta-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+            P21 短期记忆
+        </span>
+        <span class="meta-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            ~16 min
+        </span>
+        <span class="meta-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>
+            BV178w1z7EHQ
+        </span>
+    </div>
+</section>
+
+<!-- Main Content -->
+<main class="main">
+
+    <!-- Section 1: Tavily Introduction -->
+    <article class="section-card" id="tavily-intro">
+        <div class="section-header">
+            <div class="section-icon blue">#</div>
+            <div>
+                <h2 class="section-title">Tavily 搜索引擎介绍</h2>
+                <p class="section-subtitle">专为 AI Agent 设计的搜索 API</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p><strong>Tavily</strong> 是一款专门为 AI 应用程序和 LLM Agent 设计的搜索引擎 API。与传统搜索引擎不同，Tavily 的核心设计理念是：<strong>返回结构化、高质量、可直接被 LLM 理解的搜索结果</strong>。</p>
+
+            <div class="callout callout-key">
+                <span class="callout-icon">*</span>
+                <div class="callout-body">
+                    <div class="callout-title">为什么选择 Tavily 而非传统搜索？</div>
+                    <div class="callout-text">传统搜索引擎返回的是 HTML 页面，包含大量噪声（广告、导航栏、脚本等）。Tavily 返回<strong>经过清洗的结构化数据</strong>：标题 + 摘要 + URL + 内容片段，这正是 LLM 所需的理想输入格式。此外，Tavily 针对 AI 场景优化了结果排序逻辑。</div>
+                </div>
+            </div>
+
+            <h3>Tavily 核心特性</h3>
+            <ul>
+                <li><strong>AI 原生结果格式</strong> — 返回 JSON 格式的结构化数据，无需额外解析 HTML</li>
+                <li><strong>内容提取与摘要</strong> — 自动提取页面核心内容并生成摘要</li>
+                <li><strong>实时网络搜索</strong> — 覆盖全网最新信息，非静态知识库</li>
+                <li><strong>免费额度充足</strong> — 注册即获每月 1000 次免费 API 调用</li>
+                <li><strong>LangChain 官方集成</strong> — 一行代码即可接入 Agent 工具链</li>
+                <li><strong>支持高级查询</strong> — 可指定搜索深度、结果数量、主题过滤等</li>
+            </ul>
+
+            <h3>获取 API Key 步骤</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Registration Steps</span>
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                </div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="cmt"># Step 1: 访问 Tavily 官网并注册账号</span>
+<span class="cmt"># URL: https://app.tavily.com/sign-up</span>
+
+<span class="cmt"># Step 2: 使用 Google / GitHub 账号快速注册</span>
+<span class="cmt"># 注册完成后自动跳转至 Dashboard</span>
+
+<span class="cmt"># Step 3: 在 Dashboard 中找到 API Keys 区域</span>
+<span class="cmt"># 点击 "Create API Key" 生成你的密钥</span>
+
+<span class="cmt"># Step 4: 复制 API Key 并配置到环境变量</span>
+<span class="kw">import</span> os
+os.environ[<span class="str">"TAVILY_API_KEY"</span>] = <span class="str">"tvly-your-api-key-here"</span>
+
+<span class="cmt"># 免费额度: 1000 次/月 | 足够学习和开发使用</span></code></pre>
+            </div>
+
+            <div class="callout callout-tip">
+                <span class="callout-icon">+</span>
+                <div class="callout-body">
+                    <div class="callout-title">环境变量最佳实践</div>
+                    <div class="callout-text">生产环境中<strong>不要硬编码</strong> API Key！推荐使用 <code>.env</code> 文件配合 <code>python-dotenv</code> 加载，或通过 CI/CD 的 Secrets 管理。这样既安全又便于团队协作时各自使用自己的 Key。</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 2: TavilySearchResults Tool -->
+    <article class="section-card type-orange" id="tavily-tool">
+        <div class="section-header">
+            <div class="section-icon orange">{}</div>
+            <div>
+                <h2 class="section-title">TavilySearchResults 工具使用</h2>
+                <p class="section-subtitle">安装、初始化与参数配置详解</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>LangChain 提供了 <strong>TavilySearchResults</strong> 作为预定义工具类，封装了所有 Tavily API 调用细节，让开发者只需关注业务逻辑而非底层 HTTP 交互。</p>
+
+            <h3>Step 1: 安装依赖</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Bash</span>
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                </div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="cmt"># 安装 Tavily Python SDK 和 LangChain 社区集成包</span>
+pip install tavily-python langchain-community
+
+<span class="cmt"># 验证安装成功</span>
+python -c <span class="str">"from langchain_community.tools.tavily_search import TavilySearchResults; print('OK')"</span></code></pre>
+            </div>
+
+            <h3>Step 2: 初始化工具</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Python</span>
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                </div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">import</span> os
+<span class="kw">from</span> langchain_community.tools.tavily_search <span class="kw">import</span> TavilySearchResults
+
+<span class="cmt"># 配置 API Key（也可通过环境变量自动读取）</span>
+os.environ[<span class="str">"TAVILY_API_KEY"</span>] = <span class="str">"tvly-your-key-here"</span>
+
+<span class="cmt"># 创建搜索工具实例</span>
+search = TavilySearchResults(
+    max_results=<span class="num">5</span>,          <span class="cmt"># 返回最大结果数量</span>
+    search_depth=<span class="str">"basic"</span>,     <span class="cmt"># 搜索深度: "basic" 或 "advanced"</span>
+    include_answer=<span class="kw">True</span>,       <span class="cmt"># 是否在结果中包含 AI 生成的答案摘要</span>
+    include_raw_content=<span class="kw">False</span>, <span class="cmt"># 是否包含原始页面内容（Token 消耗大）</span>
+    include_images=<span class="kw">False</span>      <span class="cmt"># 是否返回图片链接</span>
+)
+
+<span class="cmt"># 直接调用测试</span>
+results = search.invoke(<span class="str">"Python LangChain 最新版本"</span>)
+<span class="kw">print</span>(results)</code></pre>
+            </div>
+
+            <h3>关键参数详解</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>参数</th>
+                            <th>类型</th>
+                            <th>默认值</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>max_results</code></td>
+                            <td>int</td>
+                            <td><code>5</code></td>
+                            <td>返回的最大搜索结果条数，建议 3-10 之间以控制 Token 消耗</td>
+                        </tr>
+                        <tr>
+                            <td><code>search_depth</code></td>
+                            <td>str</td>
+                            <td><code>"basic"</code></td>
+                            <td><code>"basic"</code> 快速搜索（推荐）；<code>"advanced"</code> 深度搜索，更全面但更慢</td>
+                        </tr>
+                        <tr>
+                            <td><code>include_answer</code></td>
+                            <td>bool</td>
+                            <td><code>True</code></td>
+                            <td>是否让 Tavily AI 直接生成问题答案摘要，对简单事实查询非常有效</td>
+                        </tr>
+                        <tr>
+                            <td><code>include_raw_content</code></td>
+                            <td>bool</td>
+                            <td><code>False</code></td>
+                            <td>是否包含页面原始文本内容，开启后 Token 消耗显著增加</td>
+                        </tr>
+                        <tr>
+                            <td><code>include_images</code></td>
+                            <td>bool</td>
+                            <td><code>False</code></td>
+                            <td>是否在结果中返回相关图片 URL</td>
+                        </tr>
+                        <tr>
+                            <td><code>name</code></td>
+                            <td>str</td>
+                            <td><code>"tavily_search_results_json"</code></td>
+                            <td>工具名称，Agent 通过此名称识别和调用该工具</td>
+                        </tr>
+                        <tr>
+                            <td><code>description</code></td>
+                            <td>str</td>
+                            <td>默认描述</td>
+                            <td>工具功能描述，<strong>决定 Agent 何时选择调用此工具</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>返回数据结构示例</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">JSON Output</span>
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                </div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code>[
+  {
+    <span class="str">"url"</span>: <span class="str">"https://python.langchain.com/docs/"</span>,
+    <span class="str">"content"</span>: <span class="str">"LangChain is a framework for developing..."</span>,
+    <span class="str">"title"</span>: <span class="str">"LangChain Documentation"</span>,
+    <span class="str">"score"</span>: <span class="num">0.9847</span>
+  },
+  {
+    <span class="str">"url"</span>: <span class="str">"https://github.com/langchain-ai/langchain"</span>,
+    <span class="str">"content"</span>: <span class="str">"Build context-aware reasoning applications..."</span>,
+    <span class="str">"title"</span>: <span class="str">"langchain-ai/langchain - GitHub"</span>,
+    <span class="str">"score"</span>: <span class="num">0.9621</span>
+  }
+  <span class="cmt"># ... 最多 max_results 条</span>
+]</code></pre>
+            </div>
+
+            <div class="callout callout-info">
+                <span class="callout-icon">i</span>
+                <div class="callout-body">
+                    <div class="callout-title">score 字段含义</div>
+                    <div class="callout-text"><code>score</code> 是 Tavily 返回的相关性评分（0~1），值越高表示结果与查询越相关。在实际应用中可利用此字段进行二次筛选或排序。</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 3: Tool Ecosystem Overview -->
+    <article class="section-card type-purple" id="tool-ecosystem">
+        <div class="section-header">
+            <div class="section-icon purple">@</div>
+            <div>
+                <h2 class="section-title">预定义工具生态概览</h2>
+                <p class="section-subtitle">LangChain 内置工具全家桶</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>除了 Tavily，LangChain 还提供了丰富的预定义工具生态，覆盖搜索、知识库、计算等多种场景。这些工具均遵循统一的接口规范，可以无缝组合使用。</p>
+
+            <div class="tool-grid">
+                <!-- Wikipedia -->
+                <div class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon" style="background:linear-gradient(135deg,#000,#333);">W</div>
+                        <div>
+                            <div class="tool-card-name">WikipediaQueryRun</div>
+                            <div class="tool-card-pkg">langchain-community</div>
+                        </div>
+                    </div>
+                    <div class="tool-card-desc">查询维基百科词条内容，适合需要权威百科知识的场景，如历史事件、人物简介、科学概念等。</div>
+                    <span class="tool-card-tag" style="background:oklch(0.55 0.15 230/0.12);color:#2563eb;">Knowledge Base</span>
+                </div>
+
+                <!-- ArXiv -->
+                <div class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon" style="background:linear-gradient(135deg,#b31b1b,#e04d22);">A</div>
+                        <div>
+                            <div class="tool-card-name">ArxivAPIWrapper</div>
+                            <div class="tool-card-pkg">langchain-community</div>
+                        </div>
+                    </div>
+                    <div class="tool-card-desc">检索 arXiv 预印本论文，按关键词、作者、分类搜索学术论文，返回摘要和元数据。</div>
+                    <span class="tool-card-tag" style="background:oklch(0.55 0.20 25/0.12);color:#d94a3a;">Academic</span>
+                </div>
+
+                <!-- DuckDuckGo -->
+                <div class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon" style="background:linear-gradient(135deg,#de5833,#fe9600);">D</div>
+                        <div>
+                            <div class="tool-card-name">DuckDuckGoSearchRun</div>
+                            <div class="tool-card-pkg">langchain-community</div>
+                        </div>
+                    </div>
+                    <div class="tool-card-desc">基于 DuckDuckGo 的免费搜索工具，无需 API Key 即可使用，适合快速原型开发和学习场景。</div>
+                    <span class="tool-card-tag" style="background:oklch(0.70 0.18 85/0.12);color:#c47a00;">Free Search</span>
+                </div>
+
+                <!-- PubMed -->
+                <div class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon" style="background:linear-gradient(135deg,#006699,#0099cc);">P</div>
+                        <div>
+                            <div class="tool-card-name">PubMedAPIWrapper</div>
+                            <div class="tool-card-pkg">langchain-community</div>
+                        </div>
+                    </div>
+                    <div class="tool-card-desc">搜索生物医学文献数据库 PubMed，适用于医疗健康、生命科学领域的专业文献检索。</div>
+                    <span class="tool-card-tag" style="background:oklch(0.55 0.16 155/0.12);color:#0d8a5e;">Medical</span>
+                </div>
+
+                <!-- Shell/Bash -->
+                <div class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon" style="background:linear-gradient(135deg,#4EAA25,#89DC05);">$</div>
+                        <div>
+                            <div class="tool-card-name">ShellTool</div>
+                            <div class="tool-card-pkg">langchain-community</div>
+                        </div>
+                    </div>
+                    <div class="tool-card-desc">执行 Shell 命令，赋予 Agent 操作文件系统、运行脚本的能力。需谨慎使用，注意安全限制。</div>
+                    <span class="tool-card-tag" style="background:oklch(0.50 0.18 300/0.12);color:#7c3aed;">System</span>
+                </div>
+
+                <!-- Calculator -->
+                <div class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">C</div>
+                        <div>
+                            <div class="tool-card-name">CalculatorTool</div>
+                            <div class="tool-card-pkg">langchain-core</div>
+                        </div>
+                    </div>
+                    <div class="tool-card-desc">精确数学计算工具，解决 LLM 在复杂算术运算上的不足，支持表达式求值。</div>
+                    <span class="tool-card-tag" style="background:oklch(0.55 0.22 250/0.12);color:var(--primary);">Utility</span>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <span class="callout-icon">!</span>
+                <div class="callout-body">
+                    <div class="callout-title">工具选择建议</div>
+                    <div class="callout-text">
+                        <strong>需要联网实时信息</strong> → Tavily（首选）/ DuckDuckGo（免费备选）<br>
+                        <strong>需要权威百科知识</strong> → Wikipedia<br>
+                        <strong>需要学术论文</strong> → ArXiv / PubMed<br>
+                        <strong>需要精确计算</strong> → Calculator<br>
+                        <strong>需要系统操作</strong> → ShellTool（务必设置白名单）
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 4: Multi-Tool Strategy -->
+    <article class="section-card type-green" id="multi-tool">
+        <div class="section-header">
+            <div class="section-icon green">&gt;</div>
+            <div>
+                <h2 class="section-title">工具组合策略</h2>
+                <p class="section-subtitle">多工具 Agent 编排实战</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>单个工具的能力有限，真正的强大来自<strong>多工具协同工作</strong>。LangChain 的 Agent 架构天然支持将多个工具绑定到一个 Agent 上，由 LLM 自主决定何时调用哪个工具。</p>
+
+            <div class="flow-diagram">
+                <div class="flow-title">多工具 Agent 执行流程</div>
+                <div class="flow-container">
+                    <div class="flow-node primary">User Query</div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node accent">LLM Reasoning</div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node">Tool Selection</div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node">Execute Tool</div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node primary">Synthesize Answer</div>
+                </div>
+            </div>
+
+            <h3>完整示例：搜索 + 计算组合 Agent</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Python</span>
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                </div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain.agents <span class="kw">import</span> create_tool_calling_agent, AgentExecutor
+<span class="kw">from</span> langchain_community.tools.tavily_search <span class="kw">import</span> TavilySearchResults
+<span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+<span class="kw">import</span> os
+
+<span class="cmt"># ========== 1. 初始化 LLM ==========-</span>
+llm = ChatOpenAI(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+
+<span class="cmt"># ========== 2. 定义工具集 ==========-</span>
+
+<span class="cmt"># 工具 A: Tavily 搜索</span>
+search = TavilySearchResults(max_results=<span class="num">3</span>)
+
+<span class="cmt"># 工具 B: 自定义计算器（使用 @tool 装饰器）</span>
+<span class="kw">@tool</span>
+<span class="kw">def</span> <span class="fn">calculator</span>(expression: str) -> str:
+    <span class="str">"""计算数学表达式的值。仅用于基础算术运算。"""</span>
+    <span class="kw">try</span>:
+        result = eval(expression)
+        <span class="kw">return</span> f<span class="str">"计算结果: {result}"</span>
+    <span class="kw">except</span> Exception as e:
+        <span class="kw">return</span> f<span class="str">"计算错误: {e}"</span>
+
+<span class="cmt"># ========== 3. 组装 Agent ==========-</span>
+tools = [search, calculator]
+
+agent = create_tool_calling_agent(llm, tools, prompt=<span class="kw">None</span>)
+agent_executor = AgentExecutor(
+    agent=agent,
+    tools=tools,
+    verbose=<span class="kw">True</span>,
+    handle_parsing_errors=<span class="kw">True</span>
+)
+
+<span class="cmt"># ========== 4. 测试运行 ==========-</span>
+
+<span class="cmt"># 场景1: 需要搜索信息</span>
+response1 = agent_executor.invoke({
+    <span class="str">"input"</span>: <span class="str">"2024年巴黎奥运会中国代表团获得了多少枚金牌？"</span>
+})
+
+<span class="cmt"># 场景2: 需要计算</span>
+response2 = agent_executor.invoke({
+    <span class="str">"input"</span>: <span class="str">"如果每枚金牌奖励50万元，总奖金是多少？"</span>
+})
+
+<span class="cmt"># 场景3: 搜索 + 计算 组合</span>
+response3 = agent_executor.invoke({
+    <span class="str">"input"</span>: <span class="str">"帮我查一下当前比特币价格，然后计算如果我有0.5个BTC值多少美元"</span>
+})</code></pre>
+            </div>
+
+            <div class="callout callout-key">
+                <span class="callout-icon">o</span>
+                <div class="callout-body">
+                    <div class="callout-title">Agent 如何选择工具？</div>
+                    <div class="callout-text">Agent 的工具选择完全依赖 <strong>LLM 的推理能力</strong>。每个工具的 <code>description</code> 参数是关键 — 它相当于给 LLM 写了一份"工具说明书"。描述写得越准确，LLM 选择正确工具的概率越高。这就是为什么自定义工具时 <strong>description 的撰写质量直接决定 Agent 表现</strong>。</div>
+                </div>
+            </div>
+
+            <h3>工具编排的核心原则</h3>
+            <div class="compare-grid">
+                <div class="compare-item">
+                    <div class="compare-item-name">职责单一</div>
+                    <div class="compare-item-desc">每个工具只做一件事，避免"万能工具"导致 LLM 选择困难</div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">描述精准</div>
+                    <div class="compare-item-desc">description 要明确说明适用场景和不适用的边界条件</div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">数量适度</div>
+                    <div class="compare-item-desc">同一 Agent 绑定 3-7 个工具为宜，过多会降低选择准确性</div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-item-name">互补覆盖</div>
+                    <div class="compare-item-desc">工具之间能力应互补而非重叠，形成完整的技能矩阵</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 5: Practical Demo -->
+    <article class="section-card type-info" id="practical-demo">
+        <div class="section-header">
+            <div class="section-icon info">&gt;&gt;</div>
+            <div>
+                <h2 class="section-title">实际搜索场景演示</h2>
+                <p class="section-subtitle">从零构建一个智能研究助手</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>下面我们用一个完整的实际案例来展示 Tavily 搜索工具在真实项目中的运用方式——构建一个<strong>技术调研助手</strong>，能够自主搜索、汇总并输出研究报告。</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Python</span>
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                </div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain.agents <span class="kw">import</span> create_tool_calling_agent, AgentExecutor
+<span class="kw">from</span> langchain_community.tools.tavily_search <span class="kw">import</span> TavilySearchResults
+<span class="kw">from</span> langchain_core.prompts <span class="kw">import</span> ChatPromptTemplate, MessagesPlaceholder
+<span class="kw">import</span> json
+
+<span class="cmt"># === 初始化 ===</span>
+llm = ChatOpenAI(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+
+<span class="cmt"># === 定义搜索工具（带自定义描述）===</span>
+tech_search = TavilySearchResults(
+    max_results=<span class="num">5</span>,
+    name=<span class="str">"tech_research_search"</span>,
+    description=(
+        <span class="str">"用于搜索最新的技术资讯、框架更新、编程语言特性、"</span>
+        <span class="str">"开源项目动态等信息。当用户询问技术趋势、版本发布、"</span>
+        <span class="str">"框架对比或需要最新资料时使用此工具。"</span>
+    )
+)
+
+news_search = TavilySearchResults(
+    max_results=<span class="num">5</span>,
+    name=<span class="str">"news_search"</span>,
+    description=(
+        <span class="str">"用于搜索时事新闻、行业动态、政策变化等新闻类信息。"</span>
+        <span class="str">"当用户询问最近发生的新闻事件、市场动态时使用此工具。"</span>
+    )
+)
+
+<span class="cmt"># === 构建 Prompt 模板 ===</span>
+prompt = ChatPromptTemplate.from_messages([
+    (<span class="str">"system"</span>, <span class="str">"""
+你是一位专业的技术研究助手。你的任务是：
+1. 根据用户的问题，主动使用搜索工具获取最新信息
+2. 对搜索结果进行分析和整理
+3. 输出结构清晰、有据可查的研究报告
+
+报告要求：
+- 使用 Markdown 格式
+- 包含信息来源引用
+- 区分事实陈述和个人分析
+- 如信息不足，明确指出
+"""</span>),
+    MessagesPlaceholder(variable_name=<span class="str">"chat_history"</span>),
+    (<span class="str">"human"</span>, <span class="str">"{input}"</span>),
+    MessagesPlaceholder(variable_name=<span class="str">"agent_scratchpad"</span>),
+])
+
+<span class="cmt"># === 创建 Agent ===</span>
+tools = [tech_search, news_search]
+agent = create_tool_calling_agent(llm, tools, prompt)
+agent_executor = AgentExecutor(
+    agent=agent,
+    tools=tools,
+    verbose=<span class="kw">True</span>,
+    max_iterations=<span class="num">5</span>,         <span class="cmt"># 最大迭代次数防止死循环</span>
+    handle_parsing_errors=<span class="kw">True</span>
+)
+
+<span class="cmt"># === 运行测试 ===</span>
+result = agent_executor.invoke({
+    <span class="str">"input"</span>: (
+        <span class="str">"请帮我调研一下 2024 年大模型领域的重要进展，"</span>
+        <span class="str">"重点关注开源模型和 Agent 框架的发展"</span>
+    ),
+    <span class="str">"chat_history"</span>: []
+})
+
+<span class="kw">print</span>(result[<span class="str">"output"</span>])</code></pre>
+            </div>
+
+            <div class="callout callout-tip">
+                <span class="callout-icon">+</span>
+                <div class="callout-body">
+                    <div class="callout-title">为什么用两个搜索实例而非一个？</div>
+                    <div class="callout-text">虽然底层都是 Tavily API，但通过不同的 <code>name</code> 和 <code>description</code>，可以让 Agent 更<strong>精准地判断该用哪个入口</strong>。技术搜索可以指定 topic 过滤为 tech，新闻搜索可以用 news topic。这种"同源异构"的工具设计模式在实际项目中非常常见。</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Section 6: Custom vs Predefined Comparison -->
+    <article class="section-card type-red" id="comparison">
+        <div class="section-header">
+            <div class="section-icon red">!</div>
+            <div>
+                <h2 class="section-title">自定义工具 vs 预定义工具</h2>
+                <p class="section-subtitle">选择标准与决策指南</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <p>上一集学习了如何用 <code>@tool</code> 装饰器创建自定义工具，本集又介绍了丰富的预定义工具生态。那么在实际项目中该如何选择？以下决策框架帮助你做出最优判断。</p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>维度</th>
+                            <th>预定义工具</th>
+                            <th>自定义工具 (@tool)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>开发速度</strong></td>
+                            <td>极快，导入即用</td>
+                            <td>需编写函数体和文档字符串</td>
+                        </tr>
+                        <tr>
+                            <td><strong>灵活性</strong></td>
+                            <td>受限于官方提供的参数</td>
+                            <td>完全可控，任意定制逻辑</td>
+                        </tr>
+                        <tr>
+                            <td><strong>维护成本</strong></td>
+                            <td>社区维护，跟随版本升级</td>
+                            <td>自行负责 Bug 修复和迭代</td>
+                        </tr>
+                        <tr>
+                            <td><strong>依赖风险</strong></td>
+                            <td>引入第三方包依赖</td>
+                            <td>无额外依赖</td>
+                        </tr>
+                        <tr>
+                            <td><strong>适用场景</strong></td>
+                            <td>通用能力（搜索、计算、知识库）</td>
+                            <td>业务特有逻辑（内部 API、私有数据）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>API Key</strong></td>
+                            <td>通常需要第三方服务密钥</td>
+                            <td>取决于具体实现</td>
+                        </tr>
+                        <tr>
+                            <td><strong>错误处理</strong></td>
+                            <td>已内置标准异常处理</td>
+                            <td>需自行实现 try-except</td>
+                        </tr>
+                        <tr>
+                            <td><strong>典型代表</strong></td>
+                            <td>Tavily、Wikipedia、Calculator</td>
+                            <td>企业内部 CRM 查询、自有算法服务</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>决策流程图</h3>
+            <div class="flow-diagram">
+                <div class="flow-title">工具选型决策路径</div>
+                <div class="flow-container">
+                    <div class="flow-node primary">需求分析</div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node">是通用能力?</div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node accent">预定义工具</div>
+                </div>
+                <div class="flow-container" style="margin-top:12px;">
+                    <div class="flow-node primary">需求分析</div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node">是业务特有?</div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-node" style="border-color:var(--danger);color:var(--danger);">自定义 @tool</div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <span class="callout-icon">!</span>
+                <div class="callout-body">
+                    <div class="callout-title">混合策略（推荐）</div>
+                    <div class="callout-text">在实际项目中，<strong>最佳实践是混合使用</strong>：用预定义工具覆盖通用能力（搜索、计算），用自定义工具封装业务逻辑（数据库查询、内部 API）。这种组合既保证了开发效率，又不失灵活性。</div>
+                </div>
+            </div>
+
+            <h3>本章小结</h3>
+            <div class="callout callout-key">
+                <span class="callout-icon">*</span>
+                <div class="callout-body">
+                    <div class="callout-title">核心要点回顾</div>
+                    <div class="callout-text">
+                        <strong>1. Tavily</strong> 是专为 AI 设计的搜索 API，返回结构化数据，免费 1000 次/月<br>
+                        <strong>2. TavilySearchResults</strong> 封装了所有 API 细节，通过参数控制搜索行为<br>
+                        <strong>3. LangChain 内置丰富工具生态</strong>：Wikipedia、ArXiv、DuckDuckGo、PubMed 等<br>
+                        <strong>4. 多工具编排</strong>是 Agent 的核心能力，description 决定工具选择质量<br>
+                        <strong>5. 选型原则</strong>：通用能力用预定义，业务逻辑用自定义，混合使用效果最佳
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+            <div class="footer-links">
+        <a href="19-工具Tools.html" class="footer-link prev">上一集：工具Tools</a>
+        <a href="21-短期记忆.html" class="footer-link next">下一集：短期记忆</a>
+    </div><div class="footer-ref">
+        参考来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">黑马程序员 LangChain 教程 P20</a> &middot;
+        <a href="https://python.langchain.com/docs/integrations/tools/tavily_search/" target="_blank">LangChain Tavily 文档</a> &middot;
+        <a href="https://tavily.com" target="_blank">Tavily 官网</a>
+    </div>
+</footer>
+
+<!-- TOC Sidebar -->
+<nav class="toc">
+    <ul class="toc-list">
+        <li><a href="#tavily-intro">Tavily 搜索引擎介绍</a></li>
+        <li><a href="#tavily-tool">TavilySearchResults 工具</a></li>
+        <li><a href="#tool-ecosystem">预定义工具生态</a></li>
+        <li><a href="#multi-tool">工具组合策略</a></li>
+        <li><a href="#practical-demo">实际搜索场景演示</a></li>
+        <li><a href="#comparison">自定义 vs 预定义对比</a></li>
+    </ul>
+</nav>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+    <button class="tweaks-toggle" onclick="toggleTweaks()" title="Tweaks">&#9881;</button>
+    <div class="tweaks-content" id="tweaksContent">
+        <div class="tweaks-title">
+            Tweaks
+            <small style="color:var(--text-muted);font-weight:400;font-size:11px;">v1.0</small>
+        </div>
+        <div class="tweaks-row">
+            <div class="tweaks-label">
+                <span>字体大小</span>
+                <span id="fontVal">100%</span>
+            </div>
+            <input type="range" class="tweaks-slider" min="0.8" max="1.3" step="0.05" value="1" onchange="changeFont(this.value)">
+        </div>
+        <div class="tweaks-row">
+            <div class="tweaks-label">
+                <span>行高倍数</span>
+                <span id="lineVal">1.7x</span>
+            </div>
+            <input type="range" class="tweaks-slider" min="1.4" max="2.0" step="0.1" value="1.7" onchange="changeLine(this.value)">
+        </div>
+    </div>
+</div>
+
+<script>
+// Copy code button
+function copyCode(btn) {
+    const code = btn.parentElement.querySelector('pre code').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+        }, 2000);
+    });
+}
+
+// Toggle Tweaks panel
+function toggleTweaks() {
+    document.getElementById('tweaksContent').classList.toggle('open');
+}
+
+// Font size adjustment
+function changeFont(val) {
+    document.documentElement.style.setProperty('--font-scale', val);
+    document.getElementById('fontVal').textContent = Math.round(val * 100) + '%';
+}
+
+// Line height adjustment
+function changeLine(val) {
+    document.body.style.lineHeight = val;
+    document.getElementById('lineVal').textContent = val + 'x';
+}
+
+// Close tweaks when clicking outside
+document.addEventListener('click', function(e) {
+    const panel = document.querySelector('.tweaks-panel');
+    if (!panel.contains(e.target)) {
+        document.getElementById('tweaksContent').classList.remove('open');
+    }
+});
+
+// Active TOC highlighting on scroll
+const sections = document.querySelectorAll('.section-card[id]');
+const tocLinks = document.querySelectorAll('.toc-list a');
+
+window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop - 140;
+        if (scrollY >= sectionTop) {
+            current = section.getAttribute('id');
+        }
+    });
+
+    tocLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>
+
+</body>
+</html>

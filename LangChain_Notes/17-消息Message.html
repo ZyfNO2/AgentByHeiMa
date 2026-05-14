@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第17集 - 消息Message | LangChain学习笔记</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8f9fc;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f1f3f8;
+            --text-primary: #1a1d26;
+            --text-secondary: #5a6072;
+            --text-muted: #949aad;
+            --primary: oklch(0.55 0.22 250);
+            --primary-light: oklch(0.75 0.15 250);
+            --accent: oklch(0.70 0.18 85);
+            --success: oklch(0.55 0.16 155);
+            --danger: oklch(0.55 0.20 25);
+            --info: oklch(0.55 0.15 230);
+            --border-color: #e2e5ef;
+            --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+            --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 4px rgba(26,29,38,0.04);
+            --shadow-lg: 0 8px 24px rgba(26,29,38,0.12), 0 4px 8px rgba(26,29,38,0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header Navigation */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(248, 249, 252, 0.85);
+            border-bottom: 1px solid var(--border-color);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .header.scrolled {
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0.875rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-brand-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            position: relative;
+        }
+  .nav-links a.nav-anchor {
+    background: rgba(79,110,247,0.10);
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .nav-links a.nav-anchor:hover {
+    background: rgba(79,110,247,0.18);
+  }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 1px;
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 7rem 0 3rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--info));
+            color: white;
+            padding: 0.375rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.25rem, 5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.1s forwards;
+        }
+
+        .hero-title-accent {
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.2s forwards;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.3s forwards;
+        }
+
+        .meta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 0.875rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .meta-tag-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        /* Content Section */
+        .content-section {
+            padding-bottom: 4rem;
+        }
+
+        .section-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .section-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-subtle);
+        }
+
+        .section-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            color: white;
+            border-radius: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-content {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .section-content p {
+            margin-bottom: 1rem;
+        }
+
+        .section-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(85, 120, 250, 0.06), rgba(100, 140, 255, 0.04));
+            border-left: 4px solid var(--primary);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 1.25rem 1.5rem;
+            margin: 1.25rem 0;
+        }
+
+        .highlight-box-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .highlight-box-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Code Block */
+        .code-block {
+            position: relative;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-md);
+            margin: 1.25rem 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.25rem;
+            background: rgba(26, 29, 38, 0.03);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-lang {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .code-copy-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.625rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+
+        .code-block:hover .code-copy-btn {
+            opacity: 1;
+        }
+
+        .code-copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.05);
+        }
+
+        .code-body {
+            padding: 1.25rem;
+            overflow-x: auto;
+        }
+
+        .code-body pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.84375rem;
+            line-height: 1.65;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .code-body code {
+            font-family: inherit;
+        }
+
+        /* Syntax Highlighting (Basic) */
+        .code-keyword { color: #c678dd; }
+        .code-string { color: #98c379; }
+        .code-comment { color: #5c6370; font-style: italic; }
+        .code-function { color: #61afef; }
+        .code-class { color: #e5c07b; }
+        .code-variable { color: #e06c75; }
+        .code-param { color: #d19a66; }
+        .code-operator { color: #56b6c2; }
+
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.25rem 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            color: white;
+        }
+
+        th {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        tbody tr:nth-child(even) {
+            background: var(--bg-subtle);
+        }
+
+        tbody tr:hover {
+            background: rgba(85, 120, 250, 0.04);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* List Styles */
+        .content-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 1rem 0;
+        }
+
+        .content-list li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .content-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.6rem;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .content-list li strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0;
+        }
+
+        .info-item {
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .info-item:hover {
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.03);
+        }
+
+        .info-item-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.375rem;
+        }
+
+        .info-item-value {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .info-item-value code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: rgba(85, 120, 250, 0.08);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            padding: 2.5rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .footer-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .footer-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(85, 120, 250, 0.04);
+            transform: translateX(4px);
+        }
+
+        .footer-link.next {
+            flex-direction: row-reverse;
+        }
+
+        .footer-link.next:hover {
+            transform: translateX(-4px);
+        }
+
+        .footer-reference {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .footer-reference a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer-reference a:hover {
+            text-decoration: underline;
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 5.5rem 0 2.5rem;
+            }
+
+            .section-card {
+                padding: 1.75rem;
+                border-radius: var(--radius-md);
+            }
+
+            .section-title {
+                font-size: 1.175rem;
+            }
+
+            .table-wrapper {
+                font-size: 0.8125rem;
+            }
+
+            th, td {
+                padding: 0.625rem 0.75rem;
+            }
+
+            .footer-nav {
+                flex-direction: column;
+            }
+
+            .footer-link {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-page);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="header">
+    <div class="nav-container">
+        <a href="index.html" class="nav-brand">
+            <span class="nav-brand-icon">LC</span>
+            LangChain Notes
+        </a>
+        <nav class="nav-links">
+            <a href="#s1" class="nav-anchor">&sect;1 消息系统的核心概念</a>
+            <a href="#s2" class="nav-anchor">&sect;2 三种核心消息类型</a>
+            <a href="#s3" class="nav-anchor">&sect;3 消息的核心属性</a>
+            <a href="#s4" class="nav-anchor">&sect;4 messages 参数传...</a>
+            <a href="#s5" class="nav-anchor">&sect;5 完整对话流与工具调用闭环</a>
+            <a href="#s6" class="nav-anchor">&sect;6 消息历史管理最佳实践</a>
+
+            <a href="17-消息Message.html" class="nav-link active">P17 消息</a>
+            <a href="18-提示词工程.html" class="nav-link">P18 提示词</a>
+            <a href="19-工具Tools.html" class="nav-link">P19 工具</a>
+            <a href="20-预定义工具Tavily.html" class="nav-link">P20 Tavily</a>
+        </nav>
+    </div>
+</header>
+
+<main class="main-container">
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-badge">Chapter 02 / Model I/O</div>
+        <h1 class="hero-title">
+            第17集：<span class="hero-title-accent">消息 Message</span>
+        </h1>
+        <p class="hero-subtitle">
+            深入理解 LangChain 的消息系统 —— 三种核心消息类型、属性结构、以及多轮对话中的最佳实践
+        </p>
+        <div class="hero-meta">
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M10 8l6 4-6 4V8z"/></svg>
+                集数 P17-P18
+            </span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                时长 24:48
+            </span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                BV178w1z7EHQ
+            </span>
+        </div>
+    </section>
+
+    <!-- Content -->
+    <div class="content-section">
+
+        <!-- Card 1: 核心概念 -->
+        <article class="section-card" id="s1" data-animate>
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2 class="section-title">消息系统的核心概念</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    在 LangChain 中，<strong>消息（Message）</strong>是连接用户、AI 和工具的核心纽带。它是聊天模型的基本上下文单元，代表模型的输入和输出，携带内容和元数据，用于表示与 LLM 交互时的对话状态。
+                </p>
+
+                <div class="highlight-box">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        为什么需要结构化消息？
+                    </div>
+                    <div class="highlight-box-content">
+                        使用语义化的消息类（而非原始字典），可以避免手动写 <code>{"role": ...}</code> 字典，
+                        更重要的是可以直接用 <code>isinstance(last_message, AIMessage)</code> 进行类型判断，
+                        代码可读性和可维护性显著提升。
+                    </div>
+                </div>
+
+                <p>每条消息是一个对象，包含三个核心要素：</p>
+                <ul class="content-list">
+                    <li><strong>角色（Role）</strong>：标识消息类型（如 system、user、assistant）</li>
+                    <li><strong>内容（Content）</strong>：消息的实际内容，可以是文本、图像、音频等</li>
+                    <li><strong>元数据（Metadata）</strong>：可选字段，如响应信息、消息 ID、token 使用量等</li>
+                </ul>
+            </div>
+        </article>
+
+        <!-- Card 2: 三种核心消息类型 -->
+        <article class="section-card" id="s2" data-animate>
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2 class="section-title">三种核心消息类型</h2>
+            </div>
+            <div class="section-content">
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>消息类型</th>
+                                <th>Role 值</th>
+                                <th>用途说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>SystemMessage</code></td>
+                                <td><code>"system"</code></td>
+                                <td>设定 AI 行为规范、背景知识、角色定位</td>
+                            </tr>
+                            <tr>
+                                <td><code>HumanMessage</code></td>
+                                <td><code>"user"</code></td>
+                                <td>代表用户的输入或提问</td>
+                            </tr>
+                            <tr>
+                                <td><code>AIMessage</code></td>
+                                <td><code>"assistant"</code></td>
+                                <td>模型回复，可能包含 tool_calls 工具调用</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- SystemMessage -->
+                <h3 style="font-family:'Space Grotesk';font-size:1.1rem;font-weight:600;margin:1.5rem 0 0.75rem;color:var(--text-primary);">SystemMessage — 系统消息</h3>
+                <p>用于"洗脑"或初始化，告诉模型它的身份和行为约束。<strong>优先级最高</strong>，通常作为消息列表的首条消息。</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.messages <span class="code-keyword">import</span> SystemMessage
+
+<span class="code-comment"># 定义系统消息：设定 AI 角色和行为边界</span>
+system_msg = SystemMessage(
+    content=<span class="code-string">"你是一名金融分析师，仅回答2023年后的A股市场数据问题，"</span>
+             <span class="code-string">"超出范围时回复'该问题超出我的知识边界'"</span>
+)
+
+<span class="code-keyword">print</span>(system_msg.content)
+<span class="code-comment"># 输出: 你是一名金融分析师，仅回答2023年后的A股市场数据问题...</span>
+<span class="code-keyword">print</span>(system_msg.type)
+<span class="code-comment"># 输出: system</span></code></pre></div>
+                </div>
+
+                <div class="highlight-box">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+                        关键要点
+                    </div>
+                    <div class="highlight-box-content">
+                        若模型不支持系统消息（如部分旧版 API），LangChain 会自动将其合并到 HumanMessage 中。
+                        SystemMessage 决定了模型的"身份设定"，直接影响输出风格和内容范围。
+                    </div>
+                </div>
+
+                <!-- HumanMessage -->
+                <h3 style="font-family:'Space Grotesk';font-size:1.1rem;font-weight:600;margin:1.5rem 0 0.75rem;color:var(--text-primary);">HumanMessage — 用户消息</h3>
+                <p>表示用户输入内容，是对话的<strong>核心触发点</strong>。支持纯文本或多模态输入（如文本+图片，需模型本身支持多模态能力）。</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.messages <span class="code-keyword">import</span> HumanMessage
+
+<span class="code-comment"># 纯文本输入</span>
+human_msg = HumanMessage(content=<span class="code-string">"2024年上证指数最高点是多少？"</span>)
+
+<span class="code-comment"># 多模态输入（需 GPT-4o 等支持多模态的模型）</span>
+human_msg_multimodal = HumanMessage(
+    content=[
+        {<span class="code-string">"type"</span>: <span class="code-string">"text"</span>, <span class="code-string">"text"</span>: <span class="code-string">"描述这张图片的金融含义"</span>},
+        {<span class="code-string">"type"</span>: <span class="code-string">"image_url"</span>, <span class="code-string">"image_url"</span>: {<span class="code-string">"url"</span>: <span class="code-string">"https://example.com/chart.png"</span>}}
+    ]
+)</code></pre></div>
+                </div>
+
+                <!-- AIMessage -->
+                <h3 style="font-family:'Space Grotesk';font-size:1.1rem;font-weight:600;margin:1.5rem 0 0.75rem;color:var(--text-primary);">AIMessage — AI 回复消息</h3>
+                <p>存储模型生成的响应，包含<strong>文本回复</strong>和可选的<strong>工具调用请求</strong>（tool_calls）。当模型决定调用外部工具时，content 可能为空字符串。</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.messages <span class="code-keyword">import</span> AIMessage
+
+<span class="code-comment"># 普通文本回复</span>
+ai_msg = AIMessage(
+    content=<span class="code-string">"2024年上证指数最高点为3,400点（截至2024年12月）"</span>
+)
+
+<span class="code-comment"># 包含工具调用的回复（模拟模型需查询实时数据）</span>
+ai_msg_with_tool = AIMessage(
+    content=<span class="code-string">""</span>,
+    tool_calls=[{
+        <span class="code-string">"name"</span>: <span class="code-string">"get_stock_data"</span>,
+        <span class="code-string">"args"</span>: {<span class="code-string">"market"</span>: <span class="code-string">"A股"</span>, <span class="code-string">"metric"</span>: <span class="code-string">"index_high"</span>},
+        <span class="code-string">"id"</span>: <span class="code-string">"call_abc123"</span>  <span class="code-comment"># 必须唯一标识调用</span>
+    }]
+)
+
+<span class="code-keyword">print</span>(ai_msg_with_tool.tool_calls)
+<span class="code-comment"># [{'name': 'get_stock_data', 'args': {...}, 'id': 'call_abc123'}]</span></code></pre></div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Card 3: 消息属性详解 -->
+        <article class="section-card" id="s3" data-animate>
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2 class="section-title">消息的核心属性</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    所有消息都继承自 <code>BaseMessage</code> 基类，该基类定义了所有消息共有的属性结构：
+                </p>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">content</div>
+                        <div class="info-item-value">消息主体内容<br><code>str | list</code></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">type</div>
+                        <div class="info-item-value">消息类型标识<br><code>"human" | "ai" | "system"</code></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">additional_kwargs</div>
+                        <div class="info-item-value">供应商扩展参数<br><code>dict</code></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">response_metadata</div>
+                        <div class="info-item-value">响应元数据（token 等）<br><code>dict</code></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">id</div>
+                        <div class="info-item-value">唯一标识符（可选）<br><code>str | None</code></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">name</div>
+                        <div class="info-item-value">发送者名称（可选）<br><code>str | None</code></div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:1.5rem;">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        additional_kwargs 的作用
+                    </div>
+                    <div class="highlight-box-content">
+                        <code>additional_kwargs</code> 用于存储特定于模型提供商的额外参数。
+                        例如 OpenAI 可能在此处放置 <code>function_call</code> 信息，
+                        Anthropic 可能在其中放置特定的元数据。这是实现跨模型兼容性的关键设计。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Card 4: messages 参数传递 -->
+        <article class="section-card" id="s4" data-animate>
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2 class="section-title">messages 参数传递给模型</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    将消息列表传递给聊天模型是 LangChain 最基础的操作方式。模型接收完整的对话历史（消息列表），然后生成对应的响应。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_openai <span class="code-keyword">import</span> ChatOpenAI
+<span class="code-keyword">from</span> langchain_core.messages <span class="code-keyword">import</span> SystemMessage, HumanMessage, AIMessage
+
+<span class="code-comment"># 初始化模型</span>
+model = ChatOpenAI(model=<span class="code-string">"gpt-4o-mini"</span>, temperature=<span class="code-param">0</span>)
+
+<span class="code-comment"># 构建消息列表（完整对话上下文）</span>
+messages = [
+    SystemMessage(content=<span class="code-string">"你是一名专业的 Python 编程助手，只输出代码，不做额外解释。"</span>),
+    HumanMessage(content=<span class="code-string">"请写一个快速排序函数"</span>)
+]
+
+<span class="code-comment"># 调用模型，传入 messages 参数</span>
+response = model.invoke(messages)
+
+<span class="code-keyword">print</span>(<span class="code-keyword">type</span>(response))     <span class="code-comment"># &lt;class 'langchain_core.messages.ai.AIMessage'&gt;</span>
+<span class="code-keyword">print</span>(response.content)      <span class="code-comment"># 模型生成的代码内容</span>
+<span class="code-keyword">print</span>(response.type)         <span class="code-comment"># "ai"</span></code></pre></div>
+                </div>
+
+                <div class="highlight-box">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+                        返回值类型
+                    </div>
+                    <div class="highlight-box-content">
+                        <code>model.invoke(messages)</code> 返回的是一个 <code>AIMessage</code> 对象，
+                        而不是普通字符串。这意味着你可以直接访问其 <code>.content</code>、<code>.tool_calls</code>、
+                        <code>.response_metadata</code> 等属性进行后续处理。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Card 5: 完整对话流示例 -->
+        <article class="section-card" id="s5" data-animate>
+            <div class="section-header">
+                <span class="section-number">05</span>
+                <h2 class="section-title">完整对话流与工具调用闭环</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    在 Agent 场景中，消息流转形成一个完整的闭环：用户提问 → AI 判断是否调用工具 → 执行工具 → 将结果传回 AI → AI 给出最终答案。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.messages <span class="code-keyword">import</span>(
+    SystemMessage, HumanMessage, AIMessage, ToolMessage
+)
+
+<span class="code-comment"># 构建一个完整的工具调用对话链</span>
+messages = [
+    <span class="code-comment"># Step 1: 系统指令 — 定义 AI 角色</span>
+    SystemMessage(content=<span class="code-string">"你是一个智能助手，可以查询天气和股票数据。"</span>),
+
+    <span class="code-comment"># Step 2: 用户输入 — 具体查询需求</span>
+    HumanMessage(content=<span class="code-string">"北京今天天气怎么样？"</span>),
+
+    <span class="code-comment"># Step 3: AI 决定调用工具（tool_calls 不为空）</span>
+    AIMessage(
+        content=<span class="code-string">""</span>,
+        tool_calls=[{
+            <span class="code-string">"name"</span>: <span class="code-string">"get_weather"</span>,
+            <span class="code-string">"args"</span>: {<span class="code-string">"city"</span>: <span class="code-string">"北京"</span>},
+            <span class="code-string">"id"</span>: <span class="code-string">"call_xyz789"</span>
+        }]
+    ),
+
+    <span class="code-comment"># Step 4: 工具执行结果 — 必须匹配 tool_call_id</span>
+    ToolMessage(
+        content=<span class="code-string">"晴，气温 25°C，湿度 45%"</span>,
+        tool_call_id=<span class="code-string">"call_xyz789"</span>
+    ),
+
+    <span class="code-comment"># Step 5: AI 根据工具结果给出最终回答</span>
+    AIMessage(content=<span class="code-string">"北京今天天气晴朗，气温 25 摄氏度，湿度 45%，适合外出活动。"</span>)
+]
+
+<span class="code-comment"># 遍历消息查看完整流程</span>
+<span class="code-keyword">for</span> msg <span class="code-keyword">in</span> messages:
+    print(<span class="code-string">f"[{msg.type:>12}] "</span>, end=<span class="code-string">""</span>)
+    <span class="code-keyword">if</span> hasattr(msg, <span class="code-string">'tool_calls'</span>) <span class="code-keyword">and</span> msg.tool_calls:
+        print(<span class="code-string">f"调用工具: {msg.tool_calls[0]['name']}"</span>)
+    <span class="code-keyword">elif</span> hasattr(msg, <span class="code-string">'tool_call_id'</span>):
+        print(<span class="code-string">f"工具结果 ({msg.tool_call_id})"</span>)
+    <span class="code-keyword">else</span>:
+        print(msg.content[:<span class="code-param">50</span>] + (<span class="code-string">"..."</span> <span class="code-keyword">if</span> len(msg.content) > <span class="code-param">50</span> <span class="code-keyword">else</span> <span class="code-string">""</span>))</code></pre></div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:1.5rem;">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        ToolMessage 的关键约束
+                    </div>
+                    <div class="highlight-box-content">
+                        <code>ToolMessage</code> 是闭环的关键环节。它<strong>必须</strong>通过
+                        <code>tool_call_id</code> 与之前 <code>AIMessage</code> 中的工具调用一一对应，
+                        否则模型无法正确关联工具结果与调用请求。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Card 6: 最佳实践 -->
+        <article class="section-card" id="s6" data-animate>
+            <div class="section-header">
+                <span class="section-number">06</span>
+                <h2 class="section-title">消息历史管理最佳实践</h2>
+            </div>
+            <div class="section-content">
+                <p>在实际应用开发中，管理消息历史需要注意以下关键实践：</p>
+
+                <ul class="content-list">
+                    <li>
+                        <strong>必须使用类型化消息对象</strong>：官方明确要求使用 SystemMessage/HumanMessage/AIMessage 等类，而非原始字典，以确保跨模型兼容性。
+                    </li>
+                    <li>
+                        <strong>SystemMessage 放在首位</strong>：系统消息通常位于消息列表的开头，用于设定全局行为约束。
+                    </li>
+                    <li>
+                        <strong>控制消息长度</strong>：随着对话轮次增加，消息列表会不断增长，需要配合记忆管理组件（如窗口裁剪、摘要压缩）来控制 token 消耗。
+                    </li>
+                    <li>
+                        <strong>保持对话结构完整性</strong>：在工具调用场景中，必须确保 AIMessage(tool_calls) → ToolMessage → AIMessage(final_answer) 的顺序不被打乱。
+                    </li>
+                    <li>
+                        <strong>使用 AnyMessage 类型注解</strong>：在函数签名中使用 <code>AnyMessage</code> 类型别名来接收任意消息类型，提升代码灵活性。
+                    </li>
+                </ul>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.messages <span class="code-keyword">import</span> AnyMessage, AIMessage, HumanMessage
+
+<span class="code-comment"># 使用 AnyMessage 处理任意消息类型</span>
+<span class="code-keyword">def</span> <span class="code-function">process_chat</span>(msg: AnyMessage):
+    <span class="code-keyword">print</span>(msg.content)
+
+    <span class="code-comment"># 类型判断后访问特定属性</span>
+    <span class="code-keyword">if isinstance</span>(msg, AIMessage):
+        <span class="code-keyword">if</span> msg.tool_calls:
+            <span class="code-keyword">print</span>(<span class="code-string">f"检测到工具调用: {len(msg.tool_calls)} 个"</span>)
+
+<span class="code-comment"># 可以接收任何子类型</span>
+process_chat(HumanMessage(content=<span class="code-string">"你好"</span>))
+process_chat(AIMessage(content=<span class="code-string">"你好！有什么可以帮助你的？"</span>))</code></pre></div>
+                </div>
+            </div>
+        </article>
+
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <nav class="footer-nav">
+  <a href="16-调用模型.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 16 集 - 调用模型</div>
+    </div>
+  </a>
+  <a href="18-提示词工程.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 18 集 - 提示词工程</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+        <div class="footer-reference">
+            参考来源：<a href="https://python.langchain.ac.cn/docs/concepts/messages/" target="_blank">LangChain 官方文档 - Messages</a> |
+            课程来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">黑马程序员 LangChain 教程</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Header scroll effect
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 20) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    // Intersection Observer for fade-up animations
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -50px 0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, index * 100);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.section-card[data-animate]').forEach(card => {
+        observer.observe(card);
+    });
+
+    // Copy code function
+    function copyCode(btn) {
+        const codeBlock = btn.closest('.code-block');
+        const code = codeBlock.querySelector('code').textContent;
+
+        navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copied!';
+            btn.style.color = 'var(--success)';
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+                btn.style.color = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Copy failed:', err);
+        });
+    }
+</script>
+
+</body>
+</html>

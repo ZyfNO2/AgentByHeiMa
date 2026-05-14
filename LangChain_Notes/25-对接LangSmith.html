@@ -1,0 +1,1104 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第25集 - 对接 LangSmith | LangChain 学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ========== Design Tokens ========== */
+:root {
+  --bg-page: #f8f9fc;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f3f8;
+  --bg-accent: #eef2ff;
+  --text-primary: #1a1d26;
+  --text-secondary: #5a6072;
+  --text-muted: #949aad;
+  --primary: oklch(0.55 0.22 250);
+  --primary-light: oklch(0.72 0.15 250);
+  --primary-bg: oklch(0.95 0.05 250);
+  --accent: oklch(0.70 0.18 85);
+  --accent-light: oklch(0.85 0.12 85);
+  --accent-bg: oklch(0.97 0.04 85);
+  --success: oklch(0.55 0.16 155);
+  --danger: oklch(0.55 0.20 25);
+  --info: oklch(0.55 0.15 230);
+  --border: rgba(26,29,38,0.08);
+  --border-strong: rgba(26,29,38,0.14);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-glow: 0 0 30px rgba(79,110,247,0.10);
+
+  /* Tweaks overrides (defaults) */
+  --font-scale: 1;
+  --content-width: 900px;
+}
+
+/* ========== Reset & Base ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Outfit', -apple-system, sans-serif;
+  font-size: calc(16px * var(--font-scale));
+  line-height: 1.75;
+  color: var(--text-primary);
+  background: var(--bg-page);
+}
+h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; line-height: 1.3; }
+a { color: var(--primary); text-decoration: none; transition: opacity .2s; }
+a:hover { opacity: .75; }
+
+/* ========== Header (Glassmorphism) ========== */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(248,249,252,0.78);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-inner {
+  max-width: var(--content-width);
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-logo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--primary);
+  display: flex; align-items: center; gap: 8px;
+}
+.header-logo svg { width: 22px; height: 22px; }
+.header-nav { display: flex; align-items: center; gap: 16px; }
+.header-nav a {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary);
+  transition: color .2s;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+.header-nav a:hover { color: var(--primary); opacity: 1; background: var(--primary-bg); }
+.ep-badge {
+  background: var(--primary); color: #fff;
+  padding: 3px 10px; border-radius: 100px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .03em;
+}
+
+/* ========== Main Content ========== */
+main {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 90px 24px 64px;
+}
+
+/* ========== Hero Section ========== */
+.hero {
+  text-align: center;
+  padding: 48px 0 40px;
+  animation: fadeUp .6s ease-out both;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--primary-bg), var(--bg-accent));
+  border: 1px solid rgba(79,110,247,.18);
+  padding: 6px 16px; border-radius: 100px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, var(--text-primary) 40%, var(--primary));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: 17px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 28px;
+  line-height: 1.65;
+}
+.hero-meta {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+}
+.meta-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12.5px; font-weight: 500;
+  color: var(--text-secondary);
+}
+.meta-chip strong { color: var(--text-primary); }
+
+/* ========== Section Card ========== */
+.section-card {
+  background: var(--bg-surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 24px;
+  animation: fadeUp .5s ease-out both;
+  transition: box-shadow .25s ease, transform .25s ease;
+}
+.section-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.card-bar {
+  width: 4px;
+  flex-shrink: 0;
+}
+.card-bar.primary { background: var(--primary); }
+.card-bar.accent { background: var(--accent); }
+.card-bar.success { background: var(--success); }
+.card-bar.info { background: var(--info); }
+.card-body {
+  padding: 28px 28px 24px;
+}
+.section-card .card-header {
+  display: flex; align-items: flex-start; gap: 0;
+}
+.section-card h2 {
+  font-size: clamp(19px, 2.3vw, 24px);
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-card h2 .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 8px;
+  font-size: 14px; font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.num.pri { background: var(--primary); }
+.num.acc { background: var(--accent); }
+.num.suc { background: var(--success); }
+.num.inf { background: var(--info); }
+.section-card p { color: var(--text-secondary); margin-bottom: 12px; }
+.section-card p:last-child { margin-bottom: 0; }
+
+/* ========== Feature Grid ========== */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.feature-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px;
+  background: var(--bg-subtle);
+  border-radius: 12px;
+  transition: background .2s;
+}
+.feature-item:hover { background: var(--bg-accent); }
+.feature-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+}
+.feature-icon.blue { background: var(--primary-bg); }
+.feature-icon.orange { background: var(--accent-bg); }
+.feature-icon.green { background: oklch(0.95 0.06 155); }
+.feature-icon.cyan { background: oklch(0.94 0.06 230); }
+.feature-text h4 {
+  font-size: 14px; font-weight: 600;
+  margin-bottom: 3px;
+}
+.feature-text p {
+  font-size: 13px; color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ========== Tech Table ========== */
+.tech-table {
+  width: 100%; border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.tech-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--primary);
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+}
+.tech-table th:first-child { border-radius: 10px 0 0 0; }
+.tech-table th:last-child { border-radius: 0 10px 0 0; }
+.tech-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.tech-table tr:nth-child(even) td { background: var(--bg-subtle); }
+.tech-table tr:hover td { background: var(--primary-bg); }
+.tech-table code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  background: var(--bg-subtle);
+  padding: 2px 7px; border-radius: 5px;
+  color: var(--primary);
+}
+
+/* ========== Code Block ========== */
+.code-block {
+  position: relative;
+  margin: 18px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+}
+.code-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg-subtle);
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.code-lang {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11.5px; font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.copy-btn {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11.5px; font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none; border: none;
+  padding: 3px 8px; border-radius: 5px;
+  transition: all .2s;
+}
+.copy-btn:hover { color: var(--primary); background: var(--bg-accent); }
+.code-block pre {
+  margin: 0;
+  padding: 20px 20px;
+  background: var(--bg-subtle);
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+.code-block pre .kw { color: var(--primary); font-weight: 600; }
+.code-block pre .fn { color: var(--accent); }
+.code-block pre .str { color: var(--success); }
+.code-block pre .cmt { color: var(--text-muted); font-style: italic; }
+.code-block pre .builtin { color: var(--info); }
+
+/* ========== Callout ========== */
+.callout {
+  display: flex; gap: 14px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  margin: 18px 0;
+  border-left: 4px solid;
+}
+.callout.tip { background: var(--primary-bg); border-color: var(--primary); }
+.callout.warn { background: var(--accent-bg); border-color: var(--accent); }
+.callout.ok { background: oklch(0.95 0.06 155); border-color: var(--success); }
+.callout-icon { font-size: 20px; flex-shrink: 0; line-height: 1.5; }
+.callout-content h4 {
+  font-size: 14px; font-weight: 600; margin-bottom: 4px;
+}
+.callout-content p {
+  font-size: 14px; color: var(--text-secondary); margin: 0;
+  line-height: 1.6;
+}
+
+/* ========== Steps List ========== */
+.steps-list {
+  counter-reset: step;
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+.steps-list li {
+  counter-increment: step;
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.steps-list li:last-child { border-bottom: none; }
+.steps-list li::before {
+  content: counter(step);
+  display: flex; align-items: center; justify-content: center;
+  min-width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+}
+.step-content h4 {
+  font-size: 15px; font-weight: 600; margin-bottom: 4px;
+}
+.step-content p {
+  font-size: 14px; color: var(--text-secondary); margin: 0;
+}
+
+/* ========== Architecture Diagram ========== */
+.arch-diagram {
+  background: var(--bg-subtle);
+  border-radius: 14px;
+  padding: 28px 24px;
+  margin: 20px 0;
+  text-align: center;
+}
+.arch-diagram .arch-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.arch-flow {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 10px;
+}
+.arch-node {
+  background: var(--bg-surface);
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--text-primary);
+  min-width: 120px;
+  transition: all .25s;
+  box-shadow: var(--shadow-sm);
+}
+.arch-node:hover { border-color: var(--primary); box-shadow: var(--shadow-glow); transform: translateY(-2px); }
+.arch-node.highlight { border-color: var(--primary); background: var(--primary-bg); color: var(--primary); }
+.arch-arrow {
+  color: var(--text-muted);
+  font-size: 20px;
+  font-weight: 300;
+}
+
+/* ========== Trace Data Card ========== */
+.trace-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+.trace-card {
+  background: var(--bg-subtle);
+  border-radius: 12px;
+  padding: 18px 16px;
+  text-align: center;
+  border: 1px solid var(--border);
+  transition: all .2s;
+}
+.trace-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+.trace-card-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+.trace-card-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* ========== Footer Navigation ========== */
+.footer-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+.nav-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px; font-weight: 600;
+  transition: all .25s;
+  text-decoration: none;
+}
+.nav-btn.prev {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.nav-btn.next {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(79,110,247,.25);
+}
+.nav-btn.prev:hover { border-color: var(--primary); color: var(--primary); }
+.nav-btn.next:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,110,247,.35); }
+.nav-label { font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 2px; }
+.ref-source {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+/* ========== Tweaks Panel ========== */
+.tweaks-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(79,110,247,.35);
+  transition: all .25s ease;
+  font-size: 20px;
+}
+.tweaks-toggle:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(79,110,247,.45);
+}
+.tweaks-panel {
+  position: fixed;
+  bottom: 84px;
+  right: 24px;
+  z-index: 199;
+  width: 300px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 20px;
+  transform-origin: bottom right;
+  transition: transform .3s cubic-bezier(.16,1,.3,1), opacity .25s ease;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.tweaks-panel.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+.tweaks-panel.hidden {
+  transform: translateY(12px) scale(.96);
+}
+.tweaks-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.tweaks-header h3 {
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.tweaks-close {
+  background: none; border: none;
+  cursor: pointer; font-size: 18px;
+  color: var(--text-muted);
+  padding: 4px; border-radius: 6px;
+  transition: all .2s;
+}
+.tweaks-close:hover { color: var(--text-primary); background: var(--bg-subtle); }
+.tweaks-group { margin-bottom: 16px; }
+.tweaks-group:last-child { margin-bottom: 0; }
+.tweaks-label {
+  font-size: 12px; font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: block;
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.tweaks-slider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--bg-subtle);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+.tweaks-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(79,110,247,.3);
+  transition: transform .15s ease;
+}
+.tweaks-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+.tweaks-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--primary);
+  float: right;
+  margin-top: -22px;
+  font-weight: 600;
+}
+
+/* ========== Animations ========== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.section-card:nth-child(1) { animation-delay: 0s; }
+.section-card:nth-child(2) { animation-delay: .08s; }
+.section-card:nth-child(3) { animation-delay: .16s; }
+.section-card:nth-child(4) { animation-delay: .24s; }
+.section-card:nth-child(5) { animation-delay: .32s; }
+.section-card:nth-child(6) { animation-delay: .40s; }
+
+/* ========== Responsive ========== */
+@media (max-width: 640px) {
+  main { padding: 80px 16px 48px; }
+  .hero { padding: 32px 0 28px; }
+  .card-body { padding: 22px 18px 18px; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .trace-cards { grid-template-columns: repeat(2, 1fr); }
+  .footer-nav { flex-direction: column; }
+  .nav-btn { width: 100%; justify-content: center; }
+  .arch-flow { flex-direction: column; }
+  .arch-arrow { transform: rotate(90deg); }
+  .tweaks-panel { width: calc(100vw - 48px); right: 16px; bottom: 80px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      LangChain Notes
+    </a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 LangSmith 平台...</a>
+      <a href="#s2" class="nav-anchor">&sect;2 环境变量配置</a>
+      <a href="#s3" class="nav-anchor">&sect;3 Trace 数据深度解读</a>
+      <a href="#s4" class="nav-anchor">&sect;4 Prompt 版本管理与...</a>
+      <a href="#s5" class="nav-anchor">&sect;5 性能瓶颈分析实战</a>
+      <a href="#s6" class="nav-anchor">&sect;6 本集小结</a>
+
+      <a href="24-需求分析与功能验证.html">Prev</a>
+      <span class="ep-badge">EP.25 / 28</span>
+      <a href="26-搭建服务端并对接OSS.html">Next</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+    可观测性 & 调试
+  </div>
+  <h1>对接 LangSmith</h1>
+  <p class="hero-sub">掌握 LLM 应用的可观测性利器 —— 从环境配置到 Trace 数据深度分析，让 Agent 的每一次运行都清晰可见</p>
+  <div class="hero-meta">
+    <span class="meta-chip">P.26 <strong>/ 第25集</strong></span>
+    <span class="meta-chip"><strong>18:42</strong> 时长</span>
+    <span class="meta-chip">调试 · 可观测性</span>
+    <span class="meta-chip">LangSmith + Tracing + Evaluation</span>
+  </div>
+</section>
+
+<!-- SECTION 1: 平台介绍 -->
+<div class="section-card" id="s1">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar primary"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num pri">1</span> LangSmith 平台概览</h2>
+      <p><strong>LangSmith</strong> 是 LangChain 官方推出的 LLM 应用开发平台，专注于解决大模型应用开发中的<strong>「黑盒问题」</strong> —— 当 Agent 行为不符合预期时，你需要的不是猜测，而是精确的运行数据。</p>
+
+      <div class="feature-grid">
+        <div class="feature-item">
+          <div class="feature-icon blue">&#128202;</div>
+          <div class="feature-text">
+            <h4>Tracing（追踪）</h4>
+            <p>完整记录每次 LLM 调用的输入/输出/延迟/Token 消耗</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon orange">&#128240;</div>
+          <div class="feature-text">
+            <h4>Evaluation（评估）</h4>
+            <p>自动化测试框架，批量评估 Prompt 和输出质量</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon green">&#128221;</div>
+          <div class="feature-text">
+            <h4>Prompt Hub</h4>
+            <p>Prompt 版本管理、A/B 测试与协作编辑</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon cyan">&#128200;</div>
+          <div class="feature-text">
+            <h4>Monitoring</h4>
+            <p>生产环境监控告警、用户反馈追踪</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout tip" style="margin-top:18px;">
+        <div class="callout-icon">&#128161;</div>
+        <div class="callout-content">
+          <h4>为什么需要 LangSmith？</h4>
+          <p>传统软件可以通过断点调试定位问题，但 LLM 应用是概率性的 —— 同样的输入可能产生不同的输出。LangSmith 通过 Trace 数据让你能「回放」每次运行过程，精确定位是哪一步出了问题。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: 环境配置 -->
+<div class="section-card" id="s2">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar accent"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num acc">2</span> 环境变量配置</h2>
+      <p>接入 LangSmith 只需要配置三个核心环境变量。打开你的 <code>.env</code> 文件：</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">.env — LangSmith 环境变量</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="cmt"># ============================================</span>
+<span class="cmt"># LangSmith 配置 — 必填项</span>
+<span class="cmt"># ============================================</span>
+
+<span class="cmt"># 你的 LangSmith API Key（从 smith.langchain.com 获取）</span>
+LANGCHAIN_API_KEY=<span class="str">"lsv2_pt_xxxxxxxxxxxxxxxxxxxx"</span>
+
+<span class="cmt"># Tracing 开关：设为 "true" 启用追踪</span>
+LANGCHAIN_TRACING=<span class="str">"true"</span>
+
+<span class="cmt"># 项目名称：用于在 Dashboard 中区分不同项目</span>
+LANGCHAIN_PROJECT=<span class="str">"ai-personal-chef"</span>
+
+<span class="cmt"># ============================================</span>
+<span class="cmt"># 可选配置项</span>
+<span class="cmt"># ============================================</span>
+
+<span class="cmt"># LangSmith 服务端点（国内用户通常不需要改）</span>
+<span class="cmt"># LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"</span>
+
+<span class="cmt"># 是否在控制台打印 Trace 信息（调试时有用）</span>
+LANGCHAIN_VERBOSE=<span class="str">"true"</span></pre>
+      </div>
+
+      <ol class="steps-list">
+        <li>
+          <div class="step-content">
+            <h4>注册 LangSmith 账号</h4>
+            <p>访问 <strong>smith.langchain.com</strong>，使用 GitHub / Google 账号登录即可免费使用。</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h4>获取 API Key</h4>
+            <p>进入 Settings → API Keys → Create new key。新账号有免费的 Trace 额度。</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h4>添加到 .env 文件</h4>
+            <p>将上述三个变量写入项目根目录的 .env，确保不要提交到 Git。</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h4>验证连接</h4>
+            <p>运行任意一次 Agent 调用后，刷新 LangSmith Dashboard 即可看到 Trace 记录。</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="callout warn" style="margin-top:18px;">
+        <div class="callout-icon">&#9888;&#65039;</div>
+        <div class="callout-content">
+          <h4>安全提醒</h4>
+          <p>LANGCHAIN_API_KEY 类似于数据库密码，绝对不能硬编码在代码中或提交到公开仓库。务必使用 .env 文件 + .gitignore 保护敏感信息。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: Trace 数据解读 -->
+<div class="section-card" id="s3">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar info"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num inf">3</span> Trace 数据深度解读</h2>
+      <p>每次 Agent 运行都会生成一条完整的 <strong>Trace</strong> 记录。理解每个字段的含义，是高效调试的基础：</p>
+
+      <!-- Trace Data Cards -->
+      <div class="trace-cards">
+        <div class="trace-card">
+          <div class="trace-card-value">Input</div>
+          <div class="trace-card-label">用户输入内容</div>
+        </div>
+        <div class="trace-card">
+          <div class="trace-card-value">Output</div>
+          <div class="trace-card-label">模型最终输出</div>
+        </div>
+        <div class="trace-card">
+          <div class="trace-card-value">2.3s</div>
+          <div class="trace-card-label">Latency 延迟</div>
+        </div>
+        <div class="trace-card">
+          <div class="trace-card-value">1,247</div>
+          <div class="trace-card-label">Total Tokens</div>
+        </div>
+      </div>
+
+      <table class="tech-table" style="margin-top:20px;">
+        <thead>
+          <tr>
+            <th>字段名</th>
+            <th>含义</th>
+            <th>调试价值</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Input</strong></td>
+            <td>传入 Agent 的原始消息（含图片 URL、文本等）</td>
+            <td>确认用户意图是否正确传递</td>
+          </tr>
+          <tr>
+            <td><strong>Output</strong></td>
+            <td>Agent 最终返回给用户的响应</td>
+            <td>检查输出质量、格式是否正确</td>
+          </tr>
+          <tr>
+            <td><strong>Latency</strong></td>
+            <td>端到端响应时间（秒）</td>
+            <td>识别性能瓶颈所在环节</td>
+          </tr>
+          <tr>
+            <td><strong>Total Tokens</strong></td>
+            <td>本次调用消耗的总 Token 数</td>
+            <td>成本估算与优化依据</td>
+          </tr>
+          <tr>
+            <td><strong>Prompt Tokens</strong></td>
+            <td>输入侧 Token 数（System Prompt + 历史 + 用户消息）</td>
+            <td>判断上下文是否过长导致截断</td>
+          </tr>
+          <tr>
+            <td><strong>Completion Tokens</strong></td>
+            <td>模型生成的输出 Token 数</td>
+            <td>衡量模型回答的详细程度</td>
+          </tr>
+          <tr>
+            <td><strong>Tool Calls</strong></td>
+            <td>Agent 调用了哪些工具及参数</td>
+            <td>确认工具选择逻辑是否正确</td>
+          </tr>
+          <tr>
+            <td><strong>Intermediate Steps</strong></td>
+            <td>ReAct 循环中每一步的 Thought → Action → Observation</td>
+            <td>最关键的调试数据！查看推理链路</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="arch-diagram" style="margin-top:20px;">
+        <div class="arch-title">Trace 层级结构 — 树状展开视图</div>
+        <div class="arch-flow" style="flex-direction:column;align-items:flex-start;gap:8px;">
+          <div class="arch-node highlight" style="width:auto;">Root Run (整个 Agent 调用)</div>
+          <div class="arch-arrow" style="transform:rotate(90deg);padding:0;">&#8595;</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;padding-left:20px;">
+            <div class="arch-node">LLM Run<br><small>(模型推理)</small></div>
+            <div class="arch-node">Tool Run<br><small>(Tavily Search)</small></div>
+            <div class="arch-node">LLM Run<br><small>(二次推理)</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: Prompt 版本管理 -->
+<div class="section-card" id="s4">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar success"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num suc">4</span> Prompt 版本管理与 A/B 测试</h2>
+      <p>LangSmith 的 <strong>Prompt Hub</strong> 功能让你可以像管理代码一样管理 Prompt，支持版本对比和 A/B 测试：</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python — 使用 Hub 管理版本化 Prompt</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="kw">from</span> langchain_core.prompts <span class="kw">import</span> ChatPromptTemplate
+<span class="kw">from</span> langsmith <span class="kw">import</span> Client
+
+<span class="cmt"># 初始化 LangSmith 客户端</span>
+client = Client()
+
+<span class="cmt"># 方式一：推送 Prompt 到 Hub 进行版本化管理</span>
+prompt = ChatPromptTemplate.from_messages([
+    (<span class="str">"system"</span>, <span class="str">"你是一名私人厨师..."</span>),
+    (<span class="str">"human"</span>, <span class="str">"{input}"</span>)
+])
+
+client.push_prompt(
+    owner_id=<span class="str">"your-org"</span>,
+    prompt_name=<span class="str">"personal-chef-v1"</span>,
+    prompt=prompt,
+    tags=[<span class="str">"production"</span>, <span class="str">"chef-agent"</span>],
+    description=<span class="str">"AI 私厨 v1.0 — 基础版 System Prompt"</span>
+)
+
+<span class="cmt"># 方式二：从 Hub 拉取指定版本的 Prompt</span>
+retrieved_prompt = client.pull_prompt(
+    owner_id=<span class="str">"your-org"</span>,
+    prompt_name=<span class="str">"personal-chef-v1"</span>,
+    label=<span class="str">"prod"</span>  <span class="cmt"># 使用 prod 标签的最新版</span>
+)</pre>
+      </div>
+
+      <div class="callout tip" style="margin-top:18px;">
+        <div class="callout-icon">&#128161;</div>
+        <div class="callout-content">
+          <h4>A/B 测试最佳实践</h4>
+          <p>创建两个版本的 Prompt（如 v1-简洁版 vs v2-详细版），在 LangSmith 中通过 Dataset + Evaluation 自动跑分对比。关注指标包括：回答准确率、Token 效率（质量/成本比）、用户满意度评分。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5: 性能瓶颈分析 -->
+<div class="section-card" id="s5">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar primary"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num pri">5</span> 性能瓶颈分析实战</h2>
+      <p>当 AI 私厨响应缓慢时，如何利用 LangSmith 定位瓶颈？以下是一个真实的性能优化案例：</p>
+
+      <div class="arch-diagram">
+        <div class="arch-title">典型 Agent 调用耗时分解</div>
+        <div class="arch-flow">
+          <div class="arch-node highlight">User Input<br><small>(~50ms)</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node">VL Model<br><small>(~1200ms)</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node accent" style="border-color:var(--accent);background:var(--accent-bg);color:var(--accent);">Tavily Search<br><small>(~800ms) &#9888;</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node">LLM Reason<br><small>(~900ms)</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node highlight">Final Output<br><small>(~30ms)</small></div>
+        </div>
+        <p style="margin-top:12px;font-size:12px;color:var(--text-muted);">总耗时 ~3s | Tavily Search 占比最高，是主要优化目标</p>
+      </div>
+
+      <table class="tech-table">
+        <thead>
+          <tr>
+            <th>瓶颈类型</th>
+            <th>表现症状</th>
+            <th>优化方案</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>搜索 API 过慢</strong></td>
+            <td>Tavily 调用耗时 > 1s</td>
+            <td>减少 max_results；启用缓存；考虑本地检索方案</td>
+          </tr>
+          <tr>
+            <td><strong>多模态推理慢</strong></td>
+            <td>VL 模型首次调用 > 2s</td>
+            <td>切换更快的 VL 模型；图片压缩预处理</td>
+          </tr>
+          <tr>
+            <td><strong>ReAct 循环过多</strong></td>
+            <td>Agent 反复调用同一工具 > 3 次</td>
+            <td>优化 System Prompt；增加 max_iterations 限制</td>
+          </tr>
+          <tr>
+            <td><strong>Context 过长</strong></td>
+            <td>单次调用 Token > 4000</td>
+            <td>启用摘要记忆；清理冗余历史消息</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout ok" style="margin-top:18px;">
+        <div class="callout-icon">&#9989;</div>
+        <div class="callout-content">
+          <h4>优化成果参考</h4>
+          <p>经过上述优化后，AI 私厨的平均响应时间从 <strong>3.2s 降至 1.8s</strong>，同时 Token 消耗减少约 35%。关键改进：(1) Tavily 结果缓存；(2) 图片压缩至 512px；(3) ReAct 最大迭代次数限制为 5。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: 本集总结 -->
+<div class="section-card" id="s6">
+  <div class="card-header" style="display:flex;">
+    <div class="card-bar accent"></div>
+    <div class="card-body" style="flex:1;padding-left:20px;">
+      <h2><span class="num acc">6</span> 本集小结</h2>
+      
+      <div class="callout warn">
+        <div class="callout-icon">&#9888;&#65039;</div>
+        <div class="callout-content">
+          <h4>核心收获</h4>
+          <p>LangSmith 是 LLM 应用开发的「显微镜」。它将 Agent 内部的黑盒操作转化为可视化的 Trace 数据树，让你能精确地看到每一步推理、每一次工具调用的细节。掌握 LangSmith = 掌握了从「猜为什么出错」到「看哪里出错」的能力跃迁。<br><br>下一集我们将学习 FastAPI 后端服务搭建与 OSS 对象存储对接，把 Agent 包装成真正的 Web 服务。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER NAV -->
+<nav class="footer-nav">
+  <a href="24-需求分析与功能验证.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 24 集 - 需求分析与功能验证</div>
+    </div>
+  </a>
+  <a href="26-搭建服务端并对接OSS.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 26 集 - 搭建服务端并对接OSS</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="ref-source">
+  参考来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ?p=26" target="_blank">黑马程序员 B站课程 BV178w1z7EHQ P26</a> | 
+  <a href="https://docs.smith.langchain.com/" target="_blank">LangSmith 官方文档</a>
+</div>
+
+</main>
+
+<!-- ===== TWEAKS PANEL ===== -->
+<button class="tweaks-toggle" onclick="toggleTweaks()" title="Design Tweaks">&#9881;</button>
+<div class="tweaks-panel hidden" id="tweaksPanel">
+  <div class="tweaks-header">
+    <h3>&#9881; Tweaks</h3>
+    <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+  </div>
+  <div class="tweaks-group">
+    <label class="tweaks-label">Font Scale</label>
+    <input type="range" class="tweaks-slider" id="fontScaleSlider" min="0.8" max="1.3" step="0.05" value="1" oninput="updateFontScale(this.value)">
+    <span class="tweaks-value" id="fontScaleValue">1.0x</span>
+  </div>
+  <div class="tweaks-group">
+    <label class="tweaks-label">Content Width</label>
+    <input type="range" class="tweaks-slider" id="widthSlider" min="700" max="1200" step="50" value="900" oninput="updateWidth(this.value)">
+    <span class="tweaks-value" id="widthValue">900px</span>
+  </div>
+</div>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--success)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+  });
+}
+
+function toggleTweaks() {
+  const panel = document.getElementById('tweaksPanel');
+  if (panel.classList.contains('open')) {
+    panel.classList.remove('open');
+    setTimeout(() => panel.classList.add('hidden'), 280);
+  } else {
+    panel.classList.remove('hidden');
+    requestAnimationFrame(() => panel.classList.add('open'));
+  }
+}
+
+function updateFontScale(val) {
+  document.documentElement.style.setProperty('--font-scale', val);
+  document.getElementById('fontScaleValue').textContent = parseFloat(val).toFixed(1) + 'x';
+}
+
+function updateWidth(val) {
+  document.documentElement.style.setProperty('--content-width', val + 'px');
+  document.getElementById('widthValue').textContent = val + 'px';
+}
+</script>
+</body>
+</html>

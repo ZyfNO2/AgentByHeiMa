@@ -1,0 +1,1514 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第19集 - 工具Tools | LangChain学习笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f8f9fc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f8;
+    --bg-code: #1a1d26;
+    --text-primary: #1a1d26;
+    --text-secondary: #5a6072;
+    --text-muted: #949aad;
+    --primary: oklch(0.55 0.22 250);
+    --primary-light: oklch(0.75 0.15 250);
+    --accent: oklch(0.70 0.18 85);
+    --success: oklch(0.55 0.16 155);
+    --danger: oklch(0.55 0.20 25);
+    --info: oklch(0.55 0.15 230);
+    --border-color: #e2e5ef;
+    --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+    --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 6px rgba(26,29,38,0.04);
+    --shadow-lg: 0 8px 30px rgba(26,29,38,0.10), 0 4px 12px rgba(26,29,38,0.06);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --font-scale: 1;
+    --line-height-scale: 1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page); color: var(--text-primary);
+    line-height: 1.7; font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    transition: font-size .3s ease, line-height .3s ease;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(248,249,252,0.85);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border-bottom: 1px solid var(--border-color); transition: box-shadow .3s ease;
+  }
+  .header.scrolled { box-shadow: var(--shadow-sm); }
+  .header-inner {
+    max-width: 900px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; padding: 0 24px;
+  }
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 17px;
+    color: var(--primary); text-decoration: none; letter-spacing: -0.02em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--primary), var(--info));
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 13px;
+  }
+  .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; }
+  .header-nav {
+    display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end;
+    max-width: 640px;
+  }
+  .header-nav a {
+    text-decoration: none; color: var(--text-secondary);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11.5px; font-weight: 500; padding: 5px 10px;
+    border-radius: 20px; transition: all .2s; white-space: nowrap;
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light, oklch(0.75 0.15 250));
+    transform: translateY(-1px);
+  }
+  .header-nav a.nav-anchor {
+    background: var(--primary-bg, rgba(79,110,247,0.08));
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .header-nav a.nav-anchor:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .header-nav a:hover, .header-nav a.active {
+    background: var(--primary-light); color: var(--primary);
+  }
+
+  /* ===== Hero ===== */
+  .hero { padding: 120px 24px 56px; max-width: 900px; margin: 0 auto; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary-light), oklch(0.95 0.03 230));
+    border: 1px solid oklch(0.85 0.05 250);
+    padding: 6px 18px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 24px;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .hero-badge::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--danger); animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 16px;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero-desc { font-size: 17px; color: var(--text-secondary); max-width: 720px; margin: 0 auto 28px; line-height: 1.65; }
+  .hero-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+  .meta-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-surface); border: 1px solid var(--border-color);
+    padding: 6px 14px; border-radius: var(--radius-xs);
+    font-size: 13px; color: var(--text-secondary);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .meta-tag svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+  /* ===== Content Sections ===== */
+  .content { max-width: 900px; margin: 0 auto; padding: 0 24px 80px; }
+  .section {
+    background: var(--bg-surface); border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    padding: 36px 40px; margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .55s ease, transform .55s ease, box-shadow .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .section::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary); border-radius: 4px 0 0 4px;
+  }
+  .section.accent::before { background: var(--accent); }
+  .section.success::before { background: var(--success); }
+  .section.info::before { background: var(--info); }
+  .section.danger::before { background: var(--danger); }
+  .section.visible { opacity: 1; transform: translateY(0); }
+  .section:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--primary); color: #fff;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .section p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* ===== Highlight Box ===== */
+  .highlight-box {
+    display: flex; gap: 16px;
+    background: linear-gradient(135deg, oklch(0.97 0.01 250), var(--bg-surface));
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 20px 22px; margin: 20px 0;
+  }
+  .highlight-box.accent { background: linear-gradient(135deg, oklch(0.98 0.015 85), var(--bg-surface)); border-left-color: var(--accent); }
+  .highlight-box.success { background: linear-gradient(135deg, oklch(0.97 0.01 155), var(--bg-surface)); border-left-color: var(--success); }
+  .highlight-box.danger { background: linear-gradient(135deg, oklch(0.98 0.015 25), var(--bg-surface)); border-left-color: var(--danger); }
+  .highlight-box.info { background: linear-gradient(135deg, oklch(0.97 0.01 230), var(--bg-surface)); border-left-color: var(--info); }
+  .hb-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-top: 2px; }
+  .hb-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.7; }
+  .hb-body strong { color: var(--text-primary); }
+  .hb-body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-subtle); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: var(--primary);
+  }
+
+  /* ===== Tables ===== */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-sm); border: 1px solid var(--border-color); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--primary); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 13px; text-align: left;
+    padding: 12px 16px; color: #fff;
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  tbody td {
+    padding: 11px 16px; border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary); vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--bg-subtle); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.97 0.005 250); }
+  table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; background: var(--bg-subtle);
+    padding: 1px 6px; border-radius: 4px; color: var(--primary);
+  }
+
+  /* ===== Code Blocks ===== */
+  .code-block {
+    position: relative; margin: 20px 0; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border-color); background: var(--bg-code);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: oklch(0.75 0.08 250);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .code-copy-btn {
+    cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+    color: oklch(0.7 0.03 250); font-family: 'Outfit', sans-serif;
+    font-size: 12px; padding: 4px 12px; border-radius: 6px; transition: all .2s;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); }
+  .code-copy-btn.copied { color: var(--success); border-color: oklch(0.55 0.16 155); }
+  pre {
+    margin: 0; padding: 20px 20px 20px 0;
+    overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; line-height: 1.7; color: #e0e2e8; tab-size: 2;
+  }
+  pre .kw { color: #c792ea; }
+  pre .fn { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .cmt { color: rgba(255,255,255,0.35); font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .op { color: #89ddff; }
+  pre .param { color: #f07178; }
+  pre .builtin { color: #ffb86c; }
+
+  /* ===== Method Comparison Cards ===== */
+  .method-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 20px 0;
+  }
+  .method-card {
+    background: var(--bg-surface); border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm); padding: 22px 20px;
+    transition: all .25s ease; text-align: center;
+  }
+  .method-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+  .method-card.primary { border-color: var(--primary); background: linear-gradient(135deg, oklch(0.98 0.01 250), var(--bg-surface)); }
+  .method-card .mc-method {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 17px; font-weight: 700; color: var(--primary);
+    margin-bottom: 8px;
+  }
+  .mc-type {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;
+  }
+  .mc-type.decorator { background: oklch(0.95 0.03 250); color: oklch(0.45 0.22 250); }
+  .mc-type.class { background: oklch(0.95 0.04 85); color: oklch(0.50 0.18 85); }
+  .mc-type.inherit { background: oklch(0.95 0.03 25); color: oklch(0.50 0.20 25); }
+  .method-card .mc-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* ===== Flow Diagram ===== */
+  .flow-diagram {
+    display: flex; align-items: center; justify-content: center; gap: 0;
+    margin: 24px 0; flex-wrap: wrap; padding: 20px;
+    background: var(--bg-subtle); border-radius: var(--radius-sm);
+  }
+  .flow-step {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 14px 18px; background: var(--bg-surface);
+    border: 1px solid var(--border-color); border-radius: var(--radius-xs);
+    min-width: 120px; text-align: center;
+  }
+  .flow-step .fs-icon { font-size: 22px; }
+  .flow-step .fs-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    font-weight: 600; color: var(--primary);
+  }
+  .flow-step .fs-desc { font-size: 11px; color: var(--text-muted); }
+  .flow-arrow {
+    font-size: 20px; color: var(--text-muted);
+    padding: 0 6px; font-weight: 300;
+  }
+
+  /* ===== Footer Nav ===== */
+  .footer-nav {
+    max-width: 900px; margin: 0 auto; padding: 0 24px 60px;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link-card {
+    flex: 1; display: flex; align-items: center; gap: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border-color);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit; transition: all .25s ease;
+  }
+  .nav-link-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .nav-link-card.disabled { opacity: .45; pointer-events: none; }
+  .nl-dir { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .nl-label { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .nl-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; }
+
+  .footer-ref {
+    max-width: 900px; margin: 0 auto; padding: 0 24px 40px;
+    text-align: center; font-size: 12.5px; color: var(--text-muted);
+  }
+  .footer-ref a { color: var(--primary); text-decoration: none; }
+  .footer-ref a:hover { text-decoration: underline; }
+
+  /* ===== Tweaks Panel ===== */
+  .tweaks-panel { position: fixed; right: 20px; bottom: 20px; z-index: 999; }
+  .tweaks-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-md); transition: all .25s ease;
+  }
+  .tweaks-toggle:hover { transform: scale(1.08); box-shadow: var(--shadow-lg); }
+  .tweaks-body {
+    position: absolute; bottom: 54px; right: 0;
+    width: 280px; background: var(--bg-surface);
+    border: 1px solid var(--border-color); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 20px; display: none;
+    animation: tweaksIn .2s ease;
+  }
+  .tweaks-body.open { display: block; }
+  @keyframes tweaksIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .tweaks-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tweaks-close { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 2px; }
+  .tweaks-group { margin-bottom: 14px; }
+  .tweaks-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tweaks-slider {
+    width: 100%; height: 4px; border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--bg-subtle); outline: none;
+  }
+  .tweaks-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--primary); cursor: pointer;
+    border: 2px solid #fff; box-shadow: var(--shadow-sm);
+  }
+
+  /* ===== Sub-section heading inside cards ===== */
+  .sub-heading {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px; font-weight: 600; color: var(--text-primary);
+    margin: 24px 0 12px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--bg-subtle);
+  }
+  .sub-heading:first-child { margin-top: 0; }
+
+  /* ===== Content List ===== */
+  .content-list {
+    list-style: none; padding-left: 0; margin: 14px 0;
+  }
+  .content-list li {
+    position: relative; padding-left: 20px; margin-bottom: 10px;
+    color: var(--text-secondary); line-height: 1.7;
+  }
+  .content-list li::before {
+    content: ''; position: absolute; left: 0; top: 9px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--primary);
+  }
+  .content-list li strong { color: var(--text-primary); }
+
+  /* ===== Info Grid ===== */
+  .info-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px; margin: 18px 0;
+  }
+  .info-item {
+    background: var(--bg-subtle); border-radius: var(--radius-xs);
+    padding: 16px; border: 1px solid var(--border-color);
+  }
+  .info-item-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+  }
+  .info-item-value {
+    font-size: 14px; font-weight: 500; color: var(--text-primary);
+  }
+  .info-item-value code {
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+    background: rgba(85,120,250,0.08); padding: 2px 6px;
+    border-radius: 4px; color: var(--primary);
+  }
+
+  @media (max-width: 768px) {
+    .section { padding: 24px 20px; }
+    .hero { padding: 100px 16px 40px; }
+    .header-inner { padding: 0 16px; }
+    .content { padding: 0 16px 60px; }
+    .table-wrap { margin: 16px -20px; border-radius: 0; border-left: none; border-right: none; }
+    .header-nav { display: none; }
+    .method-grid { grid-template-columns: 1fr; }
+    .footer-nav { flex-direction: column; }
+    .nav-link-card { width: 100%; justify-content: center; }
+    .flow-diagram { gap: 8px; }
+    .flow-arrow { display: none; }
+  }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-page); }
+  ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="hdr">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo">
+      <span class="logo-icon">LC</span> Notes <span>LangChain</span>
+    </a>
+    <nav class="header-nav">
+      <a href="#s1" class="nav-anchor">&sect;1 @tool 装饰器创建自...</a>
+      <a href="#s2" class="nav-anchor">&sect;2 StructuredTo...</a>
+      <a href="#s3" class="nav-anchor">&sect;3 工具绑定到 LLM</a>
+      <a href="#s4" class="nav-anchor">&sect;4 工具调用的输入输出格式</a>
+      <a href="#s5" class="nav-anchor">&sect;5 动态工具选择与组合</a>
+
+      <a href="13-认识LangChain.html">P13 认识LC</a>
+      <a href="14-快速入门和Agent原理.html">P14 Agent原理</a>
+      <a href="15-初始化模型.html">P15 初始化</a>
+      <a href="16-调用模型.html">P16 调用模型</a>
+      <a href="17-消息Message.html">P17 消息</a>
+      <a href="21-短期记忆.html">P21 短期记忆</a>
+      <a href="22-短期记忆-持久存储.html">P22 持久化</a>
+      <a href="23-记忆管理策略.html">P23 记忆策略</a>
+      <a href="24-需求分析与功能验证.html">P24 需求分析</a>
+      <a href="25-对接LangSmith.html">P25 LangSmith</a>
+      <a href="26-搭建服务端并对接OSS.html">P26 服务端</a>
+      <a href="27-AI私厨完成Agent开发.html">P27 完整项目</a>
+      <a href="19-工具Tools.html" class="active">P19 工具</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">第 19 集 &middot; 工具体系核心</div>
+  <h1><span class="highlight">工具</span> Tools</h1>
+  <p class="hero-desc">深入理解 LangChain 的 Tool 体系 —— 从 @tool 装饰器到 StructuredTool，从 bind_tools() 绑定到动态工具选择，掌握 Agent 与外部世界交互的核心机制。</p>
+  <div class="hero-meta">
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 核心概念</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg> Tool / Bind</span>
+    <span class="meta-tag"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg> BV178w1z7EHQ</span>
+  </div>
+</section>
+
+<!-- Content -->
+<main class="content">
+
+<!-- S1: @tool Decorator -->
+<article class="section" id="s1">
+  <h2 class="section-title"><span class="num">1</span>@tool 装饰器创建自定义工具</h2>
+
+  <p><strong>@tool</strong> 是 LangChain 中创建自定义工具最简洁、最推荐的方式。只需在普通 Python 函数上添加装饰器，即可将其转换为可供 LLM 调用的标准 Tool 对象。</p>
+
+  <h3 class="sub-heading">基本语法与参数规范</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+
+
+<span class="cmt"># ========== 最简形式：自动推断参数 ==========@</span>
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">get_weather</span>(city: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""查询指定城市的当前天气情况"""</span>
+    <span class="cmt"># 函数的 docstring 会自动成为 tool 的 description</span>
+    <span class="kw">return</span> <span class="str">f"{city}今天晴朗，气温 25°C"</span>
+
+
+<span class="cmt"># ========== 带参数的完整形式 ==========@</span>
+<span class="op">@</span><span class="fn">tool</span>(
+    name=<span class="str">"calculate_tip"</span>,        <span class="cmt">// 自定义工具名称（可选）</span>
+    description=<span class="str">"根据账单金额和小费比例计算小费金额"</span>,  <span class="cmt">// 自定义描述（可选）</span>
+    return_direct=<span class="kw">False</span>,            <span class="cmt">// 是否直接返回结果给用户</span>
+)
+<span class="kw">def</span> <span class="fn">compute_tip</span>(bill_amount: <span class="float">float</span>, tip_percent: <span class="float">float</span> = <span class="num">15.0</span>) -> <span class="str">str</span>:
+    <span class="str">"""
+    计算小费金额。
+
+    Args:
+        bill_amount: 账单总金额（元）
+        tip_percent: 小费百分比，默认 15%
+    """
+</span>
+    tip = bill_amount * (tip_percent / <span class="num">100</span>)
+    total = bill_amount + tip
+    <span class="kw">return</span> <span class="str">f"小费: ¥{tip:.2f}, 总计: ¥{total:.2f}"</span></code></pre>
+  </div>
+
+  <div class="method-grid">
+    <div class="method-card primary">
+      <div class="mc-method">@tool</div>
+      <div class="mc-type decorator">装饰器方式</div>
+      <div class="mc-desc">最简单直接，一行装饰器将函数转为 Tool。适合大多数场景。</div>
+    </div>
+    <div class="method-card">
+      <div class="mc-method">StructuredTool</div>
+      <div class="mc-type class">类封装</div>
+      <div class="mc-desc">适合复杂参数 schema、需要精细控制输入输出的场景。</div>
+    </div>
+    <div class="method-card">
+      <div class="mc-method">BaseTool</div>
+      <div class="mc-type inherit">继承方式</div>
+      <div class="mc-desc">完全自定义行为，需要实现 _run / _arun 方法。</div>
+    </div>
+  </div>
+
+  <h3 class="sub-heading">name 和 description 自动生成规则</h3>
+
+  <p>当你不显式指定 <code>name</code> 和 <code>description</code> 时，LangChain 会按以下规则自动生成：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:20%">属性</th><th>来源</th><th>规则说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>name</strong></td>
+          <td>函数名</td>
+          <td>取函数名本身，下划线替换为空格（如 <code>get_weather</code> → <code>"get_weather"</code>）。建议使用 snake_case 命名。</td>
+        </tr>
+        <tr>
+          <td><strong>description</strong></td>
+          <td>docstring</td>
+          <td>取函数的第一行 docstring 作为描述。<strong>这是 LLM 决定是否调用该工具的关键依据</strong>，务必写得清晰准确。</td>
+        </tr>
+        <tr>
+          <td><strong>args_schema</strong></td>
+          <td>类型注解</td>
+          <td>从函数签名的类型注解自动推断参数 schema，用于告诉 LLM 该工具接受什么参数。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box info">
+    <div class="hb-icon">&#128161;</div>
+    <div class="hb-body">
+      <strong>description 是工具的灵魂：</strong>LLM 通过读取每个 tool 的 description 来决定调用哪个工具。如果 description 写得模糊或错误，LLM 可能选错工具或传错参数。<br>
+      &#x2022; <strong>好：</strong><code>"查询指定城市的实时天气，返回温度和天气状况"</code><br>
+      &#x2022; <strong>差：</strong><code>"查天气"</code> — 太模糊，LLM 不知道能获取什么信息
+    </div>
+  </div>
+
+  <h3 class="sub-heading">args_schema 自定义参数 Schema</h3>
+
+  <p>当默认的类型注解无法满足需求时（如需要添加字段描述、约束条件），可以通过 Pydantic BaseModel 自定义参数 schema：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, Field
+<span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+<span class="kw">from</span> typing <span class="kw">import</span> Optional
+
+
+<span class="cmt"># === 定义参数 Schema ===</span>
+<span class="kw">class</span> <span class="cls">SearchInput</span>(BaseModel):
+    <span class="str">"""搜索工具的输入参数定义"""</span>
+    query: <span class="str">str</span> = Field(
+        description=<span class="str">"要搜索的关键词或问题"</span>,
+        min_length=<span class="num">1</span>,
+        max_length=<span class="num">200</span>,
+    )
+    category: Optional[<span class="str">str</span>] = Field(
+        default=<span class="kw">None</span>,
+        description=<span class="str">"搜索分类：tech / news / general 等"</span>,
+    )
+    limit: <span class="int">int</span> = Field(
+        default=<span class="num">5</span>,
+        ge=<span class="num">1</span>,
+        le=<span class="num">20</span>,
+        description=<span class="str">"返回结果的最大数量"</span>,
+    )
+
+
+<span class="cmt"># === 将 Schema 绑定到工具 ===</span>
+<span class="op">@</span><span class="fn">tool</span>(args_schema=SearchInput)
+<span class="kw">def</span> <span class="fn">web_search</span>(query: <span class="str">str</span>, category: Optional[<span class="str">str</span>] = <span class="kw">None</span>, limit: <span class="int">int</span> = <span class="num">5</span>) -> <span class="str">str</span>:
+    <span class="str">"""在互联网上搜索相关信息并返回结果摘要"""</span>
+    <span class="cmt"># 模拟搜索结果</span>
+    results = [
+        f"<span class="str">[{i+1}] 关于 '{query}' 的搜索结果...</span>"
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(limit)
+    ]
+    <span class="kw">return</span> <span class="str">"\n"</span>.join(results)
+
+
+<span class="cmt"># 验证生成的工具信息</span>
+<span class="fn">print</span>(web_search.name)         <span class="cmt">// "web_search"</span>
+<span class="fn">print</span>(web_search.description)  <span class="cmt">// docstring 内容</span>
+<span class="fn">print</span>(web_search.args_schema.model_json_schema())  <span class="cmt">// 完整 JSON Schema</span></code></pre>
+  </div>
+</article>
+
+<!-- S2: StructuredTool & BaseTool -->
+<article class="section accent" id="s2">
+  <h2 class="section-title"><span class="num">2</span>StructuredTool 与 BaseTool</h2>
+
+  <p>除了 <code>@tool</code> 装饰器，LangChain 还提供了两种更底层的工具构建方式，适用于不同复杂度的场景。</p>
+
+  <h3 class="sub-heading">StructuredTool — 复杂参数的工具封装</h3>
+
+  <p>当你的工具逻辑不适合写成简单函数时（比如需要维护状态、异步操作等），<code>StructuredTool.from_function()</code> 提供了更大的灵活性：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_core.tools <span class="kw">import</span> StructuredTool
+<span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, Field
+
+
+<span class="cmt"># === 定义输入 Schema ===</span>
+<span class="kw">class</span> <span class="cls">DatabaseQueryInput</span>(BaseModel):
+    table_name: <span class="str">str</span> = Field(description=<span class="str">"要查询的数据表名"</span>)
+    filter_condition: <span class="str">str</span> = Field(default=<span class="str">""</span>, description=<span class="str">"WHERE 过滤条件"</span>)
+    limit: <span class="int">int</span> = Field(default=<span class="num">10</span>, ge=<span class="num">1</span>, le=<span class="num">100</span>, description=<span class="str">"最大返回行数"</span>)
+
+
+<span class="cmt"># === 同步执行函数 ===</span>
+<span class="kw">def</span> <span class="fn">run_query_sync</span>(table_name: <span class="str">str</span>, filter_condition: <span class="str">str</span> = <span class="str">""</span>, limit: <span class="int">int</span> = <span class="num">10</span>) -> <span class="str">str</span>:
+    <span class="str">"""执行数据库查询（同步版本）"""</span>
+    <span class="cmt"># 这里模拟数据库查询</span>
+    <span class="kw">return</span> <span class="str">f"SELECT * FROM {table_name} WHERE {filter_condition or '1=1'} LIMIT {limit}"</span>
+
+
+<span class="cmt"># === 异步执行函数 ===</span>
+<span class="kw">async def</span> <span class="fn">run_query_async</span>(table_name: <span class="str">str</span>, filter_condition: <span class="str">str</span> = <span class="str">""</span>, limit: <span class="int">int</span> = <span class="num">10</span>) -> <span class="str">str</span>:
+    <span class="str">"""执行数据库查询（异步版本）"""</span>
+    <span class="kw">import</span> asyncio
+    <span class="kw">await</span> asyncio.<span class="fn">sleep</span>(<span class="num">0.1</span>)  <span class="cmt">// 模拟 I/O 延迟</span>
+    <span class="kw">return</span> <span class="str">f"[ASYNC] SELECT * FROM {table_name} LIMIT {limit}"</span>
+
+
+<span class="cmt">// === 创建 StructuredTool 实例 ===</span>
+db_query_tool = StructuredTool.<span class="fn">from_function</span>(
+    func=run_query_sync,
+    coroutine=run_query_async,       <span class="cmt">// 可选：提供异步版本</span>
+    name=<span class="str">"database_query"</span>,
+    description=<span class="str">"查询数据库表中的数据，支持 WHERE 条件过滤和 LIMIT 限制"</span>,
+    args_schema=DatabaseQueryInput,
+)
+
+<span class="cmt">// 直接调用测试</span>
+result = db_query_tool.<span class="fn">invoke</span>({<span class="str">"table_name"</span>: <span class="str">"users"</span>, <span class="str">"limit"</span>: <span class="num">5</span>})
+<span class="fn">print</span>(result)  <span class="cmt">// SELECT * FROM users WHERE 1=1 LIMIT 5</span></code></pre>
+  </div>
+
+  <h3 class="sub-heading">BaseTool 继承自定义</h3>
+
+  <p>对于需要<strong>完全控制行为</strong>的场景（如带状态的工具、复杂的初始化逻辑），可以直接继承 <code>BaseTool</code> 类：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_core.tools <span class="kw">import</span> BaseTool
+<span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, Field
+<span class="kw">from</span> typing <span class="kw">import</span> Type, Dict, Any, Optional
+<span class="kw">import</span> time
+
+
+<span class="kw">class</span> <span class="cls">CalculatorInput</span>(BaseModel):
+    expression: <span class="str">str</span> = Field(description=<span class="str">"要计算的数学表达式，如 '2 + 3 * 4'"</span>)
+
+
+<span class="kw">class</span> <span class="cls">SafeCalculator</span>(BaseTool):
+    <span class="str">"""安全的数学计算工具，带超时和异常保护"""</span>
+
+    name: <span class="str">str</span> = <span class="str">"safe_calculator"</span>
+    description: <span class="str">str</span> = <span class="str">"安全地计算数学表达式，仅支持基础运算"</span>
+    args_schema: Type[BaseModel] = CalculatorInput
+
+    <span class="cmt">// 可自定义属性</span>
+    timeout_seconds: <span class="float">float</span> = <span class="num">5.0</span>
+    _call_count: <span class="int">int</span> = <span class="num">0</span>   <span class="cmt">// 内部状态计数器</span>
+
+    <span class="kw">def</span> <span class="fn">_run</span>(self, expression: <span class="str">str</span>, run_manager=None, **kwargs) -> <span class="str">str</span>:
+        <span class="str">"""同步执行计算"""</span>
+        self._call_count += <span class="num">1</span>
+        start_time = time.time()
+
+        <span class="kw">try</span>:
+            <span class="cmt">// 安全检查：只允许数字和基本运算符</span>
+            allowed_chars = <span class="fn">set</span>(<span class="str">"0123456789+-*/().% "</span>)
+            <span class="kw">if</span> not <span class="fn">all</span>(c <span class="kw">in</span> allowed_chars <span class="kw">for</span> c <span class="kw">in</span> expression):
+                <span class="kw">raise</span> ValueError(<span class="str">"表达式包含不允许的字符"</span>)
+
+            result = <span class="fn">eval</span>(expression, {<span class="str">"__builtins__"</span>: {}}, {})  <span class="cmt">// 限制内置函数</span>
+
+            elapsed = time.time() - start_time
+            <span class="kw">if</span> elapsed > self.timeout_seconds:
+                <span class="kw">return</span> <span class="str">f"计算超时 (>{self.timeout_seconds}s)"</span>
+
+            <span class="kw">return</span> <span class="str">f"{expression} = {result} (耗时: {elapsed:.3f}s)"</span>
+
+        <span class="kw">except</span> Exception as e:
+            <span class="kw">return</span> <span class="str">f"计算错误: {type(e).__name__}: {e}"</span>
+
+    <span class="kw">async def</span> <span class="fn">_arun</span>(self, expression: <span class="str">str</span>, run_manager=None, **kwargs) -> <span class="str">str</span>:
+        <span class="str">"""异步执行计算"""</span>
+        <span class="cmt">// 复用同步方法（纯 CPU 计算，无需真正异步）</span>
+        <span class="kw">return</span> self.<span class="fn">_run</span>(expression, run_manager, **kwargs)
+
+
+<span class="cmt">// 创建实例并使用</span>
+calc = SafeCalculator()
+result = calc.<span class="fn">invoke</span>({<span class="str">"expression"</span>: <span class="str">"(2 + 3) * 4"</span>})
+<span class="fn">print</span>(result)  <span class="cmt">// (2 + 3) * 4 = 20 (耗时: 0.000s)</span></code></pre>
+  </div>
+
+  <div class="highlight-box accent">
+    <div class="hb-icon">&#127775;</div>
+    <div class="hb-body">
+      <strong>三种方式的选用指南：</strong><br>
+      &#x2022; <strong>@tool</strong> — 90% 的场景首选，零配置、最简洁<br>
+      &#x2022; <strong>StructuredTool</strong> — 需要同时提供 sync/async 版本、或从已有函数动态创建<br>
+      &#x2022; <strong>BaseTool 继承</strong> — 需要内部状态、复杂初始化、细粒度控制<br>
+      <br>原则：<strong>能用 @tool 就用 @tool</strong>，不够再升级。
+    </div>
+  </div>
+</article>
+
+<!-- S3: Binding Tools to LLM -->
+<article class="section success" id="s3">
+  <h2 class="section-title"><span class="num">3</span>工具绑定到 LLM</h2>
+
+  <p>创建了工具之后，下一步是将它们<strong>绑定</strong>到 LLM 上，让模型知道它可以使用哪些工具。<code>bind_tools()</code> 是这一过程的核心方法。</p>
+
+  <h3 class="sub-heading">bind_tools() 基础用法</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+<span class="kw">from</span> langchain_core.messages <span class="kw">import</span> HumanMessage
+
+
+<span class="cmt">// === Step 1: 创建工具 ===</span>
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">get_stock_price</span>(symbol: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""查询股票实时价格"""</span>
+    prices = {<span class="str">"AAPL"</span>: <span class="str">"$189.50"</span>, <span class="str">"TSLA"</span>: <span class="str">"$245.30"</span>, <span class="str">"NVDA"</span>: <span class="str">$880.20"}
+    <span class="kw">return</span> prices.<span class="fn">get</span>(symbol.upper(), <span class="str">f"未找到 {symbol} 的价格数据"</span>)
+
+
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">get_company_info</span>(company: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""查询公司基本信息（行业、市值、成立年份）"""</span>
+    info = {
+        <span class="str">"Apple"</span>: <span class="str">"科技 | 市值 2.9T | 1976年成立"</span>,
+        <span class="str">"Tesla"</span>: <span class="str">"新能源汽车 | 市值 780B | 2003年成立"</span>,
+        <span class="str">"NVIDIA"</span>: <span class="str">"AI芯片 | 市值 2.2T | 1993年成立"</span>,
+    }
+    <span class="kw">return</span> info.<span class="fn">get</span>(company, <span class="str">f"未找到 {company} 的公司信息"</span>)
+
+
+<span class="cmt">// === Step 2: 初始化 LLM 并绑定工具 ===</span>
+llm = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+
+tools = [get_stock_price, get_company_info]
+llm_with_tools = llm.<span class="fn">bind_tools</span>(tools)  <span class="cmt">// 关键步骤！</span>
+
+
+<span class="cmt">// === Step 3: 调用绑定后的 LLM ===</span>
+response = llm_with_tools.<span class="fn">invoke</span>([
+    <span class="fn">HumanMessage</span>(content=<span class="str">"Apple 公司现在的股价是多少？给我也看看它的基本信息。"</span>)
+])
+
+<span class="cmt">// === Step 4: 解析响应中的工具调用 ===</span>
+<span class="fn">print</span>(<span class="str">"=== 模型回复内容 ==="</span>)
+<span class="fn">print</span>(response.content)           <span class="cmt">// 通常为空字符串（因为模型选择了调用工具）</span>
+
+<span class="fn">print</span>(<span class="str">"\n=== 工具调用请求 ==="</span>)
+<span class="kw">if</span> response.tool_calls:
+    <span class="kw">for</span> tc <span class="kw">in</span> response.tool_calls:
+        <span class="fn">print</span>(<span class="str">f"  工具名: {tc['name']}"</span>)
+        <span class="fn">print</span>(<span class="str">f"  参数:   {tc['args']}"</span>)
+        <span class="fn">print</span>(<span class="str">f"  ID:     {tc['id']}"</span>)
+        <span class="fn">print</span>()</code></pre>
+  </div>
+
+  <h3 class="sub-heading">tool_choice 参数控制</h3>
+
+  <p>通过 <code>tool_choice</code> 参数可以精确控制模型的工具调用行为：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_core.messages <span class="kw">import</span> SystemMessage, HumanMessage
+
+
+<span class="cmt">// === 方式一：auto（默认）—— 模型自行决定是否调用工具 ===</span>
+llm_auto = llm.<span class="fn">bind_tools</span>(tools, tool_choice=<span class="str">"auto"</span>)
+response_auto = llm_auto.<span class="fn">invoke</span>([HumanMessage(content=<span class="str">"今天天气怎么样？"</span>)])
+<span class="cmt">// 如果没有匹配的工具，模型会正常回答文本</span>
+
+
+<span class="cmt">// === 方式二：none —— 强制不调用任何工具 ===</span>
+llm_none = llm.<span class="fn">bind_tools</span>(tools, tool_choice=<span class="str">"none"</span>)
+response_none = llm_none.<span class="fn">invoke</span>([HumanMessage(content=<span class="str">"AAPL股价多少？"</span>)])
+<span class="cmt">// 即使问题匹配工具，也不会调用，直接文本回答</span>
+
+
+<span class="cmt">// === 方式三：指定特定工具 —— 强制调用某个工具 ===</span>
+llm_forced = llm.<span class="fn">bind_tools</span>(tools, tool_choice=<span class="str">"get_stock_price"</span>)
+response_forced = llm_forced.<span class="fn">invoke</span>([
+    SystemMessage(content=<span class="str">"你是一个金融助手"</span>),
+    HumanMessage(content=<span class="str">"随便说点什么"</span>),
+])
+<span class="cmt">// 无论用户说什么，都会强制调用 get_stock_price 工具</span>
+<span class="fn">print</span>(response_forced.tool_calls)
+<span class="cmt">// [{'name': 'get_stock_price', 'args': {...}, 'id': '...'}]</span>
+
+
+<span class="cmt">// === 方式四：required / any —— 必须至少调用一个工具 ===</span>
+llm_required = llm.<span class="fn">bind_tools</span>(tools, tool_choice=<span class="str">"any"</span>)
+response_req = llm_required.<span class="fn">invoke</span>([HumanMessage(content=<span class="str">"帮我查查 NVIDIA"</span>)])</code></pre>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:18%">tool_choice 值</th><th>行为</th><th>典型用途</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>"auto"</code></td><td>模型自主决定是否/调用哪个工具</td><td>通用 Agent 场景（默认值）</td></tr>
+        <tr><td><code>"none"</code></td><td>禁止调用任何工具，仅文本回复</td><td>纯对话模式、降级方案</td></tr>
+        <tr><td><code>"tool_name"</code></td><td>强制调用指定的工具</td><td>强制提取、固定工作流</td></tr>
+        <tr><td><code>"any"</code> / <code>"required"</code></td><td>必须至少调用一个工具</td><td>确保工具被使用</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub-heading">parallel_tool_calls 并行调用</h3>
+
+  <p>当用户的请求涉及多个独立操作时，现代 LLM 支持在一次响应中<strong>并行发起多个工具调用</strong>，大幅提升效率：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="cmt">// 开启/关闭并行工具调用（默认开启）</span>
+llm_parallel = llm.<span class="fn">bind_tools</span>(
+    tools,
+    parallel_tool_calls=<span class="kw">True</span>,   <span class="cmt">// 允许一次返回多个 tool_calls</span>
+)
+
+response = llm_parallel.<span class="fn">invoke</span>([
+    <span class="fn">HumanMessage</span>(content=<span class="str">"对比一下 Apple 和 Tesla 的股价和公司信息"</span>)
+])
+
+
+<span class="cmt">// 一次响应中可能包含多个工具调用</span>
+<span class="fn">print</span>(<span class="str">f"共触发 {len(response.tool_calls)} 个工具调用:\n"</span>)
+
+<span class="kw">for</span> idx, tc <span class="kw">in</span> <span class="fn">enumerate</span>(response.tool_calls, <span class="num">1</span>):
+    <span class="fn">print</span>(<span class="str">f"  [{idx}] {tc['name']}({tc['args']})"</span>)
+
+<span class="cmt">// 输出示例：
+<span class="cmt">// 共触发 4 个工具调用:</span>
+<span class="cmt//   [1] get_stock_price({'symbol': 'AAPL'})</span>
+<span class="cmt//   [2] get_company_info({'company': 'Apple'})</span>
+<span class="cmt//   [3] get_stock_price({'symbol': 'TSLA'})</span>
+<span class="cmt//   [4] get_company_info({'company': 'Tesla'})</span></code></pre>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#9989;</div>
+    <div class="hb-body">
+      <strong>并行调用的优势：</strong>对于上述例子，串行调用需要 4 次 LLM 往返（问一次调一次），而并行调用只需 1 次往返就拿到全部 4 个调用请求。在实际应用中，这意味着<strong>延迟降低 60%~80%</strong>，用户体验显著提升。
+    </div>
+  </div>
+</article>
+
+<!-- S4: Tool I/O Format -->
+<article class="section info" id="s4">
+  <h2 class="section-title"><span class="num">4</span>工具调用的输入输出格式</h2>
+
+  <p>理解工具调用的完整数据流转格式，是构建可靠 Agent 的关键。整个流程围绕 <code>tool_call_id</code> 进行关联追踪。</p>
+
+  <!-- Flow Diagram -->
+  <div class="flow-diagram">
+    <div class="flow-step">
+      <div class="fs-icon">&#128100;</div>
+      <div class="fs-label">User Input</div>
+      <div class="fs-desc">用户提问</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">
+      <div class="fs-icon">&#129302;</div>
+      <div class="fs-label">AIMessage</div>
+      <div class="fs-desc">含 tool_calls</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">
+      <div class="fs-icon">&#128295;</div>
+      <div class="fs-label">Execute</div>
+      <div class="fs-desc">运行工具</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">
+      <div class="fs-icon">&#128220;</div>
+      <div class="fs-label">ToolMessage</div>
+      <div class="fs-desc">含 tool_call_id</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">
+      <div class="fs-icon">&#129302;</div>
+      <div class="fs-label">AIMessage</div>
+      <div class="fs-desc">最终回答</div>
+    </div>
+  </div>
+
+  <h3 class="sub-heading">ToolMessage 类型详解</h3>
+
+  <p><code>ToolMessage</code> 是工具执行结果的载体，它的核心职责是通过 <code>tool_call_id</code> 将结果「归还」给对应的工具调用请求：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_core.messages <span class="kw">import</span> ToolMessage, AIMessage, HumanMessage
+
+
+<span class="cmt">// === AIMessage 中的工具调用请求 ===</span>
+ai_response = AIMessage(
+    content=<span class="str">""</span>,  <span class="cmt">// 选择调用工具时 content 通常为空</span>
+    tool_calls=[
+        {
+            <span class="str">"id"</span>: <span class="str">"call_abc123"</span>,        <span class="cmt">// 唯一标识符（由 LLM 生成）</span>
+            <span class="str">"name"</span>: <span class="str">"get_stock_price"</span>,
+            <span class="str">"args"</span>: {<span class="str">"symbol"</span>: <span class="str">"AAPL"</span>},
+        },
+        {
+            <span class="str">"id"</span>: <span class="str">"call_def456"</span>,
+            <span class="str">"name"</span>: <span class="str">"get_company_info"</span>,
+            <span class="str">"args"</span>: {<span class="str">"company"</span>: <span class="str">"Apple"</span>},
+        },
+    ],
+)
+
+
+<span class="cmt">// === 执行工具后构造 ToolMessage ===</span>
+<span class="cmt">// 注意：tool_call_id 必须与 AIMessage 中的 id 一一对应！</span>
+tool_results = [
+    <span class="fn">ToolMessage</span>(
+        content=<span class="str">"$189.50"</span>,
+        tool_call_id=<span class="str">"call_abc123"</span>,  <span class="cmt">// 匹配第一个 tool_call</span>
+    ),
+    <span class="fn">ToolMessage</span>(
+        content=<span class="str">"科技 | 市值 2.9T | 1976年成立"</span>,
+        tool_call_id=<span class="str">"call_def456"</span>,  <span class="cmt">// 匹配第二个 tool_call</span>
+    ),
+]
+
+
+<span class="cmt">// === 构建完整的消息历史 ===</span>
+conversation_history = [
+    <span class="fn">HumanMessage</span>(content=<span class="str">"Apple 股价和公司信息？"</span>),
+    ai_response,              <span class="cmt">// AI 请求调用工具</span>
+    *tool_results,            <span class="cmt">// 工具执行结果（展开列表）</span>
+]
+
+<span class="cmt">// 将完整历史再次发给 LLM，它会基于工具结果生成最终回答</span>
+final_response = llm.<span class="fn">invoke</span>(conversation_history)
+<span class="fn">print</span>(final_response.content)
+<span class="cmt">// "根据最新数据，Apple(AAPL) 当前股价为 $189.50..."</span></code></pre>
+  </div>
+
+  <h3 class="sub-heading">tool_call_id 关联机制</h3>
+
+  <div class="info-grid">
+    <div class="info-item">
+      <div class="info-item-label">ID 来源</div>
+      <div class="info-item-value">由 <code>LLM API</code> 在生成 tool_calls 时自动分配唯一 ID</div>
+    </div>
+    <div class="info-item">
+      <div class="info-item-label">格式示例</div>
+      <div class="info-item-value"><code>call_abc123</code> / <code>toolu_xxxxx</code></div>
+    </div>
+    <div class="info-item">
+      <div class="info-item-label">匹配要求</div>
+      <div class="info-item-value">ToolMessage.id <strong>必须等于</strong> 对应 tool_call.id</div>
+    </div>
+    <div class="info-item">
+      <div class="info-item-label">错误后果</div>
+      <div class="info-item-value">ID 不匹配会导致 LLM 无法关联结果与调用</div>
+    </div>
+  </div>
+
+  <h3 class="sub-heading">错误返回与容错处理</h3>
+
+  <p>工具执行过程中可能出现各种异常，正确的做法是<strong>将错误信息作为 ToolMessage 返回</strong>，而不是抛出异常中断流程：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_core.messages <span class="kw">import</span> ToolMessage
+<span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+
+
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">robust_api_call</span>(endpoint: <span class="str">str</span>, data: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""调用外部 API 接口，带完善的容错处理"""</span>
+    <span class="kw">try</span>:
+        <span class="cmt">// ... 实际 API 调用逻辑 ...</span>
+        <span class="kw">if</span> endpoint == <span class="str">"/error"</span>:
+            <span class="kw">raise</span> ConnectionError(<span class="str">"API 服务不可达"</span>)
+
+        <span class="kw">return</span> <span class="str">f"API 调用成功: {data}"</span>
+
+    <span class="kw">except</span> ConnectionError as e:
+        <span class="cmt">// !!! 不要 raise，而是返回错误信息字符串 !!!</span>
+        <span class="kw">return</span> <span class="str">f"[ERROR] 连接失败: {e}。请检查网络连接或稍后重试。"</span>
+
+    <span class="kw">except</span> TimeoutError as e:
+        <span class="kw">return</span> <span class="str">f"[ERROR] 请求超时: {e}。建议减小数据量或增加超时时间。"</span>
+
+    <span class="kw">except</span> Exception as e:
+        <span class="kw">return</span> <span class="str">f"[ERROR] 未预期错误 ({type(e).__name__}): {e}"</span>
+
+
+<span class="cmt">// 在 Agent 中使用时的容错包装</span>
+<span class="kw">def</span> <span class="fn">safe_tool_execute</span>(tool_obj, tool_call) -> ToolMessage:
+    <span class="str">"""安全执行工具并构造 ToolMessage"""</span>
+    <span class="kw">try</span>:
+        result = tool_obj.<span class="fn">invoke</span>(tool_call[<span class="str">"args"</span>])
+        <span class="kw">return</span> <span class="fn">ToolMessage</span>(content=str(result), tool_call_id=tool_call[<span class="str">"id"</span>])
+    <span class="kw">except</span> Exception as e:
+        <span class="cmt">// 兜底：即使工具本身没处理好异常，Agent 层也要兜住</span>
+        <span class="kw">return</span> <span class="fn">ToolMessage</span>(
+            content=<span class="str">f"[AGENT_ERROR] 工具执行失败: {e}"</span>,
+            tool_call_id=tool_call[<span class="str">"id"</span>],
+            is_error=<span class="kw">True</span>,  <span class="cmt">// 标记为错误消息</span>
+        )</code></pre>
+  </div>
+
+  <div class="highlight-box danger">
+    <div class="hb-icon">&#9888;&#65039;</div>
+    <div class="hb-body">
+      <strong>黄金法则：工具永远不要抛异常给 Agent。</strong>工具应该始终返回一个字符串（成功结果或错误描述），由 LLM 来决定如何处理错误——它可以重试、换一种方式询问用户、或者向用户报告错误。如果工具抛出未捕获的异常，整个 Agent 流程会崩溃。
+    </div>
+  </div>
+</article>
+
+<!-- S5: Dynamic Tool Selection -->
+<article class="section danger" id="s5">
+  <h2 class="section-title"><span class="num">5</span>动态工具选择与组合</h2>
+
+  <p>在生产级应用中，工具集往往不是固定的。根据用户身份、意图上下文、权限等级<strong>动态调整可用工具</strong>，是构建安全、高效 Agent 的必备能力。</p>
+
+  <h3 class="sub-heading">根据意图动态加载工具集</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+<span class="kw">from</span> langchain_core.messages <span class="kw">import</span> HumanMessage, SystemMessage
+
+
+<span class="cmt">// ============================================================</span>
+<span class="cmt">// === 定义不同领域的工具集 ===</span>
+<span class="cmt">// ============================================================</span>
+
+<span class="cmt">// --- 金融工具集 ---</span>
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">query_stock</span>(symbol: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""查询股票实时行情数据"""</span>
+    <span class="kw">return</span> <span class="str">f"{symbol}: $189.50 (+2.3%)"</span>
+
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">query_fund</span>(fund_code: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""查询基金净值和持仓信息"""</span>
+    <span class="kw">return</span> <span class="str">f"{fund_code}: NAV 1.2345"</span>
+
+finance_tools = [query_stock, query_fund]
+
+
+<span class="cmt">// --- 天气工具集 ---</span>
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">get_forecast</span>(city: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""查询城市未来7天天气预报"""</span>
+    <span class="kw">return</span> <span class="str">f"{city}: 未来7天以晴天为主，气温 18~28°C"</span>
+
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">get_air_quality</span>(city: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""查询城市实时空气质量指数(AQI)"""</span>
+    <span class="kw">return</span> <span class="str">f"{city}: AQI 45 (优)"</span>
+
+weather_tools = [get_forecast, get_air_quality]
+
+
+<span class="cmt">// --- 办公工具集 ---</span>
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">send_email</span>(to: <span class="str">str</span>, subject: <span class="str">str</span>, body: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""发送邮件给指定收件人"""</span>
+    <span class="kw">return</span> <span class="str">f"邮件已发送至 {to}: {subject}"</span>
+
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">schedule_meeting</span>(title: <span class="str">str</span>, date: <span class="str">str</span>, attendees: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""创建会议日程安排"""</span>
+    <span class="kw">return</span> <span class="str">f"会议已创建: {title} @ {date}, 参会人: {attendees}"</span>
+
+office_tools = [send_email, schedule_meeting]
+
+
+<span class="cmt">// ============================================================</span>
+<span class="cmt">// === 意图路由：根据用户输入选择工具集 ===</span>
+<span class="cmt">// ============================================================</span>
+
+TOOL_REGISTRY = {
+    <span class="str">"finance"</span>: (<span class="str">"金融投资助手"</span>, finance_tools),
+    <span class="str">"weather"</span>: (<span class="str">"天气预报助手"</span>, weather_tools),
+    <span class="str">"office"</span>:  (<span class="str">"办公协作助手"</span>, office_tools),
+}
+
+
+<span class="kw">def</span> <span class="fn">route_intent</span>(user_input: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""简单的关键词意图分类（生产环境应使用 LLM 分类器）"""</span>
+    lower_input = user_input.lower()
+    <span class="kw">if</span> any(kw <span class="kw">in</span> lower_input <span class="kw">for</span> kw <span class="kw">in</span> [<span class="str">"股票"</span>, <span class="str">"基金"</span>, <span class="str">"股价"</span>, <span class="str">"stock"</span>, <span class="str">"投资"</span>]):
+        <span class="kw">return</span> <span class="str">"finance"</span>
+    <span class="kw">elif</span> any(kw <span class="kw">in</span> lower_input <span class="kw">for</span> kw <span class="kw">in</span> [<span class="str">"天气"</span>, <span class="str">"气温"</span>, <span class="str">"下雨"</span>, <span class="str">"weather"</span>, <span class="str">"空气"</span>]):
+        <span class="kw">return</span> <span class="str">"weather"</span>
+    <span class="kw">elif</span> any(kw <span class="kw">in</span> lower_input <span class="kw">for</span> kw <span class="kw">in</span> [<span class="str">"邮件"</span>, <span class="str">"开会"</span>, <span class="str">"日程"</span>, <span class="str">"email"</span>, <span class="str">"meeting"</span>]):
+        <span class="kw">return</span> <span class="str">"office"</span>
+    <span class="kw">else</span>:
+        <span class="kw">return</span> <span class="str">"general"</span>  <span class="cmt">// 无匹配工具，走纯对话</span>
+
+
+<span class="cmt">// ============================================================</span>
+<span class="cmt">// === 组装并调用 ===</span>
+<span class="cmt">// ============================================================</span>
+
+llm = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+
+user_question = <span class="str">"帮我查一下 AAPL 和 TSLA 的股价"</span>
+intent = <span class="fn">route_intent</span>(user_question)
+
+<span class="kw">if</span> intent != <span class="str">"general"</span> and intent <span class="kw">in</span> TOOL_REGISTRY:
+    role_name, tools = TOOL_REGISTRY[intent]
+
+    <span class="cmt">// 动态绑定工具集</span>
+    contextual_llm = llm.<span class="fn">bind_tools</span>(tools)
+
+    response = contextual_llm.<span class="fn">invoke</span>([
+        <span class="fn">SystemMessage</span>(content=<span class="str">f"你是{role_name}。只使用你拥有的工具来回答问题。"</span>),
+        <span class="fn">HumanMessage</span>(content=user_question),
+    ])
+
+    <span class="fn">print</span>(<span class="str">f"意图分类: {intent}"</span>)
+    <span class="fn">print</span>(<span class="str">f"加载工具: {[t.name for t in tools]}"</span>)
+    <span class="fn">print</span>(<span class="str">f"工具调用: {response.tool_calls}"</span>)
+<span class="kw">else</span>:
+    <span class="cmt">// 无需工具，普通对话</span>
+    response = llm.<span class="fn">invoke</span>([HumanMessage(content=user_question)])
+    <span class="fn">print</span>(response.content)</code></pre>
+  </div>
+
+  <h3 class="sub-heading">工具权限分级</h3>
+
+  <p>不同级别的用户应该看到不同的工具集。这既是安全需求，也是降低 LLM 选择困难度的有效手段：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> enum <span class="kw">import</span> Enum
+<span class="kw">from</span> typing <span class="kw">import</span> List
+
+
+<span class="kw">class</span> <span class="cls">UserRole</span>(Enum):
+    GUEST = <span class="str">"guest"</span>        <span class="cmt">// 游客：只读操作</span>
+    USER = <span class="str">"user"</span>          <span class="cmt">// 普通用户：基本查询</span>
+    ADMIN = <span class="str">"admin"</span>        <span class="cmt">// 管理员：包含写操作</span>
+
+
+<span class="cmt">// === 不同权限级别的工具定义 ===</span>
+
+<span class="cmt">// Level 0: 所有人可用</span>
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">public_search</span>(query: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""公开信息搜索"""</span>
+    <span class="kw">return</span> <span class="str">f"搜索结果: {query}"</span>
+
+<span class="cmt">// Level 1: 登录用户可用</span>
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">view_profile</span>(user_id: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""查看个人资料信息（需登录）"""</span>
+    <span class="kw">return</span> <span class="str">f"用户 {user_id} 的资料"</span>
+
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">my_orders</span>(user_id: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""查看我的订单记录（需登录）"""</span>
+    <span class="kw">return</span> <span class="str">f"用户 {user_id} 的订单列表"</span>
+
+<span class="cmt">// Level 2: 仅管理员可用</span>
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">delete_user</span>(user_id: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""删除用户账号（危险操作，仅管理员）"""</span>
+    <span class="kw">return</span> <span class="str">f"警告: 用户 {user_id} 已被删除"</span>
+
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">export_database</span>(format: <span class="str">str</span> = <span class="str">"csv"</span>) -> <span class="str">str</span>:
+    <span class="str">"""导出全量数据库（敏感操作，仅管理员）"""</span>
+    <span class="kw">return</span> <span class="str">f"数据库已导出为 {format} 格式"</span>
+
+
+<span class="cmt">// === 权限分级映射 ===</span>
+PERMISSION_MAP = {
+    UserRole.GUEST: [public_search],                          <span class="cmt">// 1 个工具</span>
+    UserRole.USER:  [public_search, view_profile, my_orders],  <span class="cmt">// 3 个工具</span>
+    UserRole.ADMIN: [public_search, view_profile, my_orders,
+                     delete_user, export_database],               <span class="cmt">// 5 个工具</span>
+}
+
+
+<span class="kw">def</span> <span class="fn">get_tools_for_user</span>(role: UserRole) -> List:
+    <span class="str">"""根据用户角色返回对应的工具集"""</span>
+    tools = PERMISSION_MAP.<span class="fn">get</span>(role, [])
+    <span class="fn">print</span>(<span class="str">f"[权限] {role.value} -> {len(tools)} 个工具可用"</span>)
+    <span class="kw">return</span> tools
+
+
+<span class="cmt">// === 使用示例 ===</span>
+current_role = UserRole.USER
+available_tools = <span class="fn">get_tools_for_user</span>(current_role)
+
+contextual_llm = llm.<span class="fn">bind_tools</span>(available_tools)
+
+<span class="cmt">// 普通用户即使要求删除账号，LLM 也没有 delete_user 工具可用</span>
+response = contextual_llm.<span class="fn">invoke</span>([
+    <span class="fn">HumanMessage</span>(content=<span class="str">"帮我把用户 test_user 删掉"</span>)
+])
+<span class="fn">print</span>(response.content)
+<span class="cmt">// "抱歉，我没有删除用户的功能。如果您需要注销账号，请联系客服..."</span></code></pre>
+  </div>
+
+  <h3 class="sub-heading">实际案例：多步骤工具协作</h3>
+
+  <p>下面展示一个完整的<strong>多步骤工具协作</strong>案例 —— 用户想规划一次旅行，Agent 需要依次调用多个工具来完成：</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python</span>
+      <button class="code-copy-btn" onclick="copyCode(this)">复制</button>
+    </div>
+    <pre><code><span class="kw">from</span> langchain_core.messages <span class="kw">import</span> (
+    HumanMessage, AIMessage, ToolMessage, SystemMessage
+)
+<span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+
+
+<span class="cmt">// === 旅行规划工具集 ===</span>
+
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">search_flights</span>(origin: <span class="str">str</span>, destination: <span class="str">str</span>, date: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""搜索航班信息"""</span>
+    <span class="kw">return</span> (
+        <span class="str">f"航班搜索结果 ({origin} -> {destination}, {date}):\n"</span>
+        <span class="str">"1. CA1831 08:00-10:30 ¥850\n"</span>
+        <span class="str">"2. MU5132 14:20-16:45 ¥720\n"</span>
+        <span class="str">"3. CZ3456 19:00-21:15 ¥680"</span>
+    )
+
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">search_hotels</span>(city: <span class="str">str</span>, check_in: <span class="str">str</span>, check_out: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""搜索酒店住宿"""</span>
+    <span class="kw">return</span> (
+        <span class="str">f"酒店搜索结果 ({city}, {check_in} ~ {check_out}):\n"</span>
+        <span class="str">"1. 万豪酒店 ★★★★★ ¥1,200/晚\n"</span>
+        <span class="str">"2. 希尔顿酒店 ★★★★ ¥680/晚\n"</span>
+        <span class="str">"3. 如家快捷 ★★ ¥260/晚"</span>
+    )
+
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">get_attractions</span>(city: <span class="str">str</span>) -> <span class="str">str</span>:
+    <span class="str">"""获取城市热门景点推荐"""</span>
+    attractions = {
+        <span class="str">"杭州"</span>: <span class="str">"西湖、灵隐寺、宋城、千岛湖、西溪湿地"</span>,
+        <span class="str">"北京"</span>: <span class="str">"故宫、长城、颐和园、天坛、南锣鼓巷"</span>,
+        <span class="str">"成都"</span>: <span class="str">"大熊猫基地、宽窄巷子、锦里、都江堰、春熙路"</span>,
+    }
+    <span class="kw">return</span> attractions.<span class="fn">get</span>(city, <span class="str">f"暂无 {city} 的景点信息"</span>)
+
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">estimate_budget</span>(flights_cost: <span class="float">float</span>, hotel_per_night: <span class="float">float</span>, nights: <span class="int">int</span>) -> <span class="str">str</span>:
+    <span class="str">"""估算旅行总预算"""</span>
+    total_hotel = hotel_per_night * nights
+    other_expense = (flights_cost + total_hotel) * <span class="num">0.3</span>  <span class="cmt">// 餐饮交通等约30%</span>
+    total = flights_cost + total_hotel + other_expense
+    <span class="kw">return</span> (
+        <span class="str">f"预算估算:\n"</span>
+        <span class="str">f"  机票: ¥{flights_cost:.0f}\n"</span>
+        <span class="str">f"  住宿: ¥{total_hotel:.0f} ({nights}晚)\n"</span>
+        <span class="str">f"  其他: ¥{other_expense:.0f}\n"</span>
+        <span class="str">f"  ──────────────\n"</span>
+        <span class="str">f"  总计: ¥{total:.0f}"</span>
+    )
+
+
+travel_tools = [search_flights, search_hotels, get_attractions, estimate_budget]
+llm_travel = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>).<span class="fn">bind_tools</span>(travel_tools)
+
+
+<span class="cmt">// === 模拟完整的多轮工具调用流程 ===</span>
+<span class="kw">def</span> <span class="fn">simulate_agent_loop</span>(user_query: <span class="str">str</span>, max_rounds: <span class="int">int</span> = <span class="num">5</span>):
+    <span class="str">"""模拟 Agent 的工具调用循环"""</span>
+    messages = [
+        <span class="fn">SystemMessage</span>(content=<span class="str">"你是一个智能旅行规划助手。使用可用工具帮助用户规划旅行，综合所有信息给出建议。"</span>),
+        <span class="fn">HumanMessage</span>(content=user_query),
+    ]
+
+    <span class="kw">for</span> round_num <span class="kw">in</span> <span class="fn">range</span>(max_rounds):
+        <span class="fn">print</span>(<span class="str">f"\n--- 第 {round_num + 1} 轮 ---"</span>)
+
+        <span class="cmt">// 调用 LLM</span>
+        response = llm_travel.<span class="fn">invoke</span>(messages)
+        messages.append(response)
+
+        <span class="cmt">// 如果没有工具调用，说明 LLM 已经给出最终答案</span>
+        <span class="kw">if</span> not response.tool_calls:
+            <span class="fn">print</span>(<span class="str">"最终回答:"</span>)
+            <span class="fn">print</span>(response.content)
+            <span class="kw">break</span>
+
+        <span class="cmt">// 执行所有工具调用</span>
+        <span class="kw">for</span> tc <span class="kw">in</span> response.tool_calls:
+            <span class="fn">print</span>(<span class="str">f"  >> 调用: {tc['name']}({tc['args']})"</span>)
+
+            <span class="cmt">// 根据名称找到对应工具并执行</span>
+            tool_obj = next((t <span class="kw">for</span> t <span class="kw">in</span> travel_tools <span class="kw">if</span> t.name == tc[<span class="str">'name'</span>]), <span class="kw">None</span>)
+            <span class="kw">if</span> tool_obj:
+                result = tool_obj.<span class="fn">invoke</span>(tc[<span class="str">"args"</span>])
+                tool_msg = <span class="fn">ToolMessage</span>(content=result, tool_call_id=tc[<span class="str">"id"</span>])
+                messages.append(tool_msg)
+                <span class="fn">print</span>(  <span class="str">"  << 结果已返回"</span>)
+            <span class="kw">else</span>:
+                <span class="fn">print</span>(  <span class="str">"  !! 未找到工具"</span>)
+
+
+<span class="cmt">// 启动旅行规划</span>
+<span class="fn">simulate_agent_loop</span>(
+    user_query=<span class="str">"我想下周三去杭州玩3天，帮我查一下机票酒店和景点，做个预算估算。我出发地是北京。"</span>
+)
+
+<span class="cmt">// 输出示例：
+<span class="cmt">// --- 第 1 轮 ---</span>
+<span class="cmt">//   >> 调用: search_flights({'origin':'北京','destination':'杭州','date':'下周三'})</span>
+<span class="cmt//   << 结果已返回</span>
+<span class="cmt//   >> 调用: search_hotels({'city':'杭州','check_in':'下周三','check_out':'周六'})</span>
+<span class="cmt//   << 结果已返回</span>
+<span class="cmt//   >> 调用: get_attractions({'city':'杭州'})</span>
+<span class="cmt//   << 结果已返回</span>
+<span class="cmt//</span>
+<span class="cmt// --- 第 2 轮 ---</span>
+<span class="cmt//   >> 调用: estimate_budget({'flights_cost':850,'hotel_per_night':680,'nights':3})</span>
+<span class="cmt//   << 结果已返回</span>
+<span class="cmt//</span>
+<span class="cmt// 最终回答:</span>
+<span class="cmt// "根据您的需求，为您整理了杭州3日游方案..."</span></code></pre>
+  </div>
+
+  <div class="highlight-box success">
+    <div class="hb-icon">&#127881;</div>
+    <div class="hb-body">
+      <strong>恭喜完成第 19 集 —— 工具 Tools 的学习！</strong><br><br>
+      你现在已经掌握了 LangChain 工具体系的五大核心模块：<br>
+      &#x2022; <strong>@tool 装饰器</strong> — 一行代码创建工具，description 写得好不好决定 LLM 用得对不对<br>
+      &#x2022; <strong>StructuredTool / BaseTool</strong> — 从简单到复杂的工具构建阶梯<br>
+      &#x2022; <strong>bind_tools() + tool_choice</strong> — 让 LLM 学会使用工具的艺术<br>
+      &#x2022; <strong>ToolMessage + tool_call_id</strong> — 完整闭环的关键纽带<br>
+      &#x2022; <strong>动态工具选择</strong> — 生产级 Agent 的权限管理与意图路由<br>
+      <br>接下来可以去学习 Memory 记忆管理（P21）、LangSmith 对接（P25），以及完整的项目实战（P27）。Spinning~♪
+    </div>
+  </div>
+</article>
+
+</main>
+
+<!-- Footer Nav -->
+<nav class="footer-nav">
+  <a href="18-提示词工程.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">&larr; 上一集</div>
+      <div class="nl-label">第 18 集 - 提示词工程</div>
+    </div>
+  </a>
+  <a href="20-预定义工具Tavily.html" class="nav-link-card">
+    <div>
+      <div class="nl-dir">下一集 &rarr;</div>
+      <div class="nl-label">第 20 集 - 预定义工具Tavily</div>
+    </div>
+    <span class="nl-arrow">&rarr;</span>
+  </a>
+</nav>
+
+<div class="footer-ref">
+  参考来源：<a href="https://python.langchain.ac.cn/docs/how_to/custom_tools/" target="_blank">LangChain 官方文档 - Custom Tools</a> &middot;
+  视频来源：<a href="https://www.bilibili.com/video/BV178w1z7EHQ" target="_blank">B站 黑马程序员 BV178w1z7EHQ</a>
+</div>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+  <button class="tweaks-toggle" onclick="toggleTweaks()" title="调节面板">&#9881;</button>
+  <div class="tweaks-body" id="tweaksBody">
+    <div class="tweaks-title">
+      Tweaks
+      <button class="tweaks-close" onclick="toggleTweaks()">&times;</button>
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">字体大小</label>
+      <input type="range" class="tweaks-slider" min="0.85" max="1.25" step="0.05" value="1" oninput="setFontSize(this.value)">
+    </div>
+    <div class="tweaks-group">
+      <label class="tweaks-label">行距</label>
+      <input type="range" class="tweaks-slider" min="0.9" max="1.4" step="0.05" value="1" oninput="setLineHeight(this.value)">
+    </div>
+  </div>
+</div>
+
+<script>
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => { hdr.classList.toggle('scrolled', window.scrollY > 20); });
+
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) setTimeout(() => entry.target.classList.add('visible'), i * 80);
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = '已复制!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function toggleTweaks() { document.getElementById('tweaksBody').classList.toggle('open'); }
+function setFontSize(val) { document.documentElement.style.setProperty('--font-scale', val); }
+function setLineHeight(val) { document.documentElement.style.setProperty('--line-height-scale', val); }
+</script>
+</body>
+</html>
