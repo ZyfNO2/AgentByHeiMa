@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提示词工程 · 完整学习笔记 | 总览导航</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #faf8f6;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f3efe9;
+            --text-primary: #1a1d26;
+            --text-secondary: #5a564f;
+            --text-muted: #94928a;
+            --primary: oklch(0.70 0.18 85);
+            --primary-light: oklch(0.85 0.12 85);
+            --primary-dark: oklch(0.55 0.16 85);
+            --accent: oklch(0.65 0.20 25);
+            --secondary: oklch(0.60 0.15 200);
+            --success: oklch(0.55 0.16 155);
+            --danger: oklch(0.55 0.20 25);
+            --teal: oklch(0.55 0.14 180);
+            --warm-orange: oklch(0.70 0.18 75);
+            --warm-red: oklch(0.65 0.20 25);
+            --amber: oklch(0.72 0.16 70);
+            --border-color: #e8e4de;
+            --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+            --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 4px rgba(26,29,38,0.04);
+            --shadow-lg: 0 8px 24px rgba(26,29,38,0.10), 0 4px 8px rgba(26,29,38,0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --font-scale: 1;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: calc(16px * var(--font-scale));
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== Header Navigation ===== */
+        .header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            background: rgba(250, 248, 246, 0.82);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .header.scrolled { box-shadow: var(--shadow-sm); }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+        }
+
+        .header-logo-icon {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-size: 13px; font-weight: 700;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            max-width: 800px;
+            overflow-x: auto;
+        }
+
+        .header-nav::-webkit-scrollbar { display: none; }
+
+        .header-nav a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 5px 9px;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .header-nav a:hover { color: var(--primary); background: var(--bg-subtle); }
+        .header-nav a.active { color: white; background: var(--primary); font-weight: 600; }
+
+        /* ===== Hero Section ===== */
+        .hero {
+            padding-top: 120px;
+            padding-bottom: 56px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -200px; left: -200px;
+            width: 550px; height: 550px;
+            background: radial-gradient(circle, oklch(0.70 0.18 85 / 0.07) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -150px; right: -100px;
+            width: 450px; height: 450px;
+            background: radial-gradient(circle, oklch(0.65 0.20 25 / 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero-content { position: relative; z-index: 1; }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, oklch(0.70 0.18 85 / 0.09), oklch(0.65 0.20 25 / 0.07));
+            border: 1px solid oklch(0.70 0.18 85 / 0.18);
+            padding: 7px 22px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--primary-dark);
+            margin-bottom: 28px;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        .hero-badge-dot {
+            width: 7px; height: 7px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(32px, 5.5vw, 56px);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 18px;
+            letter-spacing: -0.03em;
+            animation: fadeUp 0.6s ease 0.1s both;
+        }
+
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--amber) 35%, var(--accent) 70%, var(--warm-red) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 17px;
+            color: var(--text-secondary);
+            max-width: 640px;
+            margin: 0 auto 36px;
+            line-height: 1.65;
+            animation: fadeUp 0.6s ease 0.2s both;
+        }
+
+        /* ===== Stats Bar ===== */
+        .stats-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            animation: fadeUp 0.6s ease 0.3s both;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            padding: 14px 22px;
+            border-radius: var(--radius-md);
+            transition: all 0.25s ease;
+        }
+
+        .stat-item:hover {
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+        }
+
+        .stat-icon.orange { background: oklch(0.70 0.18 85 / 0.10); color: #c47a00; }
+        .stat-icon.red { background: oklch(0.65 0.20 25 / 0.08); color: #d94a3a; }
+        .stat-icon.green { background: oklch(0.55 0.16 155 / 0.10); color: #0d8a5e; }
+        .stat-icon.teal { background: oklch(0.55 0.14 180 / 0.10); color: #0d9488; }
+        .stat-icon.amber { background: oklch(0.72 0.16 70 / 0.10); color: #b8860b; }
+
+        .stat-info { text-align: left; }
+        .stat-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+        .stat-label {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ===== Progress Section ===== */
+        .progress-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px 40px;
+            animation: fadeUp 0.6s ease 0.35s both;
+        }
+
+        .progress-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .progress-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .progress-count {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-subtle);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--amber), var(--primary), var(--accent));
+            border-radius: 4px;
+            transition: width 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 2.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* ===== Main Content ===== */
+        .main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+
+        /* ===== Chapter Section Header ===== */
+        .chapter-section { margin-bottom: 44px; }
+
+        .chapter-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .chapter-icon {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .chapter-icon.ch1 {
+            background: linear-gradient(135deg, oklch(0.82 0.14 80), oklch(0.70 0.18 85));
+            color: white;
+        }
+
+        .chapter-info h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+
+        .chapter-info p {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .chapter-count-badge {
+            margin-left: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            flex-shrink: 0;
+            background: oklch(0.95 0.04 85);
+            color: #c47a00;
+        }
+
+        /* ===== Episode Grid ===== */
+        .episode-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+        }
+
+        @media (min-width: 1024px) {
+            .episode-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .episode-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+        }
+
+        @media (max-width: 480px) {
+            .episode-grid { grid-template-columns: 1fr; }
+        }
+
+        .episode-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .episode-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-4px);
+            border-color: oklch(0.70 0.18 85 / 0.30);
+        }
+
+        .episode-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background: linear-gradient(90deg, var(--primary), var(--amber), var(--accent));
+        }
+
+        .episode-card:hover::before { opacity: 1; }
+
+        .ch1-card:nth-child(1) { animation-delay: 0.03s; }
+        .ch1-card:nth-child(2) { animation-delay: 0.05s; }
+        .ch1-card:nth-child(3) { animation-delay: 0.07s; }
+        .ch1-card:nth-child(4) { animation-delay: 0.09s; }
+        .ch1-card:nth-child(5) { animation-delay: 0.11s; }
+        .ch1-card:nth-child(6) { animation-delay: 0.13s; }
+        .ch1-card:nth-child(7) { animation-delay: 0.15s; }
+        .ch1-card:nth-child(8) { animation-delay: 0.17s; }
+        .ch1-card:nth-child(9) { animation-delay: 0.19s; }
+        .ch1-card:nth-child(10) { animation-delay: 0.21s; }
+
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .card-number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 38px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, oklch(0.70 0.18 85 / 0.18), oklch(0.65 0.20 25 / 0.14));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-duration {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--bg-subtle);
+            padding: 4px 9px;
+            border-radius: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .card-duration svg { width: 11px; height: 11px; opacity: 0.6; }
+
+        .card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
+            line-height: 1.3;
+            transition: color 0.2s ease;
+        }
+
+        .episode-card:hover .card-title { color: #c47a00; }
+
+        .card-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.58;
+            margin-bottom: 16px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .card-tag {
+            font-size: 10.5px;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 5px;
+            letter-spacing: 0.02em;
+        }
+
+        .tag-foundation { background: oklch(0.70 0.18 85 / 0.08); color: #c47a00; }
+        .tag-core { background: oklch(0.65 0.20 25 / 0.07); color: #d94a3a; }
+        .tag-technique { background: oklch(0.55 0.14 180 / 0.08); color: #0d9488; }
+        .tag-advanced { background: oklch(0.50 0.18 300 / 0.08); color: #7c3aed; }
+        .tag-safety { background: oklch(0.55 0.16 155 / 0.08); color: #0d8a5e; }
+        .tag-project { background: oklch(0.62 0.22 330 / 0.10); color: #9333ea; }
+
+        .card-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .status-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-done { background: var(--success); }
+        .status-current { background: var(--primary); animation: pulse-dot 2s infinite; }
+        .status-pending { background: var(--border-color); }
+        .status-upcoming { background: var(--text-muted); opacity: 0.4; }
+
+        .card-arrow {
+            opacity: 0;
+            transform: translateX(-4px);
+            transition: all 0.25s ease;
+            color: var(--primary);
+            font-size: 15px;
+        }
+
+        .episode-card:hover .card-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .episode-card.disabled {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        .episode-card.disabled .card-title {
+            color: var(--text-muted);
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px 48px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-logo {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-size: 12px; font-weight: 700;
+        }
+
+        .footer-text {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .footer-text a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer-text a:hover { text-decoration: underline; }
+
+        .footer-bilibili {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.25s ease;
+        }
+
+        .footer-bilibili:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* ===== Tweaks Panel ===== */
+        .tweaks-panel {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
+        }
+
+        .tweaks-toggle {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+        }
+
+        .tweaks-toggle:hover {
+            transform: scale(1.08) rotate(15deg);
+            box-shadow: 0 8px 30px rgba(196,122,0,0.3);
+        }
+
+        .tweaks-content {
+            position: absolute;
+            bottom: 60px;
+            right: 0;
+            width: 280px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+            display: none;
+            animation: slideUp 0.25s ease;
+        }
+
+        .tweaks-content.open { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tweaks-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tweaks-row { margin-bottom: 14px; }
+
+        .tweaks-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tweaks-label span:last-child {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary);
+            font-size: 11px;
+        }
+
+        .tweaks-slider {
+            width: 100%;
+            height: 5px;
+            border-radius: 3px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--bg-subtle);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(196,122,0,0.3);
+            transition: transform 0.15s ease;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .header-inner { padding: 0 16px; height: 56px; }
+            .header-nav { display: none; }
+            .hero { padding-top: 96px; padding-bottom: 36px; }
+            .hero h1 { font-size: clamp(26px, 8vw, 40px); }
+            .hero-subtitle { font-size: 14.5px; }
+            .stats-bar { gap: 10px; }
+            .stat-item { padding: 10px 14px; }
+            .stat-value { font-size: 16px; }
+            .stat-icon { width: 32px; height: 32px; font-size: 14px; }
+            .main { padding: 0 16px 60px; }
+            .chapter-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .chapter-count-badge { margin-left: 0; }
+            .episode-card { padding: 20px; }
+            .card-number { font-size: 32px; }
+            .card-title { font-size: 15px; }
+            .progress-section { padding: 0 16px 30px; }
+            .footer { padding: 28px 16px 40px; }
+            .footer-inner { flex-direction: column; text-align: center; }
+            .tweaks-panel { bottom: 16px; right: 16px; }
+            .tweaks-content { width: 260px; right: -8px; }
+        }
+
+        /* ===== Scrollbar ===== */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="hdr">
+    <div class="header-inner">
+        <a href="index.html" class="header-logo">
+            <div class="header-logo-icon">PE</div>
+            Prompt Notes
+        </a>
+        <nav class="header-nav">
+            <a href="#p01">P01</a>
+            <a href="#p02">P02</a>
+            <a href="#p03">P03</a>
+            <a href="#p04">P04</a>
+            <a href="#p05">P05</a>
+            <a href="#p06">P06</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            黑马程序员 2026 提示词工程专题
+        </div>
+        <h1><span class="gradient-text">提示词工程</span> Prompt Engineering</h1>
+        <p class="hero-subtitle">从零开始系统掌握提示词设计方法论，涵盖结构化提示、角色设定、Few-Shot 学习、思维链推理、输出格式控制、高级模式与安全对齐，最终通过综合实战案例融会贯通，成为 Prompt Engineering 高手。</p>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-icon orange">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">6 集</div>
+                    <div class="stat-label">完整课程</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon amber">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">~3h</div>
+                    <div class="stat-label">总时长</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon red">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">1 大章节</div>
+                    <div class="stat-label">知识体系</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon green">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">实战驱动</div>
+                    <div class="stat-label">学习方式</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Progress Bar -->
+<section class="progress-section">
+    <div class="progress-header">
+        <span class="progress-label">学习进度</span>
+        <span class="progress-count">已完成 6 / 6 集</span>
+    </div>
+    <div class="progress-track">
+        <div class="progress-fill" id="progressBar" style="width: 100%;"></div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<main class="main">
+
+    <!-- ========== Chapter 1: 提示词工程完整体系 ========== -->
+    <section class="chapter-section" id="ch1">
+
+        <div class="chapter-header">
+            <div class="chapter-icon ch1">&#128172;</div>
+            <div class="chapter-info">
+                <h2>提示词工程 — 完整知识体系</h2>
+                <p>从提示词基础原理出发，系统掌握结构化设计、Few-Shot 学习、思维链推理、格式控制、高级模式与安全对齐，最终通过综合实战融会贯通。</p>
+            </div>
+            <span class="chapter-count-badge">P01 – P06 &middot; 6 集</span>
+        </div>
+
+        <div class="episode-grid">
+
+            <!-- P01 -->
+            <a href="prompt_engineering_notes/01-提示词工程基础.html" id="p01" class="episode-card ch1-card">
+                <div class="card-top">
+                    <span class="card-number">01</span>
+                    <span class="card-duration">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        ~20min
+                    </span>
+                </div>
+                <h3 class="card-title">提示词工程基础</h3>
+                <p class="card-desc">大模型 Prompt 工程指南，从提示词的本质与核心原则出发，建立系统化的提示词设计思维框架</p>
+                <div class="card-footer">
+                    <span class="card-tag tag-foundation">Foundation</span>
+                    <span class="card-status">
+                        <span class="status-dot status-done"></span>
+                        已完成
+                        <span class="card-arrow">&rarr;</span>
+                    </span>
+                </div>
+            </a>
+
+            <!-- P02 -->
+            <a href="prompt_engineering_notes/02-结构化提示词.html" id="p02" class="episode-card ch1-card">
+                <div class="card-top">
+                    <span class="card-number">02</span>
+                    <span class="card-duration">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        ~25min
+                    </span>
+                </div>
+                <h3 class="card-title">零样本提示与优化案例</h3>
+                <p class="card-desc">零样本（Zero-Shot）提示技术入门，通过自然语言指令直接引导模型输出，结合实际优化案例分析</p>
+                <div class="card-footer">
+                    <span class="card-tag tag-core">Core</span>
+                    <span class="card-status">
+                        <span class="status-dot status-done"></span>
+                        已完成
+                        <span class="card-arrow">&rarr;</span>
+                    </span>
+                </div>
+            </a>
+
+            <!-- P03 -->
+            <a href="prompt_engineering_notes/03-角色设定与人格.html" id="p03" class="episode-card ch1-card">
+                <div class="card-top">
+                    <span class="card-number">03</span>
+                    <span class="card-duration">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        ~30min
+                    </span>
+                </div>
+                <h3 class="card-title">金融文本分类实战</h3>
+                <p class="card-desc">以金融领域文本分类为实战场景，综合运用角色设定、Few-Shot 等技巧完成多类别文本分类任务</p>
+                <div class="card-footer">
+                    <span class="card-tag tag-project">Project</span>
+                    <span class="card-status">
+                        <span class="status-dot status-done"></span>
+                        已完成
+                        <span class="card-arrow">&rarr;</span>
+                    </span>
+                </div>
+            </a>
+
+            <!-- P04 -->
+            <a href="prompt_engineering_notes/04-Few-Shot少样本学习.html" id="p04" class="episode-card ch1-card">
+                <div class="card-top">
+                    <span class="card-number">04</span>
+                    <span class="card-duration">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        ~25min
+                    </span>
+                </div>
+                <h3 class="card-title">JSON 数据格式控制</h3>
+                <p class="card-desc">掌握用 JSON Schema 精确约束 LLM 输出格式，实现从自由文本到结构化数据的可靠转换</p>
+                <div class="card-footer">
+                    <span class="card-tag tag-core">Core</span>
+                    <span class="card-status">
+                        <span class="status-dot status-done"></span>
+                        已完成
+                        <span class="card-arrow">&rarr;</span>
+                    </span>
+                </div>
+            </a>
+
+            <!-- P05 -->
+            <a href="prompt_engineering_notes/05-Chain-of-Thought思维链.html" id="p05" class="episode-card ch1-card">
+                <div class="card-top">
+                    <span class="card-number">05</span>
+                    <span class="card-duration">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        ~35min
+                    </span>
+                </div>
+                <h3 class="card-title">金融文本信息提取</h3>
+                <p class="card-desc">以金融文档信息提取为综合实战，运用 CoT 推理、输出格式控制等技术从非结构化文本中提取结构化数据</p>
+                <div class="card-footer">
+                    <span class="card-tag tag-project">Project</span>
+                    <span class="card-status">
+                        <span class="status-dot status-done"></span>
+                        已完成
+                        <span class="card-arrow">&rarr;</span>
+                    </span>
+                </div>
+            </a>
+
+            <!-- P06 -->
+            <a href="prompt_engineering_notes/06-输出格式控制.html" id="p06" class="episode-card ch1-card">
+                <div class="card-top">
+                    <span class="card-number">06</span>
+                    <span class="card-duration">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        ~35min
+                    </span>
+                </div>
+                <h3 class="card-title">金融文本语义匹配</h3>
+                <p class="card-desc">终极实战——金融文本语义匹配与相似度计算，融会贯通全部提示词技巧，完成端到端的智能文本处理系统</p>
+                <div class="card-footer">
+                    <span class="card-tag tag-project">Finale</span>
+                    <span class="card-status">
+                        <span class="status-dot status-done"></span>
+                        已完成
+                        <span class="card-arrow">&rarr;</span>
+                    </span>
+                </div>
+            </a>
+
+
+
+        </div><!-- /.episode-grid -->
+
+    </section><!-- /#ch1 -->
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-left">
+            <div class="footer-logo">PE</div>
+            <span class="footer-text">
+                提示词工程 Prompt Engineering 学习笔记 &middot; 基于
+                <a href="https://www.bilibili.com/video/BV1yjz5BLEoY" target="_blank">黑马程序员</a> 2026 教程整理
+            </span>
+        </div>
+        <a href="https://www.bilibili.com/video/BV1yjz5BLEoY" target="_blank" class="footer-bilibili">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907L2.983.66A1.234 1.234 0 0 1 3.89.287c.356 0 .658.124.907.373L7.45 4.214c.125.117.208.248.253.393h8.207c.044-.145.128-.276.253-.393l2.653-2.554A1.234 1.234 0 0 1 19.67.287c.356 0 .658.124.907.373l1.6 1.6c.25.25.373.551.373.906 0 .355-.124.657-.373.906l-1.164 1.121zM5.333 7.24c-.8.036-1.472.34-2.014.893-.542.553-.817 1.224-.824 2.013v7.574c.007.788.282 1.459.824 2.013.542.553 1.213.857 2.014.893h13.334c.8-.036 1.472-.34 2.014-.893.542-.553.817-1.224.824-2.013v-7.574c-.007-.789-.282-1.46-.824-2.013-.542-.553-1.213-.857-2.014-.893H5.333zM8 11.107c.367 0 .68.133.933.387.253.253.38.567.38.933v4.267c0 .366-.127.68-.38.933a1.27 1.27 0 0 1-.933.386 1.27 1.27 0 0 1-.933-.386 1.27 1.27 0 0 1-.38-.933v-4.267c0-.366.127-.68.38-.933.253-.254.566-.387.933-.387zm8 0c.367 0 .68.133.933.387.253.253.38.567.38.933v4.267c0 .366-.127.68-.38.933a1.27 1.27 0 0 1-.933.386 1.27 1.27 0 0 1-.933-.386 1.27 1.27 0 0 1-.38-.933v-4.267c0-.366.127-.68.38-.933.253-.254.566-.387.933-.387z"/></svg>
+            BV1yjz5BLEoY
+        </a>
+    </div>
+</footer>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel">
+    <button class="tweaks-toggle" onclick="toggleTweaks()" title="Tweaks">&#9881;</button>
+    <div class="tweaks-content" id="tweaksContent">
+        <div class="tweaks-title">
+            Tweaks
+            <small style="color:var(--text-muted);font-weight:400;font-size:11px;">v2.0</small>
+        </div>
+        <div class="tweaks-row">
+            <div class="tweaks-label">
+                <span>字体大小</span>
+                <span id="fontVal">100%</span>
+            </div>
+            <input type="range" class="tweaks-slider" min="0.8" max="1.3" step="0.05" value="1" onchange="changeFont(this.value)">
+        </div>
+        <div class="tweaks-row">
+            <div class="tweaks-label">
+                <span>行高倍数</span>
+                <span id="lineVal">1.7x</span>
+            </div>
+            <input type="range" class="tweaks-slider" min="1.4" max="2.0" step="0.1" value="1.7" onchange="changeLine(this.value)">
+        </div>
+        <div class="tweaks-row">
+            <div class="tweaks-label">
+                <span>卡片列数</span>
+                <span id="gridVal">自动</span>
+            </div>
+            <input type="range" class="tweaks-slider" min="1" max="4" step="1" value="3" onchange="changeGrid(this.value)">
+        </div>
+    </div>
+</div>
+
+<script>
+const hdr = document.getElementById('hdr');
+window.addEventListener('scroll', () => {
+    hdr.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+function toggleTweaks() {
+    document.getElementById('tweaksContent').classList.toggle('open');
+}
+
+function changeFont(val) {
+    document.documentElement.style.setProperty('--font-scale', val);
+    document.getElementById('fontVal').textContent = Math.round(val * 100) + '%';
+}
+
+function changeLine(val) {
+    document.body.style.lineHeight = val;
+    document.getElementById('lineVal').textContent = val + 'x';
+}
+
+function changeGrid(val) {
+    const grids = document.querySelectorAll('.episode-grid');
+    const labels = ['1 列', '2 列', '自动', '4 列'];
+    grids.forEach(grid => {
+        if (val == 3) {
+            grid.style.gridTemplateColumns = '';
+        } else {
+            grid.style.gridTemplateColumns = `repeat(${val}, 1fr)`;
+        }
+    });
+    document.getElementById('gridVal').textContent = labels[val - 1];
+}
+
+document.addEventListener('click', function(e) {
+    const panel = document.querySelector('.tweaks-panel');
+    if (!panel.contains(e.target)) {
+        document.getElementById('tweaksContent').classList.remove('open');
+    }
+});
+
+window.addEventListener('load', function() {
+    const progressBar = document.getElementById('progressBar');
+    progressBar.style.width = '100%';
+});
+</script>
+
+</body>
+</html>

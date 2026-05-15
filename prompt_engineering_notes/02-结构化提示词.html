@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第02集 - 结构化提示词 | 提示词工程学习笔记</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8f9fc;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f1f3f8;
+            --text-primary: #1a1d26;
+            --text-secondary: #5a6072;
+            --text-muted: #949aad;
+            --primary: oklch(0.55 0.22 250);
+            --primary-light: oklch(0.75 0.15 250);
+            --accent: oklch(0.70 0.18 85);
+            --success: oklch(0.55 0.16 155);
+            --danger: oklch(0.55 0.20 25);
+            --info: oklch(0.55 0.15 230);
+            --teal: oklch(0.55 0.14 180);
+            --border-color: #e2e5ef;
+            --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+            --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 4px rgba(26,29,38,0.04);
+            --shadow-lg: 0 8px 24px rgba(26,29,38,0.12), 0 4px 8px rgba(26,29,38,0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --font-size-base: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: var(--font-size-base);
+            -webkit-font-smoothing: antialiased;
+            transition: font-size 0.2s ease;
+        }
+
+        .header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(248, 249, 252, 0.85);
+            border-bottom: 1px solid var(--border-color);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .header.scrolled { box-shadow: var(--shadow-md); }
+
+        .nav-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0.875rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-brand-icon {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            max-width: 600px;
+            justify-content: flex-end;
+        }
+
+        .nav-link {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover { color: var(--primary); }
+        .nav-link.active { color: var(--primary); font-weight: 600; }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 0; right: 0;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 1px;
+        }
+
+        .nav-anchor {
+            background: rgba(79,110,247,0.10);
+            color: var(--primary) !important;
+            font-weight: 600;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .hero {
+            padding: 7rem 0 3rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--teal));
+            color: white;
+            padding: 0.375rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.25rem, 5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.1s forwards;
+        }
+
+        .hero-title-accent {
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 620px;
+            margin: 0 auto 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.2s forwards;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.3s forwards;
+        }
+
+        .meta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 0.875rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .meta-tag-icon { width: 16px; height: 16px; opacity: 0.7; }
+
+        .content-section { padding-bottom: 4rem; }
+
+        .section-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .section-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .section-card.accent-bar-success { border-left-color: var(--success); }
+        .section-card.accent-bar-accent { border-left-color: var(--accent); }
+        .section-card.accent-bar-info { border-left-color: var(--info); }
+        .section-card.accent-bar-teal { border-left-color: var(--teal); }
+        .section-card.accent-bar-danger { border-left-color: var(--danger); }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-subtle);
+        }
+
+        .section-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            color: white;
+            border-radius: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-content {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .section-content p { margin-bottom: 1rem; }
+        .section-content p:last-child { margin-bottom: 0; }
+
+        .section-subtitle {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(85, 120, 250, 0.06), rgba(100, 140, 255, 0.04));
+            border-left: 4px solid var(--primary);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 1.25rem 1.5rem;
+            margin: 1.25rem 0;
+        }
+
+        .highlight-box.success {
+            background: linear-gradient(135deg, rgba(85, 180, 130, 0.06), rgba(100, 200, 150, 0.04));
+            border-left-color: var(--success);
+        }
+
+        .highlight-box.warning {
+            background: linear-gradient(135deg, rgba(220, 160, 60, 0.06), rgba(235, 180, 80, 0.04));
+            border-left-color: var(--accent);
+        }
+
+        .highlight-box.danger {
+            background: linear-gradient(135deg, rgba(220, 90, 80, 0.06), rgba(235, 105, 95, 0.04));
+            border-left-color: var(--danger);
+        }
+
+        .highlight-box.teal {
+            background: linear-gradient(135deg, rgba(80, 180, 160, 0.06), rgba(100, 200, 180, 0.04));
+            border-left-color: var(--teal);
+        }
+
+        .highlight-box-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .highlight-box.success .highlight-box-title { color: var(--success); }
+        .highlight-box.warning .highlight-box-title { color: var(--accent); }
+        .highlight-box.danger .highlight-box-title { color: var(--danger); }
+        .highlight-box.teal .highlight-box-title { color: var(--teal); }
+
+        .highlight-box-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .code-block {
+            position: relative;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-md);
+            margin: 1.25rem 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.25rem;
+            background: rgba(26, 29, 38, 0.03);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-lang {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .code-copy-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.625rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+
+        .code-block:hover .code-copy-btn { opacity: 1; }
+
+        .code-copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.05);
+        }
+
+        .code-body {
+            padding: 1.25rem;
+            overflow-x: auto;
+        }
+
+        .code-body pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.84375rem;
+            line-height: 1.65;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .code-body code { font-family: inherit; }
+
+        .code-keyword { color: #c678dd; }
+        .code-string { color: #98c379; }
+        .code-comment { color: #5c6370; font-style: italic; }
+        .code-function { color: #61afef; }
+        .code-class { color: #e5c07b; }
+        .code-variable { color: #e06c75; }
+        .code-param { color: #d19a66; }
+        .code-operator { color: #56b6c2; }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.25rem 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            color: white;
+        }
+
+        th {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        tbody tr:nth-child(even) { background: var(--bg-subtle); }
+        tbody tr:hover { background: rgba(85, 120, 250, 0.04); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        td code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: rgba(85, 120, 250, 0.08);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        .content-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 1rem 0;
+        }
+
+        .content-list li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .content-list li::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0.6rem;
+            width: 8px; height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .content-list li strong { color: var(--text-primary); font-weight: 600; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0;
+        }
+
+        .info-item {
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .info-item:hover {
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.03);
+        }
+
+        .info-item-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.375rem;
+        }
+
+        .info-item-value {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .info-item-value code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: rgba(85, 120, 250, 0.08);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        .footer {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            padding: 2.5rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .footer-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .footer-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(85, 120, 250, 0.04);
+            transform: translateX(4px);
+        }
+
+        .footer-link.next {
+            flex-direction: row-reverse;
+        }
+
+        .footer-link.next:hover {
+            transform: translateX(-4px);
+        }
+
+        .footer-reference {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .footer-reference a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer-reference a:hover { text-decoration: underline; }
+
+        .tweaks-panel {
+            position: fixed;
+            bottom: 2rem; right: 2rem;
+            z-index: 999;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .tweaks-panel.collapsed {
+            padding: 0.625rem 0.875rem;
+        }
+
+        .tweaks-panel.collapsed .tweaks-label,
+        .tweaks-panel.collapsed .tweaks-slider,
+        .tweaks-panel.collapsed .tweaks-value {
+            display: none;
+        }
+
+        .tweaks-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .tweaks-toggle:hover { color: var(--primary); }
+
+        .tweaks-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px; height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .tweaks-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 2.5rem;
+            text-align: center;
+        }
+
+        .tweaks-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero { padding: 5.5rem 0 2.5rem; }
+            .section-card { padding: 1.75rem; border-radius: var(--radius-md); }
+            .section-title { font-size: 1.175rem; }
+            .table-wrapper { font-size: 0.8125rem; }
+            th, td { padding: 0.625rem 0.75rem; }
+            .footer-nav { flex-direction: column; }
+            .footer-link { width: 100%; justify-content: center; }
+            .tweaks-panel { bottom: 1rem; right: 1rem; }
+        }
+
+        /* ===== CSS Diagrams: Replace broken text_to_image API imgs ===== */
+        .css-diagram {
+            width: 100%;
+            max-width: 720px;
+            margin: 1.5rem auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            background: var(--bg-surface);
+        }
+
+        /* --- Diagram 1: Zero-Shot vs Few-Shot --- */
+        .diagram-zeroshot {
+            display: flex;
+            align-items: stretch;
+            position: relative;
+        }
+        .diagram-zeroshot .d-col {
+            flex: 1;
+            padding: 1.5rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .diagram-zeroshot .d-col-left { background: linear-gradient(135deg, rgba(85,120,250,0.07), rgba(79,110,247,0.03)); }
+        .diagram-zeroshot .d-col-right { background: linear-gradient(135deg, rgba(85,180,130,0.07), rgba(80,200,150,0.03)); }
+        .diagram-zeroshot .d-badge {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.3rem 0.85rem;
+            border-radius: 20px;
+            letter-spacing: 0.03em;
+        }
+        .diagram-zeroshot .d-col-left .d-badge { background: var(--primary); color: #fff; }
+        .diagram-zeroshot .d-col-right .d-badge { background: var(--success); color: #fff; }
+        .diagram-zeroshot .d-prompt-box {
+            width: 100%;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--text-primary);
+            border: 1px dashed var(--border-color);
+            text-align: center;
+            line-height: 1.5;
+        }
+        .diagram-zeroshot .d-examples {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .diagram-zeroshot .d-ex-item {
+            background: var(--bg-subtle);
+            border-radius: 6px;
+            padding: 0.4rem 0.65rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            border-left: 3px solid var(--success);
+            line-height: 1.4;
+        }
+        .diagram-zeroshot .d-arrow-down {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            line-height: 1;
+        }
+        .diagram-zeroshot .d-llm-box {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+        }
+        .diagram-zeroshot .d-vs-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            flex-shrink: 0;
+            background: var(--bg-subtle);
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+        }
+        .diagram-zeroshot .d-vs-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--accent);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 0.15em;
+        }
+
+        @media (max-width: 540px) {
+            .diagram-zeroshot { flex-direction: column; }
+            .diagram-zeroshot .d-vs-divider {
+                width: auto; height: 36px;
+                border-left: none; border-right: none;
+                border-top: 1px solid var(--border-color);
+                border-bottom: 1px solid var(--border-color);
+            }
+            .diagram-zeroshot .d-vs-text { writing-mode: horizontal-tb; letter-spacing: 0.08em; }
+        }
+
+        /* --- Diagram 2: Prompt Optimization Before/After --- */
+        .diagram-optimize {
+            display: flex;
+            align-items: stretch;
+            padding: 1.25rem;
+            gap: 0;
+        }
+        .diagram-optimize .d-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            gap: 0.6rem;
+        }
+        .diagram-optimize .d-side-bad {
+            background: linear-gradient(135deg, rgba(220,90,80,0.06), rgba(235,105,95,0.03));
+            border: 1px solid rgba(220,90,80,0.18);
+        }
+        .diagram-optimize .d-side-good {
+            background: linear-gradient(135deg, rgba(85,180,130,0.06), rgba(100,200,150,0.03));
+            border: 1px solid rgba(85,180,130,0.18);
+        }
+        .diagram-optimize .d-side-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+        }
+        .diagram-optimize .d-side-bad .d-side-label { background: var(--danger); color: #fff; }
+        .diagram-optimize .d-side-good .d-side-label { background: var(--success); color: #fff; }
+        .diagram-optimize .d-mock-output {
+            flex: 1;
+            border-radius: 6px;
+            padding: 0.65rem 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            line-height: 1.55;
+            overflow: hidden;
+        }
+        .diagram-optimize .d-side-bad .d-mock-output {
+            background: rgba(220,90,80,0.05);
+            color: var(--danger);
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        .diagram-optimize .d-side-good .d-mock-output {
+            background: rgba(85,180,130,0.05);
+            color: var(--success);
+            border: 1px solid rgba(85,180,130,0.15);
+        }
+        .diagram-optimize .d-arrow-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            flex-shrink: 0;
+            padding: 0 0.25rem;
+            gap: 0.15rem;
+        }
+        .diagram-optimize .d-big-arrow {
+            font-size: 1.4rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+        .diagram-optimize .d-step-tags {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .diagram-optimize .d-step-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            font-weight: 600;
+            color: var(--primary);
+            background: rgba(85,120,250,0.08);
+            padding: 1px 5px;
+            border-radius: 4px;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .diagram-optimize { flex-direction: column; }
+            .diagram-optimize .d-arrow-zone {
+                width: auto; flex-direction: row;
+                height: 48px; padding: 0.25rem 0;
+            }
+            .diagram-optimize .d-step-tags { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+        }
+
+        /* --- Diagram 3: LangChain Template Workflow --- */
+        .diagram-workflow {
+            padding: 1.5rem 1.25rem;
+        }
+        .diagram-workflow .d-flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: wrap;
+        }
+        .diagram-workflow .d-flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            min-width: 100px;
+            max-width: 160px;
+            flex: 1;
+        }
+        .diagram-workflow .d-step-card {
+            width: 100%;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 0.6rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .diagram-workflow .d-step-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .diagram-workflow .d-step-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.3rem;
+        }
+        .diagram-workflow .d-step-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        .diagram-workflow .d-step-desc {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        .diagram-workflow .d-step-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--primary);
+            background: rgba(85,120,250,0.07);
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin-top: 0.2rem;
+        }
+        .diagram-workflow .d-flow-arrow {
+            font-size: 1.1rem;
+            color: var(--primary);
+            font-weight: 700;
+            padding: 0 0.2rem;
+            flex-shrink: 0;
+        }
+        .diagram-workflow .d-methods-bar {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0.9rem 0 0.5rem;
+            flex-wrap: wrap;
+        }
+        .diagram-workflow .d-method-chip {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            font-weight: 600;
+            padding: 0.28rem 0.6rem;
+            border-radius: 12px;
+            border: 1px solid;
+            white-space: nowrap;
+        }
+        .diagram-workflow .d-method-chip.m-format { color: var(--info); border-color: var(--info); background: rgba(85,130,230,0.06); }
+        .diagram-workflow .d-method-chip.m-fmsg { color: var(--teal); border-color: var(--teal); background: rgba(80,180,160,0.06); }
+        .diagram-workflow .d-method-chip.m-partial { color: var(--accent); border-color: var(--accent); background: rgba(220,160,60,0.06); }
+        .diagram-workflow .d-llm-final {
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        .diagram-workflow .d-llm-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            padding: 0.5rem 1.5rem;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(85,120,250,0.25);
+        }
+
+        @media (max-width: 600px) {
+            .diagram-workflow .d-flow-row { flex-direction: column; align-items: center; }
+            .diagram-workflow .d-flow-step { max-width: 260px; min-width: 200px; }
+            .diagram-workflow .d-flow-arrow { transform: rotate(90deg); padding: 0.3rem 0; }
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-page); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<header class="header" id="header">
+    <div class="nav-container">
+        <a href="../index-prompt.html" class="nav-brand">
+            <span class="nav-brand-icon">PE</span>
+            提示词工程 Notes
+        </a>
+        <nav class="nav-links">
+            <a href="01-提示词工程基础.html" class="nav-link">P01 基础</a>
+            <a href="#s1" class="nav-anchor">&sect;1 结构化原理</a>
+            <a href="#s2" class="nav-link active">P02 结构化</a>
+            <a href="#s3" class="nav-link">P03 角色设定</a>
+            <a href="#s4" class="nav-link">P04 Few-Shot</a>
+            <a href="#s5" class="nav-link">P05 思维链</a>
+        </nav>
+    </div>
+</header>
+
+<main class="main-container">
+
+    <section class="hero">
+        <div class="hero-badge">P12 / Chapter 02 · Zero-Shot &amp; Optimization</div>
+        <h1 class="hero-title">
+            第02集：<span class="hero-title-accent">零样本提示与优化案例</span>
+        </h1>
+        <p class="hero-subtitle">
+            掌握零样本（Zero-Shot）提示技术，通过精心设计的自然语言指令直接引导模型输出，结合实际案例理解提示词优化的完整流程
+        </p>
+        <div class="hero-meta">
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M10 8l6 4-6 4V8z"/></svg>
+                集数 P12(P02)
+            </span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                时长 ~25min
+            </span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                BV1yjz5BLEoY
+            </span>
+        </div>
+    </section>
+
+    <div class="content-section">
+
+        <!-- ==================== Section 01: Zero-Shot vs Few-Shot 概念区分 ==================== -->
+        <article class="section-card" id="s1" data-animate>
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2 class="section-title">Zero-Shot vs Few-Shot：概念全景</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    在提示词工程的核心技术谱系中，<strong>Zero-Shot（零样本）</strong>和<strong>Few-Shot（少样本）</strong>是两个最基础也最重要的范式。
+                    它们的区别看似简单——「给不给示例」——但背后涉及的是<strong>模型如何利用预训练知识 vs 如何从示例中归纳模式</strong>这一根本性问题。
+                    理清这个区别，是选择正确提示策略的第一步。
+                </p>
+
+                <h3 class="section-subtitle">核心定义与对比</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>维度</th>
+                                <th>Zero-Shot 零样本</th>
+                                <th>Few-Shot 少样本</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>定义</strong></td>
+                                <td>不提供任何示例，仅靠自然语言指令引导模型完成任务</td>
+                                <td>在指令中提供 1~5 个输入-输出示例对，让模型模仿模式</td>
+                            </tr>
+                            <tr>
+                                <td><strong>知识来源</strong></td>
+                                <td>完全依赖模型<strong>预训练阶段</strong>学到的知识</td>
+                                <td>结合预训练知识 + 从示例中<strong>上下文学习（In-Context Learning）</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Token 成本</strong></td>
+                                <td>低 — 只有指令本身</td>
+                                <td>较高 — 指令 + 所有示例的 token</td>
+                            </tr>
+                            <tr>
+                                <td><strong>输出稳定性</strong></td>
+                                <td>中等 — 依赖指令质量，容易产生格式偏差</td>
+                                <td>高 — 示例约束了输出格式和风格</td>
+                            </tr>
+                            <tr>
+                                <td><strong>适用场景</strong></td>
+                                <td>通用任务、常识推理、简单分类、翻译/摘要</td>
+                                <td>特定格式输出、领域分类、复杂推理、风格迁移</td>
+                            </tr>
+                            <tr>
+                                <td><strong>典型用法</strong></td>
+                                <td><code>"将以下中文翻译成英文：{text}"</code></td>
+                                <td><code>"参考以下示例完成翻译...\n例1: 你好→Hello\n例2: ..."</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <figure style="margin: 1.5rem 0; text-align: center;">
+                    <div class="css-diagram diagram-zeroshot">
+                        <div class="d-col d-col-left">
+                            <span class="d-badge">Zero-Shot</span>
+                            <div class="d-prompt-box">"将以下中文翻译成英文：{text}"</div>
+                            <span class="d-arrow-down">↓</span>
+                            <div class="d-llm-box">🤖 LLM 输出</div>
+                        </div>
+                        <div class="d-vs-divider">
+                            <span class="d-vs-text">VS</span>
+                        </div>
+                        <div class="d-col d-col-right">
+                            <span class="d-badge">Few-Shot</span>
+                            <div class="d-examples">
+                                <div class="d-ex-item">例1: 你好 → Hello</div>
+                                <div class="d-ex-item">例2: 谢谢 → Thank you</div>
+                                <div class="d-ex-item">例3: 再见 → Goodbye</div>
+                            </div>
+                            <div class="d-prompt-box">+ "翻译：{text}"</div>
+                            <span class="d-arrow-down">↓</span>
+                            <div class="d-llm-box">🤖 LLM 输出</div>
+                        </div>
+                    </div>
+                    <figcaption style="font-size:0.8125rem;color:var(--text-muted);margin-top:0.75rem;font-style:italic;">
+                        图 1-1：Zero-Shot 与 Few-Shot 的核心区别 —— Zero-Shot 仅通过自然语言指令直接驱动模型；Few-Shot 在指令基础上附加示例对，利用 In-Context Learning 引导模型归纳输出模式
+                    </figcaption>
+                </figure>
+
+                <h3 class="section-subtitle">何时用 Zero-Shot？何时升级到 Few-Shot？</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">✅ 优先使用 Zero-Shot</div>
+                        <div class="info-item-value">文本翻译 · 摘要生成 · 常识问答 · 简单情感分类 · 格式转换 · 通用写作辅助</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">⚡ 考虑 Few-Shot</div>
+                        <div class="info-item-value">特定领域分类 · 非标准 JSON 输出 · 风格化改写 · 复杂多步推理 · 边界情况处理</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🔬 进阶：CoT + Few-Shot</div>
+                        <div class="info-item-value">数学推理 · 逻辑推演 · 多条件决策 · 需要展示推理链路的场景</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">💡 经验法则</div>
+                        <div class="info-item-value">先试 Zero-Shot → 效果不够再叠加 Few-Shot → 还不够加 CoT</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box warning">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        关键认知：In-Context Learning 不是「训练」
+                    </div>
+                    <div class="highlight-box-content">
+                        Few-Shot 中的示例并不会改变模型的权重参数。它的工作机制是：<strong>示例作为额外的上下文信息，帮助模型在当前对话中定位到正确的输出模式</strong>。
+                        这就好比考试时给你看了几道例题——你并没有因此变得更聪明，但你更清楚老师期望的答题格式和深度。
+                        因此 Few-Shot 示例的<strong>质量和代表性</strong>远比数量重要。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== Section 02: Zero-Shot 原理深入与实践 ==================== -->
+        <article class="section-card accent-bar-success" id="s2" data-animate>
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2 class="section-title">Zero-Shot Prompting：原理与实战</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    Zero-Shot 提示的本质是<strong>利用大语言模型在预训练阶段习得的广泛知识来完成新任务</strong>。
+                    当你给出一个清晰的指令时，模型会在其参数空间中检索与该任务相关的知识模式，
+                    并据此生成输出。这个过程不需要任何针对特定任务的微调或示例演示。
+                </p>
+
+                <h3 class="section-subtitle">工作原理：从预训练到零样本推理</h3>
+                <p>
+                    大语言模型（如 GPT 系列、Claude、Qwen、DeepSeek 等）在海量文本数据上进行自监督预训练。
+                    这些数据天然包含了各种任务的隐式模式：
+                </p>
+                <ul class="content-list">
+                    <li><strong>翻译模式</strong>：「Hello」经常与「你好」共现 → 学会双语映射</li>
+                    <li><strong>摘要模式</strong>：长文章后常跟着简短总结 → 学会信息压缩</li>
+                    <li><strong>分类模式</strong>：「太棒了！」常被标记为正面 → 学会情感判断</li>
+                    <li><strong>问答模式</strong>：问题后紧跟答案 → 学会问题-答案关联</li>
+                </ul>
+
+                <h3 class="section-subtitle">实战：用 OpenAI 兼容 API 调用 Zero-Shot</h3>
+                <p>下面是一个可直接运行的完整代码示例，使用 Qwen 或 DeepSeek 的 API：</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python — Zero-Shot 完整调用示例</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> openai <span class="code-keyword">import</span> OpenAI
+
+<span class="code-comment"># 初始化客户端（兼容 OpenAI API 格式的服务均可）</span>
+<span class="code-comment"># 支持：Qwen / DeepSeek / OpenAI / 本地 Ollama 等</span>
+client = OpenAI(
+    api_key=<span class="code-string">"your-api-key"</span>,
+    base_url=<span class="code-string">"https://dashscope.aliyuncs.com/compatible-mode/v1"</span>  <span class="code-comment"># Qwen</span>
+)
+
+<span class="code-comment"># ===== Zero-Shot Prompt 定义 =====</span>
+zero_shot_prompt = <span class="code-string">"""请判断以下用户评价的情感倾向。
+
+评价文本：
+"{review_text}"
+
+请从以下三个选项中选择最匹配的一个：
+A. 正面（Positive）
+B. 负面（Negative）
+C. 中性（Neutral）
+
+只输出选项字母和对应标签，不要额外解释。"""</span>
+
+<span class="code-comment"># ===== 调用 API =====</span>
+response = client.chat.completions.create(
+    model=<span class="code-string">"qwen-plus"</span>,          <span class="code-comment"># 或 "deepseek-chat", "gpt-4o-mini" 等</span>
+    messages=[
+        {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, <span class="code-string">"content"</span>: <span class="code-string">"你是一个专业的情感分析助手。"</span>},
+        {<span class="code-string">"role"</span>: <span class="code-string">"user"</span>,   <span class="code-string">"content"</span>: zero_shot_prompt.format(
+            review_text=<span class="code-string">"这个产品太棒了！物流很快，包装也很用心，完全超出我的预期！"</span>
+        )}
+    ],
+    temperature=<span class="code-param">0.3</span>,              <span class="code-comment"># 低温度 = 更确定性的输出</span>
+    max_tokens=<span class="code-param">100</span>
+)
+
+<span class="code-comment"># 解析结果</span>
+result = response.choices[<span class="code-param">0</span>].message.content
+<span class="code-function">print</span>(f<span class="code-string">"模型输出: {result}"</span>)
+<span class="code-comment"># 典型输出: A. 正面（Positive）</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">Zero-Shot 的关键优化技巧</h3>
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        技巧清单：提升 Zero-Shot 成功率的 6 个要点
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
+                            <li style="margin-bottom:0.4rem;"><strong>明确选项范围</strong>：不要说「判断情感」，而是列出具体选项（正面/负面/中性），减少自由发挥空间</li>
+                            <li style="margin-bottom:0.4rem;"><strong>约束输出格式</strong>：「只输出 A/B/C 和标签」比「请分析」能得到更稳定、可解析的结果</li>
+                            <li style="margin-bottom:0.4rem;"><strong>设定 System Role</strong>：system message 设定角色（如"你是专业分析师"）能激活特定领域的知识子空间</li>
+                            <li style="margin-bottom:0.4rem;"><strong>控制 Temperature</strong>：分类任务用 0~0.3，创意写作用 0.7~1.0，根据任务类型调整</li>
+                            <li style="margin-bottom:0.4rem;"><strong>使用结构化标记</strong>：用 ## 标题、### 子标题、- 列表等 Markdown 结构组织 prompt，提升模型理解力</li>
+                            <li><strong>添加负面约束</strong>：「不要输出解释」「不要编造信息」比只说正面要求更有效</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== Section 03: Prompt 优化案例（差→好 改造过程） ==================== -->
+        <article class="section-card accent-bar-accent" id="s3" data-animate>
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2 class="section-title">Prompt 优化实战：从差到好的五步改造</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    理论讲得再多，不如看一个真实的逐步优化过程。
+                    下面以<strong>「电商产品评价分析」</strong>为任务目标，
+                    展示一个粗糙的 prompt 如何经过五轮迭代，最终变成生产级的高质量 prompt。
+                    每一步都明确标注了<strong>改了什么、为什么改、效果如何</strong>。
+                </p>
+
+                <h3 class="section-subtitle">📋 任务定义</h3>
+                <div class="highlight-box">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        目标任务
+                    </div>
+                    <div class="highlight-box-content">
+                        对用户产品评价进行<strong>多维度分析</strong>，包括：情感倾向判断、置信度评估、正负向因素提取、购买意图预测、一句话总结。
+                        最终输出必须是<strong>可被程序直接解析的 JSON 格式</strong>。
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">❌ Step 0：原始 Bad Prompt</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Step 0 — 问题版 Prompt</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>prompt_v0 = <span class="code-string">"""
+分析一下这个评价：
+东西收到了，用了一段时间感觉还行吧，
+没有特别惊艳的地方但也不算差，客服回复挺快的。
+"""</span>
+
+<span class="code-comment"># === 问题诊断 ===</span>
+<span class="code-comment"># ❌ 无角色设定 → 模型不知道用什么视角分析</span>
+<span class="code-comment"># ❌ 无任务描述 → 不知道要提取哪些维度</span>
+<span class="code-comment"># ❌ 无格式约束 → 输出可能是段落、列表或混合体</span>
+<span class="code-comment"># ❌ 无输出控制 → 可能附带大量冗余分析文字</span>
+<span class="code-comment">#</span>
+<span class="code-comment"># 模型典型输出（不可控、不可解析）：</span>
+<span class="code-comment"># 这条评价整体来看是中性的。用户表示产品"还行"，说明...</span>
+<span class="code-comment"># （后续还有几百字的分析性文字，无法被程序自动处理）</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">🔧 Step 1：加入角色设定</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Step 1 — 加入角色设定</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>prompt_v1 = <span class="code-string">"""
+## 角色
+你是一名专业的电商数据分析师，擅长从用户评价中提取结构化洞察。
+
+## 任务
+分析一下这个评价：
+东西收到了，用了一段时间感觉还行吧，
+没有特别惊艳的地方但也不算差，客服回复挺快的。
+"""</span>
+
+<span class="code-comment"># ✅ 改进：加入了角色设定</span>
+<span class="code-comment"># 🎯 原理：角色设定激活模型在数据分析领域的知识子空间</span>
+<span class="code-comment"># ⚠️ 仍缺：任务描述模糊、无格式约束</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">🔧 Step 2：明确任务描述 + 维度定义</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Step 2 — 明确任务与维度</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>prompt_v2 = <span class="code-string">"""
+## 角色
+你是一名专业的电商数据分析师，擅长从用户评价中提取结构化洞察。
+
+## 任务
+对以下产品评价进行情感分析和关键信息提取，需要覆盖以下维度：
+1. 情感倾向（正面/负面/中性）
+2. 置信度评估
+3. 正向因素提取
+4. 负向因素提取
+5. 购买意图判断
+6. 一句话总结
+
+## 待分析文本
+"东西收到了，用了一段时间感觉还行吧，
+没有特别惊艳的地方但也不算差，客服回复挺快的。"
+"""</span>
+
+<span class="code-comment"># ✅ 改进：明确了6个分析维度</span>
+<span class="code-comment"># 🎯 原理：减少模型对"分析什么"的猜测空间</span>
+<span class="code-comment"># ⚠️ 仍缺：输出格式未约束 → 结果仍可能是非结构化的</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">🔧 Step 3：添加严格的格式约束（JSON Schema）</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Step 3 — JSON 格式约束</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>prompt_v3 = <span class="code-string">"""
+## 角色
+你是一名专业的电商数据分析师，擅长从用户评价中提取结构化洞察。
+
+## 任务
+对以下产品评价进行情感分析和关键信息提取。
+
+## 待分析文本
+"东西收到了，用了一段时间感觉还行吧，
+没有特别惊艳的地方但也不算差，客服回复挺快的。"
+
+## 输出要求
+请严格按照以下 JSON 格式返回，不要输出任何其他内容：
+{
+  "sentiment": "正面/负面/中性",
+  "confidence": "高/中/低",
+  "positive_factors": ["因素1", "因素2"],
+  "negative_factors": ["因素1"],
+  "neutral_factors": ["因素1"],
+  "purchase_intent": "会回购/犹豫/不会回购",
+  "one_line_summary": "一句话总结"
+}
+"""</span>
+
+<span class="code-comment"># ✅ 改进：指定了完整的 JSON Schema（7个字段）</span>
+<span class="code-comment"># 🎯 原理：输出可直接 json.loads() 解析，无需正则后处理</span>
+<span class="code-comment"># ⚠️ 仍缺：可能混入 ```json 标记或多余说明文字</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">🔧 Step 4：强化输出控制 + 负面约束</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Step 4 — 强化输出控制</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>prompt_v4 = <span class="code-string">"""
+## 角色
+你是一名专业的电商数据分析师，擅长从用户评价中提取结构化洞察。
+
+## 任务
+对以下产品评价进行情感分析和关键信息提取。
+
+## 待分析文本
+"东西收到了，用了一段时间感觉还行吧，
+没有特别惊艳的地方但也不算差，客服回复挺快的。"
+
+## 输出要求
+请严格按照以下 JSON 格式返回：
+{
+  "sentiment": "正面/负面/中性",
+  "confidence": "高/中/低",
+  "positive_factors": ["因素1", "因素2"],
+  "negative_factors": ["因素1"],
+  "neutral_factors": ["因素1"],
+  "purchase_intent": "会回购/犹豫/不会回购",
+  "one_line_summary": "一句话总结"
+}
+
+## 注意事项
+- 只输出 JSON 对象，不要包含 markdown 代码块标记
+- 不要输出任何分析过程或解释性文字
+- 不要编造文本中没有提及的信息
+- factors 数组中的每项必须是原文中出现过的具体内容
+"""</span>
+
+<span class="code-comment"># ✅ 改进：增加了4条明确的负面约束</span>
+<span class="code-comment"># 🎯 原理：负面约束（"不要..."）往往比正面要求更有约束力</span>
+<span class="code-comment"># ✅ 当前版本已达到生产可用水平</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">✅ Step 5：最终版 + 实际输出效果</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Step 5 — 最终版 &amp; 模型输出</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment"># 最终版 prompt（即上面的 v4 版本）调用后的典型输出：</span>
+
+{
+  <span class="code-string">"sentiment"</span>: <span class="code-string">"中性"</span>,
+  <span class="code-string">"confidence"</span>: <span class="code-string">"高"</span>,
+  <span class="code-string">"positive_factors"</span>: [<span class="code-string">"客服回复快"</span>],
+  <span class="code-string">"negative_factors"</span>: [],
+  <span class="code-string">"neutral_factors"</span>: [<span class="code-string">"产品表现一般"</span>, <span class="code-string">"无明显亮点"</span>],
+  <span class="code-string">"purchase_intent"</span>: <span class="code-string">"犹豫"</span>,
+  <span class="code-string">"one_line_summary"</span>: <span class="code-string">"用户态度中立，认可客服质量但对产品本身无强烈感受"</span>
+}
+
+<span class="code-comment"># ✅ 可直接用 json.loads() 解析</span>
+<span class="code-comment"># ✅ 字段完整，无缺失</span>
+<span class="code-comment"># ✅ 因素均来自原文，无幻觉</span></code></pre>
+                </div>
+
+                <figure style="margin: 1.5rem 0; text-align: center;">
+                    <div class="css-diagram diagram-optimize">
+                        <div class="d-side d-side-bad">
+                            <span class="d-side-label">❌ Bad Prompt</span>
+                            <div class="d-mock-output">"分析一下这个评价：东西收到了，用了一段时间感觉还行吧，没有特别惊艳的地方但也不算差，客服回复挺快的。"<br><br>→ 模型输出：一段不可控的、非结构的分析性文字（几百字），无法被程序自动解析处理...</div>
+                        </div>
+                        <div class="d-arrow-zone">
+                            <span class="d-big-arrow">→</span>
+                            <div class="d-step-tags">
+                                <span class="d-step-tag">① 角色设定</span>
+                                <span class="d-step-tag">② 任务定义</span>
+                                <span class="d-step-tag">③ JSON Schema</span>
+                                <span class="d-step-tag">④ 负面约束</span>
+                                <span class="d-step-tag">⑤ 验证迭代</span>
+                            </div>
+                        </div>
+                        <div class="d-side d-side-good">
+                            <span class="d-side-label">✅ Optimized Prompt</span>
+                            <div class="d-mock-output">{<br>&nbsp;&nbsp;"sentiment": "中性",<br>&nbsp;&nbsp;"confidence": "高",<br>&nbsp;&nbsp;"positive_factors": ["客服回复快"],<br>&nbsp;&nbsp;"negative_factors": [],<br>&nbsp;&nbsp;"purchase_intent": "犹豫",<br>&nbsp;&nbsp;"one_line_summary": "..."<br>}</div>
+                        </div>
+                    </div>
+                    <figcaption style="font-size:0.8125rem;color:var(--text-muted);margin-top:0.75rem;font-style:italic;">
+                        图 3-1：Prompt 优化的五步改造过程 —— 从无结构的随意提问（左）到有角色、有维度、有格式、有约束的结构化 Prompt（右），每一步都在缩小模型的「猜测空间」
+                    </figcaption>
+                </figure>
+
+                <h3 class="section-subtitle">五步优化汇总表</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>步骤</th>
+                                <th>优化动作</th>
+                                <th>解决的问题</th>
+                                <th>效果提升</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Step 1</strong></td>
+                                <td>加入角色设定</td>
+                                <td>模型不知道用什么视角</td>
+                                <td>激活领域知识子空间</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Step 2</strong></td>
+                                <td>明确任务 + 分析维度</td>
+                                <td>不知道要输出什么</td>
+                                <td>聚焦目标，避免遗漏</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Step 3</strong></td>
+                                <td>指定 JSON Schema</td>
+                                <td>输出格式不可控</td>
+                                <td>程序可直接解析</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Step 4</strong></td>
+                                <td>添加负面约束</td>
+                                <td>混入多余文字/幻觉</td>
+                                <td>输出纯净稳定</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Step 5</strong></td>
+                                <td>验证 & 迭代</td>
+                                <td>边界情况处理</td>
+                                <td>达到生产级质量</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight-box danger">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        优化的本质
+                    </div>
+                    <div class="highlight-box-content">
+                        <strong>提示词优化的本质就是持续减少模型的「自由发挥空间」。</strong>
+                        差的 prompt 让模型自己决定一切：输出什么格式？包含哪些字段？用什么语气？
+                        好的 prompt 把这些决策权全部收回——你告诉模型 exactly 要什么，
+                        模型只需要专注于「如何最好地完成这个明确的任务」。<strong>每增加一个有效约束，就减少一个不确定性来源。</strong>
+                        但注意：<strong>过度约束也会限制模型的能力</strong>，需要在灵活性和可控性之间找到平衡点。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== Section 04: 提示词模板基础（Python原生方式） ==================== -->
+        <article class="section-card accent-bar-info" id="s4" data-animate>
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2 class="section-title">提示词模板基础：Python 原生方案</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    当你的提示词需要在多个场景下复用时，<strong>模板化（Templating）</strong>就变得至关重要。
+                    模板的核心思想是将提示词中的<strong>固定部分</strong>与<strong>可变部分</strong>分离——
+                    固定部分（指令、约束、格式定义）写一次，可变部分（用户输入、动态参数）运行时填入。
+                    这是提示词工程从「一次性对话」进化到「生产级应用」的关键一步。
+                </p>
+
+                <h3 class="section-subtitle">为什么需要模板化？</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">🔄 复用性</div>
+                        <div class="info-item-value">同一套逻辑适配不同输入，避免重复编写相似 prompt</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">📦 可维护性</div>
+                        <div class="info-item-value">修改模板一处即可全局生效，无需逐个调整</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">⚡ 一致性</div>
+                        <div class="info-item-value">所有调用共享相同指令结构和约束条件</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🔧 可组合性</div>
+                        <div class="info-item-value">子模板可拼接成复杂 Pipeline，支持模块化管理</div>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">方案一：str.format() —— 最基础的模板方式</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python — str.format() 模板</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment"># ========== 定义模板（使用 {variable} 占位符）==========</span>
+review_template = <span class="code-string">"""
+## 角色
+你是一名{role}，擅长{expertise_domain}。
+
+## 任务
+对以下产品评价进行情感分析和关键信息提取。
+
+## 待分析文本
+"{review_text}"
+
+## 输出要求
+请严格按照 JSON 格式返回，包含以下字段：
+sentiment, confidence, positive_factors, negative_factors,
+neutral_factors, purchase_intent, one_line_summary
+
+只输出 JSON，不要其他内容。
+"""</span>
+
+<span class="code-comment"># ========== 使用时填充变量 ==========</span>
+prompt_1 = review_template.format(
+    role=<span class="code-string">"电商数据分析师"</span>,
+    expertise_domain=<span class="code-string">"用户行为分析与情感计算"</span>,
+    review_text=<span class="code-string">"太棒了！物流超快，包装精美，五星好评！"</span>
+)
+
+prompt_2 = review_template.format(
+    role=<span class="code-string">"电商数据分析师"</span>,
+    expertise_domain=<span class="code-string">"用户行为分析与情感计算"</span>,
+    review_text=<span class="code-string">"质量太差了，用了两天就坏，退款！"</span>
+)
+
+<span class="code-function">print</span>(prompt_1)
+<span class="code-comment"># → 两份 prompt 共享相同的指令结构和约束，只有 review_text 不同</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">方案二：Partial 预填充 —— 减少运行时变量</h3>
+                <p>
+                    当模板中有大量变量，但其中很多是<strong>固定不变</strong>的（如角色、格式要求等），
+                    可以先用 <code>format()</code> 填充固定变量，生成一个「半成品」模板，
+                    后续每次只需传入真正变化的变量。
+                </p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python — Partial 预填充模式</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment"># ========== 第一步：定义全量模板 ==========</span>
+full_template = <span class="code-string">"""
+## 角色
+你是一名{role}，擅长{expertise_domain}。
+
+## 任务
+对以下{content_type}进行{task_type}。
+
+## 待处理内容
+{content}
+
+## 输出要求
+- 语言：{language}
+- 格式：{output_format}
+- 长度限制：{max_length}
+"""</span>
+
+<span class="code-comment"># ========== 第二步：预填充固定变量（生成半成品模板）==========</span>
+<span class="code-comment"># 角色和格式是固定的，只有 content 是每次调用都不同的</span>
+analyst_template = full_template.format(
+    role=<span class="code-string">"金融分析师"</span>,
+    expertise_domain=<span class="code-string">"市场分析、财务建模、风险评估"</span>,
+    content_type=<span class="code-string">"财经新闻文本"</span>,
+    task_type=<span class="code-string">"多维度分类标注"</span>,
+    language=<span class="code-string">"中文"</span>,
+    output_format=<span class="code-string">"JSON"</span>,
+    max_length=<span class="code-string">"不超过200字"</span>,
+    content=<span class="code-string">"{content}"</span>     <span class="code-comment"># ← 保留占位符，稍后填入</span>
+)
+
+<span class="code-comment"># ========== 第三步：运行时只需传入变化的部分 ==========</span>
+news_1 = analyst_template.format(content=<span class="code-string">"央行今日宣布降准0.5个百分点，释放长期资金约1万亿元"</span>)
+news_2 = analyst_template.format(content=<span class="code-string">"某科技巨头Q3营收同比增长35%，超市场预期"</span>)
+
+<span class="code-comment"># 优势：业务代码只需关心 content 参数，其余配置集中管理</span></code></pre>
+                </div>
+
+                <div class="highlight-box teal">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        Partial 模式的价值
+                    </div>
+                    <div class="highlight-box-content">
+                        Partial 预填充实现了<strong>「配置与数据的分离」</strong>。
+                        固定不变的配置（角色、格式、约束）在系统初始化时一次性填入，
+                        变化的数据（用户输入、待处理文本）在每次请求时动态注入。
+                        这种模式在批量处理场景下尤为强大——比如你需要分析 1000 条评论，
+                        只需构造一次半成品模板，然后循环填入不同评论即可。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== Section 05: LangChain PromptTemplate & ChatPromptTemplate ==================== -->
+        <article class="section-card accent-bar-teal" id="s5" data-animate>
+            <div class="section-header">
+                <span class="section-number">05</span>
+                <h2 class="section-title">LangChain 模板体系：PromptTemplate & ChatPromptTemplate</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    当项目规模增长到需要管理大量提示词时，纯 Python 字符串模板就开始显得力不从心了。
+                    <strong>LangChain</strong> 提供了一套成熟的提示词模板体系——<code>PromptTemplate</code> 用于单轮补全式提示，
+                    <code>ChatPromptTemplate</code> 用于多轮对话式提示。它们不仅支持变量管理，
+                    还提供了<strong>三种变量注入方式</strong>、<code>partial_variables</code> 动态绑定、
+                    以及与 LLM Chain 的无缝集成能力。
+                </p>
+
+                <h3 class="section-subtitle">5.1 PromptTemplate：单轮补全式模板</h3>
+                <p><code>PromptTemplate</code> 是最基础的模板类，适用于将整个 prompt 作为一个整体发送给模型的场景（类似 GPT-3 的 text completion 接口）：</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">LangChain — PromptTemplate 基础用法</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> PromptTemplate
+
+<span class="code-comment"># ========== 方式一：from_template（推荐）==========</span>
+template = <span class="code-string">"""
+请对以下产品评价进行情感分析：
+
+评价内容：{review_text}
+
+请判断情感倾向（正面/负面/中性），并给出置信度。
+只输出结果，不要解释。
+"""</span>
+
+prompt_template = PromptTemplate.from_template(template)
+
+<span class="code-comment"># 查看模板中的变量名</span>
+<span class="code-function">print</span>(prompt_template.input_variables)
+<span class="code-comment"># 输出: ['review_text']</span>
+
+<span class="code-comment"># ========== 方式二：format 注入（最常用）==========</span>
+prompt = prompt_template.format(review_text=<span class="code-string">"这个产品太棒了，超出预期！"</span>)
+<span class="code-function">print</span>(prompt)
+<span class="code-comment"># → 生成的完整 prompt 文本</span>
+
+<span class="code-comment"># ========== 方式三：partial 预填充（返回新模板对象）==========</span>
+<span class="code-comment"># 预填充部分变量，得到一个只需要剩余变量的新模板</span>
+partial_tmpl = prompt_template.partial(review_text=<span class="code-string">"默认评论文本"</span>)
+<span class="code-comment"># partial_tmpl 现在是一个不需要任何变量的「已完成」模板</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">5.2 ChatPromptTemplate：多轮对话式模板</h3>
+                <p>
+                    现代 LLM API（OpenAI Chat Completions、Qwen、DeepSeek 等）都是基于<strong>消息列表</strong>的多轮对话接口。
+                    <code>ChatPromptTemplate</code> 专为这种场景设计，它管理一组 <code>System / User / Assistant</code> 消息模板，
+                    每条消息都可以包含独立的变量。
+                </p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">LangChain — ChatPromptTemplate.from_messages</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
+
+<span class="code-comment"># ========== 定义多轮对话模板 ==========</span>
+chat_template = ChatPromptTemplate.from_messages([
+    (<span class="code-string">"system"</span>, <span class="code-string">"你是一名{role}，擅长{expertise}。请始终以专业的态度回答问题。"</span>),
+    (<span class="code-string">"user"</span>,  <span class="code-string">"请分析以下评价：\n{review_text}"</span>),
+])
+
+<span class="code-comment"># ========== format_messages：生成消息列表（直接传给 API）==========</span>
+messages = chat_template.format_messages(
+    role=<span class="code-string">"电商数据分析师"</span>,
+    expertise=<span class="code-string">"用户情感分析与行为洞察"</span>,
+    review_text=<span class="code-string">"物流很快，但产品质量一般般"</span>
+)
+
+<span class="code-comment"># messages 是一个 [SystemMessage, UserMessage] 列表</span>
+<span class="code-function">print</span>(messages[<span class="code-param">0</span>].content)
+<span class="code-comment"># → "你是一名电商数据分析师，擅长用户情感分析与行为洞察。请始终以专业的态度回答问题。"</span>
+
+<span class="code-function">print</span>(messages[<span class="code-param">1</span>].content)  
+<span class="code-comment"># → "请分析以下评价：\n物流很快，但产品质量一般般"</span>
+
+<span class="code-comment"># ========== 直接传给 LLM（无缝集成）==========</span>
+<span class="code-comment"># response = llm.invoke(messages)</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">5.3 三种变量注入方式对比</h3>
+                <p>LangChain 模板体系提供了三种变量注入机制，各有适用场景：</p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>方式</th>
+                                <th>方法名</th>
+                                <th>返回值</th>
+                                <th>适用场景</th>
+                                <th>特点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>format</strong></td>
+                                <td><code>.format(**kwargs)</code></td>
+                                <td><code>str</code> (字符串)</td>
+                                <td>需要获取完整 prompt 文本</td>
+                                <td>最常用，一次性填入所有变量</td>
+                            </tr>
+                            <tr>
+                                <td><strong>format_messages</strong></td>
+                                <td><code>.format_messages(**kwargs)</code></td>
+                                <td><code>List[Message]</code></td>
+                                <td>直接传给 ChatModel</td>
+                                <td>ChatPromptTemplate 专用，返回消息对象列表</td>
+                            </tr>
+                            <tr>
+                                <td><strong>partial / partial_variables</strong></td>
+                                <td><code>.partial()</code> / 构造参数</td>
+                                <td><code>新 Template 对象</code></td>
+                                <td>预填充固定变量</td>
+                                <td>返回新模板，剩余变量延后填入</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="section-subtitle">5.4 partial_variables：动态变量的高级用法</h3>
+                <p>
+                    <code>partial_variables</code> 是 <code>partial()</code> 的进阶版——它允许你传入一个<strong>可调用对象（函数）</strong>，
+                    每次格式化时动态执行该函数来获取变量值。这在需要<strong>动态生成时间戳、加载外部配置</strong>等场景下非常有用。
+                </p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">LangChain — partial_variables 动态绑定</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> datetime <span class="code-keyword">import</span> datetime
+<span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> PromptTemplate, ChatPromptTemplate
+
+<span class="code-comment"># ========== 定义动态变量函数 ==========</span>
+<span class="code-keyword">def</span> <span class="code-function">get_current_time</span>():
+    <span class="code-keyword">return</span> datetime.now().strftime(<span class="code-string">"%Y-%m-%d %H:%M:%S"</span>)
+
+<span class="code-keyword">def</span> <span class="code-function">load_system_config</span>():
+    <span class="code-comment"># 可从数据库、配置文件、环境变量等动态加载</span>
+    <span class="code-keyword">return</span> {
+        <span class="code-string">"version"</span>: <span class="code-string">"v2.1"</span>,
+        <span class="code-string">"rules"</span>: <span class="code-string">"严格遵循JSON格式，不输出markdown标记"</span>
+    }
+
+<span class="code-comment"># ========== PromptTemplate + partial_variables ==========</span>
+template = PromptTemplate.from_template(
+    <span class="code-string">"""
+当前时间：{current_time}
+系统配置：{system_config}
+
+请分析以下内容：{content}
+"""</span>
+)
+
+<span class="code-comment"># 绑定动态变量（函数会在每次 format 时自动调用）</span>
+partial_tmpl = template.partial(
+    current_time=get_current_time,      <span class="code-comment"># 传入函数引用</span>
+    system_config=load_system_config     <span class="code-comment"># 传入函数引用</span>
+)
+
+<span class="code-comment"># 每次 format 时，动态函数会重新执行</span>
+prompt_1 = partial_tmpl.format(content=<span class="code-string">"第一条评论"</span>)   <span class="code-comment"># 时间: 2026-05-15 10:30:00</span>
+<span class="code-keyword">import</span> time; time.sleep(<span class="code-param">2</span>)
+prompt_2 = partial_tmpl.format(content=<span class="code-string">"第二条评论"</span>)   <span class="code-comment"># 时间: 2026-05-15 10:30:02（自动更新！）</span>
+
+<span class="code-comment"># ========== ChatPromptTemplate + partial_variables ==========</span>
+chat_tmpl = ChatPromptTemplate.from_messages([
+    (<span class="code-string">"system"</span>, <span class="code-string">"分析时间：{current_time}\n规则：{rules}"</span>),
+    (<span class="code-string">"user"</span>, <span class="code-string">"请分析：{content}"</span>),
+])
+
+<span class="code-comment"># 通过构造参数绑定 partial_variables</span>
+chat_with_partial = chat_tmpl.partial(
+    current_time=get_current_time,
+    rules=<span class="code-keyword">lambda</span>: load_system_config()[<span class="code-string">"rules"</span>]
+)
+
+messages = chat_with_partial.format_messages(content=<span class="code-string">"测试评论"</span>)
+<span class="code-comment"># SystemMessage 中自动包含最新的时间和规则</span></code></pre>
+                </div>
+
+                <figure style="margin: 1.5rem 0; text-align: center;">
+                    <div class="css-diagram diagram-workflow">
+                        <div class="d-flow-row">
+                            <div class="d-flow-step">
+                                <div class="d-step-card">
+                                    <span class="d-step-num">1</span>
+                                    <div class="d-step-title">定义模板</div>
+                                    <div class="d-step-desc">使用 {variable} 占位符编写 Prompt 模板字符串</div>
+                                    <div class="d-step-code">PromptTemplate(template)</div>
+                                </div>
+                            </div>
+                            <span class="d-flow-arrow">→</span>
+                            <div class="d-flow-step">
+                                <div class="d-step-card">
+                                    <span class="d-step-num">2</span>
+                                    <div class="d-step-title">变量注入</div>
+                                    <div class="d-step-desc">选择注入方式，填入运行时数据</div>
+                                    <div class="d-methods-bar" style="margin:0.5rem 0 0;">
+                                        <span class="d-method-chip m-format">.format() → str</span>
+                                        <span class="d-method-chip m-fmsg">.format_messages()</span>
+                                        <span class="d-method-chip m-partial">.partial()</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="d-flow-arrow">→</span>
+                            <div class="d-flow-step">
+                                <div class="d-step-card">
+                                    <span class="d-step-num">3</span>
+                                    <div class="d-step-title">生成输出</div>
+                                    <div class="d-step-desc">得到完整 prompt 字符串或消息列表对象</div>
+                                    <div class="d-step-code">str / List[Message]</div>
+                                </div>
+                            </div>
+                            <span class="d-flow-arrow">→</span>
+                            <div class="d-flow-step">
+                                <div class="d-step-card">
+                                    <span class="d-step-num">4</span>
+                                    <div class="d-step-title">送入 LLM</div>
+                                    <div class="d-step-desc">将格式化后的内容传给大语言模型执行推理</div>
+                                    <div class="d-step-code">llm.invoke(prompt)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-llm-final">
+                            <span class="d-llm-pill">🤖 LLM 推理 & 输出结果</span>
+                        </div>
+                    </div>
+                    <figcaption style="font-size:0.8125rem;color:var(--text-muted);margin-top:0.75rem;font-style:italic;">
+                        图 5-1：LangChain 模板工作流程 —— 从模板定义（含占位符）→ 选择变量注入方式（format/format_messages/partial）→ 生成最终 prompt 或消息列表 → 送入 LLM 执行
+                    </figcaption>
+                </figure>
+
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        选择建议：什么时候用什么？
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
+                            <li style="margin-bottom:0.4rem;"><strong>简单脚本 / 快速原型</strong>：直接用 Python f-string 或 str.format()，零依赖，足够用</li>
+                            <li style="margin-bottom:0.4rem;"><strong>单轮补全场景</strong>：用 <code>PromptTemplate.from_template()</code> + <code>.format()</code></li>
+                            <li style="margin-bottom:0.4rem;"><strong>多轮对话 / Chat API 场景</strong>：用 <code>ChatPromptTemplate.from_messages()</code> + <code>.format_messages()</code></li>
+                            <li style="margin-bottom:0.4rem;"><strong>批量处理 / Pipeline</strong>：用 <code>.partial()</code> 或 <code>partial_variables</code> 预填充固定配置</li>
+                            <li><strong>需要动态变量（时间、外部配置）</strong>：用 <code>partial_variables</code> 绑定函数，实现懒求值</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== Section 06: 本集小结 & 实践 ==================== -->
+        <article class="section-card accent-bar-danger" id="s6" data-animate>
+            <div class="section-header">
+                <span class="section-number">06</span>
+                <h2 class="section-title">本集小结 & 实践 Checklist</h2>
+            </div>
+            <div class="section-content">
+                <h3 class="section-subtitle">核心知识地图</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">Zero-Shot 核心</div>
+                        <div class="info-item-value">不提供示例，仅靠自然语言指令引导模型完成任务，依赖预训练知识</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">vs Few-Shot</div>
+                        <div class="info-item-value">Few-Shot 利用 In-Context Learning 从示例中归纳模式，输出更稳定但 Token 成本更高</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">优化方法论</div>
+                        <div class="info-item-value">角色设定 → 明确任务 → 格式约束 → 负面约束 → 验证迭代（五步法）</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">模板化三要素</div>
+                        <div class="info-item-value">固定/可变分离 · Partial 预填充 · 变量注入（format/partial/partial_variables）</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">LangChain 模板栈</div>
+                        <div class="info-item-value">PromptTemplate（单轮）· ChatPromptTemplate（多轮）· from_template / from_messages</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">优化本质</div>
+                        <div class="info-item-value">每增加一个有效约束 = 减少一个不确定性来源 = 提升输出稳定性</div>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">实践 Checklist</h3>
+                <div class="highlight-box success" style="margin-top: 1.25rem;">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        Zero-Shot + 模板化 自检清单
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:none;padding:0;margin:0;">
+                            <li style="padding:0.35rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;<strong>Zero-Shot 检查</strong>：指令是否列出了明确的选项范围？（而非开放式提问）
+                            </li>
+                            <li style="padding:0.35rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;<strong>格式约束检查</strong>：输出是否有明确格式要求？（JSON Schema / 表格 / 固定字段）
+                            </li>
+                            <li style="padding:0.35rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;<strong>负面约束检查</strong>：是否使用了「不要...」类型的约束来消除不想要的输出？
+                            </li>
+                            <li style="padding:0.35rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;<strong>A/B 测试验证</strong>：是否对比过 Bad vs Good prompt 的实际输出差异？
+                            </li>
+                            <li style="padding:0.35rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;<strong>模板化检查</strong>：重复使用的 prompt 是否已模板化？（使用 {variable} 占位符）
+                            </li>
+                            <li style="padding:0.35rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;<strong>Partial 使用</strong>：固定配置是否通过 Partial 预填充来减少运行时变量数量？
+                            </li>
+                            <li style="padding:0.35rem 0;">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;<strong>LangChain 选型</strong>：是否根据场景正确选择了 PromptTemplate 还是 ChatPromptTemplate？
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">下集预告</h3>
+                <p>
+                    下一集将进入<strong>角色设定与人格塑造（Role Prompting）</strong>专题。
+                    我们将深入探讨如何通过精心设计的 System Prompt 激活模型的特定领域能力，
+                    包括<strong>专家人设构建、思维框架植入、人格一致性维护</strong>等高级技巧。
+                    你将学到如何让模型扮演「资深 Python 架构师」「临床医学专家」「创意文案总监」等专业角色，
+                    并理解为什么一个好的角色设定能带来<strong>质的输出飞跃</strong>~
+                </p>
+            </div>
+        </article>
+
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="footer-container">
+        <nav class="footer-nav">
+            <a href="01-提示词工程基础.html" class="footer-link">
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">&larr; 上一集</div>
+                    <div>第 01 集 - 提示词工程基础</div>
+                </div>
+            </a>
+            <a href="03-角色设定与人格.html" class="footer-link next">
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">下一集 &rarr;</div>
+                    <div>第 03 集 - 角色设定与人格</div>
+                </div>
+            </a>
+        </nav>
+        <div class="footer-reference">
+            课程来源：<a href="https://www.bilibili.com/video/BV1yjz5BLEoY" target="_blank">B站视频 BV1yjz5BLEoY</a> &middot;
+            P12 起始
+        </div>
+    </div>
+</footer>
+
+<div class="tweaks-panel" id="tweaksPanel">
+    <button class="tweaks-toggle" onclick="toggleTweaks()" title="调整字体大小">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+    </button>
+    <span class="tweaks-label">字号</span>
+    <input type="range" class="tweaks-slider" id="fontSlider" min="12" max="22" value="16" step="1" oninput="adjustFontSize(this.value)">
+    <span class="tweaks-value" id="fontValue">16px</span>
+</div>
+
+<script>
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 20) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -50px 0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, index * 100);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.section-card[data-animate]').forEach(card => {
+        observer.observe(card);
+    });
+
+    function copyCode(btn) {
+        const codeBlock = btn.closest('.code-block');
+        const code = codeBlock.querySelector('code').textContent;
+
+        navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copied!';
+            btn.style.color = 'var(--success)';
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+                btn.style.color = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Copy failed:', err);
+        });
+    }
+
+    let tweaksExpanded = true;
+
+    function toggleTweaks() {
+        const panel = document.getElementById('tweaksPanel');
+        tweaksExpanded = !tweaksExpanded;
+        if (tweaksExpanded) {
+            panel.classList.remove('collapsed');
+        } else {
+            panel.classList.add('collapsed');
+        }
+    }
+
+    function adjustFontSize(size) {
+        document.documentElement.style.setProperty('--font-size-base', size + 'px');
+        document.getElementById('fontValue').textContent = size + 'px';
+    }
+</script>
+
+</body>
+</html>

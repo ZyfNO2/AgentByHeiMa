@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第03集 - 角色设定与人格塑造 | 提示词工程学习笔记</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8f9fc;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f1f3f8;
+            --text-primary: #1a1d26;
+            --text-secondary: #5a6072;
+            --text-muted: #949aad;
+            --primary: oklch(0.55 0.22 250);
+            --primary-light: oklch(0.75 0.15 250);
+            --accent: oklch(0.70 0.18 85);
+            --success: oklch(0.55 0.16 155);
+            --danger: oklch(0.55 0.20 25);
+            --info: oklch(0.55 0.15 230);
+            --teal: oklch(0.55 0.14 180);
+            --border-color: #e2e5ef;
+            --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+            --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 4px rgba(26,29,38,0.04);
+            --shadow-lg: 0 8px 24px rgba(26,29,38,0.12), 0 4px 8px rgba(26,29,38,0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --font-size-base: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: var(--font-size-base);
+            -webkit-font-smoothing: antialiased;
+            transition: font-size 0.2s ease;
+        }
+
+        .header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(248, 249, 252, 0.85);
+            border-bottom: 1px solid var(--border-color);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .header.scrolled { box-shadow: var(--shadow-md); }
+
+        .nav-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0.875rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-brand-icon {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            max-width: 600px;
+            justify-content: flex-end;
+        }
+
+        .nav-link {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover { color: var(--primary); }
+        .nav-link.active { color: var(--primary); font-weight: 600; }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 0; right: 0;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 1px;
+        }
+
+        .nav-anchor {
+            background: rgba(79,110,247,0.10);
+            color: var(--primary) !important;
+            font-weight: 600;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .hero {
+            padding: 7rem 0 3rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--teal));
+            color: white;
+            padding: 0.375rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.25rem, 5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.1s forwards;
+        }
+
+        .hero-title-accent {
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 620px;
+            margin: 0 auto 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.2s forwards;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.3s forwards;
+        }
+
+        .meta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 0.875rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .meta-tag-icon { width: 16px; height: 16px; opacity: 0.7; }
+
+        .content-section { padding-bottom: 4rem; }
+
+        .section-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .section-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .section-card.accent-bar-success { border-left-color: var(--success); }
+        .section-card.accent-bar-accent { border-left-color: var(--accent); }
+        .section-card.accent-bar-info { border-left-color: var(--info); }
+        .section-card.accent-bar-teal { border-left-color: var(--teal); }
+        .section-card.accent-bar-danger { border-left-color: var(--danger); }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-subtle);
+        }
+
+        .section-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            color: white;
+            border-radius: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-content {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .section-content p { margin-bottom: 1rem; }
+        .section-content p:last-child { margin-bottom: 0; }
+
+        .section-subtitle {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(85, 120, 250, 0.06), rgba(100, 140, 255, 0.04));
+            border-left: 4px solid var(--primary);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 1.25rem 1.5rem;
+            margin: 1.25rem 0;
+        }
+
+        .highlight-box.success {
+            background: linear-gradient(135deg, rgba(85, 180, 130, 0.06), rgba(100, 200, 150, 0.04));
+            border-left-color: var(--success);
+        }
+
+        .highlight-box.warning {
+            background: linear-gradient(135deg, rgba(220, 160, 60, 0.06), rgba(235, 180, 80, 0.04));
+            border-left-color: var(--accent);
+        }
+
+        .highlight-box.danger {
+            background: linear-gradient(135deg, rgba(220, 90, 80, 0.06), rgba(235, 105, 95, 0.04));
+            border-left-color: var(--danger);
+        }
+
+        .highlight-box.teal {
+            background: linear-gradient(135deg, rgba(80, 180, 160, 0.06), rgba(100, 200, 180, 0.04));
+            border-left-color: var(--teal);
+        }
+
+        .highlight-box-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .highlight-box.success .highlight-box-title { color: var(--success); }
+        .highlight-box.warning .highlight-box-title { color: var(--accent); }
+        .highlight-box.danger .highlight-box-title { color: var(--danger); }
+        .highlight-box.teal .highlight-box-title { color: var(--teal); }
+
+        .highlight-box-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .code-block {
+            position: relative;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-md);
+            margin: 1.25rem 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.25rem;
+            background: rgba(26, 29, 38, 0.03);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-lang {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .code-copy-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.625rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+
+        .code-block:hover .code-copy-btn { opacity: 1; }
+
+        .code-copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.05);
+        }
+
+        .code-body {
+            padding: 1.25rem;
+            overflow-x: auto;
+        }
+
+        .code-body pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.84375rem;
+            line-height: 1.65;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .code-body code { font-family: inherit; }
+
+        .code-keyword { color: #c678dd; }
+        .code-string { color: #98c379; }
+        .code-comment { color: #5c6370; font-style: italic; }
+        .code-function { color: #61afef; }
+        .code-class { color: #e5c07b; }
+        .code-variable { color: #e06c75; }
+        .code-param { color: #d19a66; }
+        .code-operator { color: #56b6c2; }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.25rem 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            color: white;
+        }
+
+        th {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        tbody tr:nth-child(even) { background: var(--bg-subtle); }
+        tbody tr:hover { background: rgba(85, 120, 250, 0.04); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        td code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: rgba(85, 120, 250, 0.08);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        .content-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 1rem 0;
+        }
+
+        .content-list li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .content-list li::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0.6rem;
+            width: 8px; height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .content-list li strong { color: var(--text-primary); font-weight: 600; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0;
+        }
+
+        .info-item {
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .info-item:hover {
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.03);
+        }
+
+        .info-item-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.375rem;
+        }
+
+        .info-item-value {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .info-item-value code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: rgba(85, 120, 250, 0.08);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        .figure-container {
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .figure-container img {
+            max-width: 100%;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .figure-caption {
+            margin-top: 0.75rem;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .footer {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            padding: 2.5rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .footer-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .footer-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(85, 120, 250, 0.04);
+            transform: translateX(4px);
+        }
+
+        .footer-link.next {
+            flex-direction: row-reverse;
+        }
+
+        .footer-link.next:hover {
+            transform: translateX(-4px);
+        }
+
+        .footer-reference {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .footer-reference a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer-reference a:hover { text-decoration: underline; }
+
+        .tweaks-panel {
+            position: fixed;
+            bottom: 2rem; right: 2rem;
+            z-index: 999;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .tweaks-panel.collapsed {
+            padding: 0.625rem 0.875rem;
+        }
+
+        .tweaks-panel.collapsed .tweaks-label,
+        .tweaks-panel.collapsed .tweaks-slider,
+        .tweaks-panel.collapsed .tweaks-value {
+            display: none;
+        }
+
+        .tweaks-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .tweaks-toggle:hover { color: var(--primary); }
+
+        .tweaks-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px; height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .tweaks-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 2.5rem;
+            text-align: center;
+        }
+
+        .tweaks-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero { padding: 5.5rem 0 2.5rem; }
+            .section-card { padding: 1.75rem; border-radius: var(--radius-md); }
+            .section-title { font-size: 1.175rem; }
+            .table-wrapper { font-size: 0.8125rem; }
+            th, td { padding: 0.625rem 0.75rem; }
+            .footer-nav { flex-direction: column; }
+            .footer-link { width: 100%; justify-content: center; }
+            .tweaks-panel { bottom: 1rem; right: 1rem; }
+        }
+
+        /* ========== CSS Diagram: Role Playing 概念图 ========== */
+        .diagram-role-playing {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            padding: 2rem 1rem;
+            background: linear-gradient(135deg, #f8f9fc, #eef1f7);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            margin: 1.5rem 0;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+        .rp-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+        .rp-node-icon {
+            width: 56px; height: 56px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.2s ease;
+        }
+        .rp-node:hover .rp-node-icon { transform: scale(1.08); }
+        .rp-node-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+            line-height: 1.3;
+        }
+        .rp-node-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        .rp-arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 70px;
+            flex-shrink: 0;
+            padding: 0 0.25rem;
+        }
+        .rp-arrow-line {
+            width: 40px; height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--teal));
+            border-radius: 1px;
+            position: relative;
+        }
+        .rp-arrow-line::after {
+            content: '';
+            position: absolute;
+            right: -4px; top: -4px;
+            border: 5px solid transparent;
+            border-left-color: var(--teal);
+        }
+        .rp-arrow-text {
+            font-size: 0.65rem;
+            color: var(--primary);
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            white-space: nowrap;
+            margin-top: 4px;
+        }
+        .rp-icon-llm { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+        .rp-icon-prompt { background: linear-gradient(135deg, var(--primary), var(--teal)); }
+        .rp-icon-expert { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+
+        /* ========== CSS Diagram: 金融文本分类流程图 ========== */
+        .diagram-classification {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            padding: 1.75rem 1rem;
+            background: linear-gradient(180deg, #f8f9fc, #eef1f7);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            margin: 1.5rem 0;
+        }
+        .cf-input-box {
+            background: var(--bg-surface);
+            border: 2px dashed var(--primary);
+            border-radius: var(--radius-sm);
+            padding: 0.65rem 1.25rem;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            max-width: 380px;
+            text-align: center;
+        }
+        .cf-arrow-down {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.35rem 0;
+        }
+        .cf-arrow-down-line {
+            width: 2px; height: 22px;
+            background: linear-gradient(180deg, var(--primary), var(--teal));
+            border-radius: 1px;
+        }
+        .cf-arrow-down-line::after {
+            content: '';
+            display: block;
+            width: 0; height: 0;
+            margin-left: -5px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid var(--teal);
+        }
+        .cf-llm-box {
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            color: white;
+            border-radius: var(--radius-sm);
+            padding: 0.6rem 1.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-md);
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .cf-prompt-tag {
+            font-size: 0.65rem;
+            background: rgba(255,255,255,0.25);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+        .cf-split-container {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+            flex-wrap: wrap;
+        }
+        .cf-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+        }
+        .cf-branch-line-v {
+            width: 2px; height: 18px;
+            background: var(--border-color);
+        }
+        .cf-branch-line-h {
+            width: 28px; height: 2px;
+            background: var(--border-color);
+            border-radius: 1px;
+        }
+        .cf-output-card {
+            border-radius: var(--radius-sm);
+            padding: 0.45rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            color: white;
+            text-align: center;
+            min-width: 90px;
+            box-shadow: var(--shadow-sm);
+        }
+        .cf-out-news { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .cf-out-announce { background: linear-gradient(135deg, #10b981, #059669); }
+        .cf-out-finance { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .cf-out-analyst { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+        /* ========== CSS Diagram: Few-Shot 分类器架构图 ========== */
+        .diagram-architecture {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            padding: 1.75rem 1.5rem;
+            background: linear-gradient(180deg, #f8f9fc, #eef1f7);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            margin: 1.5rem 0;
+        }
+        .arch-layer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 520px;
+        }
+        .arch-box {
+            border-radius: var(--radius-sm);
+            padding: 0.7rem 1.25rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            text-align: center;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .arch-layer-1 .arch-box {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+        .arch-layer-2 .arch-box {
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            color: white;
+        }
+        .arch-layer-3 {
+            display: flex;
+            gap: 0.75rem;
+            width: 100%;
+            max-width: 520px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .arch-layer-3 .arch-box {
+            flex: 1;
+            min-width: 140px;
+            max-width: 220px;
+        }
+        .arch-input-box {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+        }
+        .arch-llm-box {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        .arch-connector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.3rem 0;
+        }
+        .arch-conn-line {
+            width: 2px; height: 16px;
+            background: var(--border-color);
+            border-radius: 1px;
+        }
+        .arch-conn-line::after {
+            content: '';
+            display: block;
+            width: 0; height: 0;
+            margin-left: -5px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid var(--border-color);
+        }
+        .arch-conn-label {
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            font-family: 'Space Grotesk', sans-serif;
+            margin-top: 2px;
+        }
+        .arch-output-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+            flex-wrap: wrap;
+        }
+        .arch-output-badge {
+            background: var(--bg-surface);
+            border: 1.5px solid var(--success);
+            border-radius: 20px;
+            padding: 0.3rem 0.85rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--success);
+        }
+
+        @media (max-width: 768px) {
+            .diagram-role-playing { flex-direction: column; gap: 0.75rem; }
+            .rp-arrow { transform: rotate(90deg); min-width: 50px; }
+            .cf-split-container { gap: 0.35rem; }
+            .cf-output-card { min-width: 72px; font-size: 0.68rem; padding: 0.35rem 0.5rem; }
+            .arch-layer-3 { flex-direction: column; align-items: center; }
+            .arch-layer-3 .arch-box { max-width: 280px; width: 100%; }
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-page); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<header class="header" id="header">
+    <div class="nav-container">
+        <a href="../index-prompt.html" class="nav-brand">
+            <span class="nav-brand-icon">PE</span>
+            提示词工程 Notes
+        </a>
+        <nav class="nav-links">
+            <a href="01-提示词工程基础.html" class="nav-link">P01 基础</a>
+            <a href="02-结构化提示词.html" class="nav-link">P02 结构化</a>
+            <a href="#s1" class="nav-anchor">&sect;1 角色原理</a>
+            <a href="#s2" class="nav-link active">P03 角色设定</a>
+            <a href="#s3" class="nav-link">P04 Few-Shot</a>
+            <a href="#s4" class="nav-link">P05 思维链</a>
+        </nav>
+    </div>
+</header>
+
+<main class="main-container">
+
+    <section class="hero">
+        <div class="hero-badge">P13 / Chapter 03 &middot; Role Playing &amp; Financial Text Classification</div>
+        <h1 class="hero-title">
+            第03集：<span class="hero-title-accent">角色设定与人格 &amp; 金融文本分类实战</span>
+        </h1>
+        <p class="hero-subtitle">
+            深入理解 Role Playing 角色扮演技巧的底层原理，以金融领域四分类任务（新闻报道/公司公告/财务公告/分析师报告）为实战场景，综合运用角色设定 + Few-Shot + 结构化输出完成端到端分类系统构建
+        </p>
+        <div class="hero-meta">
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M10 8l6 4-6 4V8z"/></svg>
+                集数 P13(P03)
+            </span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                时长 ~45min
+            </span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                BV1yjz5BLEoY
+            </span>
+        </div>
+    </section>
+
+    <div class="content-section">
+
+        <!-- ==================== Section 1: Role Playing 原理 ==================== -->
+        <article class="section-card" id="s1" data-animate>
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2 class="section-title">Role Playing 角色扮演：原理与机制</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    <strong>Role Playing（角色扮演）</strong>是提示词工程中最核心也最有效的技巧之一。
+                    它的核心理念非常直观——通过在 System Prompt 中为模型指定一个明确的「身份」或「角色」，
+                    引导模型激活与该角色相关的知识子空间，从而在特定领域内输出更专业、更准确、更符合预期的内容。
+                </p>
+
+                <div class="figure-container">
+                    <div class="diagram-role-playing">
+                        <div class="rp-node">
+                            <div class="rp-node-icon rp-icon-llm">🤖</div>
+                            <div class="rp-node-label">通用 LLM</div>
+                            <div class="rp-node-sub">基础大模型</div>
+                        </div>
+                        <div class="rp-arrow">
+                            <div class="rp-arrow-line"></div>
+                            <div class="rp-arrow-text">角色设定 Prompt</div>
+                        </div>
+                        <div class="rp-node">
+                            <div class="rp-node-icon rp-icon-prompt">🎭</div>
+                            <div class="rp-node-label">专家 Persona</div>
+                            <div class="rp-node-sub">身份激活</div>
+                        </div>
+                        <div class="rp-arrow">
+                            <div class="rp-arrow-line"></div>
+                            <div class="rp-arrow-text">领域知识</div>
+                        </div>
+                        <div class="rp-node">
+                            <div class="rp-node-icon rp-icon-expert">💼</div>
+                            <div class="rp-node-label">金融分析师</div>
+                            <div class="rp-node-sub">变身完成 ✓</div>
+                        </div>
+                    </div>
+                    <p class="figure-caption">图 1：Role Playing 核心概念 —— 通过角色设定将通用大模型「变身」为领域专家</p>
+                </div>
+
+                <h3 class="section-subtitle">为什么角色设定能提升输出质量？</h3>
+                <p>
+                    从技术角度来看，角色设定的效果可以从以下几个层面解释：
+                </p>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">🧠 知识子空间激活</div>
+                        <div class="info-item-value">大模型预训练阶段接触过海量各领域文本。角色指令相当于一个<strong>检索锚点</strong>，让模型的注意力机制优先聚焦于金融/医疗/法律等特定领域的 token 分布和语义模式</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🎯 输出风格约束</div>
+                        <div class="info-item-value">不同角色的语言风格差异巨大。「资深金融分析师」的输出会自然使用专业术语、严谨的数据分析语气；而「科普博主」则会用更通俗的表达方式</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">📐 推理框架引导</div>
+                        <div class="info-item-value">角色设定隐含了<strong>思维模式</strong>的约束。例如「金融分析师」会自动采用「数据→分析→结论」的推理路径，而非漫无边际的自由联想</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">⚡ 上下文窗口优化</div>
+                        <div class="info-item-value">好的角色设定相当于在上下文窗口中预先填充了高质量的<strong>领域先验</strong>，减少模型需要从零开始「摸索」任务要求的 token 开销</div>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">Prompt 工程指南中的六大技巧回顾</h3>
+                <p>
+                    在正式进入实战之前，让我们回顾一下本课程体系中的核心 Prompt 技巧框架。
+                    这些技巧并非孤立使用，而是可以灵活组合——本集的金融分类任务就是<strong>技巧二（角色扮演）+ 技巧五（提供示例/Few-Shot）+ 技巧四（指定步骤）</strong>的经典组合案例：
+                </p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>技巧编号</th>
+                                <th>技巧名称</th>
+                                <th>核心思想</th>
+                                <th>本集应用</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>技巧一</strong></td>
+                                <td><code>详细的描述</code></td>
+                                <td>清晰表达需求是所有技巧的基础</td>
+                                <td>✅ 分类任务描述精确到4个类别定义</td>
+                            </tr>
+                            <tr>
+                                <td><strong>技巧二</strong></td>
+                                <td><code>充当某个角色</code></td>
+                                <td>指定身份激活领域知识子空间</td>
+                                <td>✅✅ 设定「资深金融分析师」角色（核心）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>技巧三</strong></td>
+                                <td><code>分隔符标明输入</code></td>
+                                <td>用 XML/三引号等划分输入区域</td>
+                                <td>✅ 使用 ### 分隔示例和待分类文本</td>
+                            </tr>
+                            <tr>
+                                <td><strong>技巧四</strong></td>
+                                <td><code>对任务指定步骤</code></td>
+                                <td>拆解复杂任务为可执行流程</td>
+                                <td>✅ 定义「识别→匹配→输出JSON」三步流程</td>
+                            </tr>
+                            <tr>
+                                <td><strong>技巧五</strong></td>
+                                <td><code>提供例子（Few-Shot）</code></td>
+                                <td>给模型展示正确范例降低理解偏差</td>
+                                <td>✅✅ 每类至少1个标注示例（核心）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>技巧六</strong></td>
+                                <td><code>使用参考文本作答</code></td>
+                                <td>提供外部知识源减少幻觉</td>
+                                <td>⭕ 本集暂不涉及（RAG部分后续讲解）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight-box teal">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        本天才的核心洞察
+                    </div>
+                    <div class="highlight-box-content">
+                        角色设定的本质是<strong>「注意力重定向」</strong>——它不改变模型的参数，
+                        而是通过精心设计的上下文信号，让模型在推理时优先调用与目标领域相关的知识和推理模式。
+                        一个设计精良的角色 Prompt 可以让基础模型的输出效果媲美经过简单微调的领域专用模型，
+                        这就是为什么提示词工程被称为「无需训练的模型能力增强术」~
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== Section 2: 金融文本分类任务 ==================== -->
+        <article class="section-card accent-bar-success" id="s2" data-animate>
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2 class="section-title">实战任务：金融文本四分类系统</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    本集选取<strong>金融文本分类</strong>作为综合实战场景。
+                    金融领域的文本分类是 NLP 在金融科技（FinTech）中的高价值应用，
+                    广泛覆盖舆情监控、智能投研、合规审查、信息抽取等业务场景。
+                    我们的任务目标是：给定一条中文财经相关文本，将其准确归入以下四个类别之一。
+                </p>
+
+                <div class="figure-container">
+                    <div class="diagram-classification">
+                        <div class="cf-input-box">📄 输入：中文财经文本（待分类）</div>
+                        <div class="cf-arrow-down"><div class="cf-arrow-down-line"></div></div>
+                        <div class="cf-llm-box">🧠 LLM 推理引擎 <span class="cf-prompt-tag">+ 角色Prompt</span></div>
+                        <div class="cf-arrow-down"><div class="cf-arrow-down-line"></div></div>
+                        <div class="cf-split-container">
+                            <div class="cf-branch">
+                                <div class="cf-branch-line-v"></div>
+                                <div class="cf-branch-line-h"></div>
+                                <div class="cf-output-card cf-out-news">📰 新闻报道</div>
+                            </div>
+                            <div class="cf-branch">
+                                <div class="cf-branch-line-v"></div>
+                                <div class="cf-branch-line-h"></div>
+                                <div class="cf-output-card cf-out-announce">📋 公司公告</div>
+                            </div>
+                            <div class="cf-branch">
+                                <div class="cf-branch-line-v"></div>
+                                <div class="cf-branch-line-h"></div>
+                                <div class="cf-output-card cf-out-finance">📊 财务公告</div>
+                            </div>
+                            <div class="cf-branch">
+                                <div class="cf-branch-line-v"></div>
+                                <div class="cf-branch-line-h"></div>
+                                <div class="cf-output-card cf-out-analyst">📈 分析师报告</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="figure-caption">图 2：金融文本分类完整处理流水线 —— 从原始文本输入到结构化 JSON 输出的端到端流程</p>
+                </div>
+
+                <h3 class="section-subtitle">四分类体系的详细定义</h3>
+                <p>
+                    与通用的宏观/行业/市场/政策四分法不同，本课程采用的是更贴近实际业务场景的分类体系：
+                    <strong>新闻报道、公司公告、财务报告、分析师报告</strong>。
+                    这四个类别对应着金融信息生产链条上的不同环节和不同的写作主体：
+                </p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类别</th>
+                                <th>英文标识</th>
+                                <th>发布主体</th>
+                                <th>典型特征</th>
+                                <th>区分关键词</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>新闻报道</strong></td>
+                                <td><code>News Report</code></td>
+                                <td>媒体/记者</td>
+                                <td>第三人称叙述、引用多方观点、时效性强、标题吸引眼球</td>
+                                <td>据XX报道、今日、近日、市场人士认为、消息显示</td>
+                            </tr>
+                            <tr>
+                                <td><strong>公司公告</strong></td>
+                                <td><code>Company Announcement</code></td>
+                                <td>上市公司/企业</td>
+                                <td>第一人称或官方口吻、格式规范（董事会决议/股东大会）、法律效力</td>
+                                <td>本公司、董事会、股东大会、特此公告、关于、通知</td>
+                            </tr>
+                            <tr>
+                                <td><strong>财务公告</strong></td>
+                                <td><code>Financial Report</code></td>
+                                <td>公司/审计机构</td>
+                                <td>密集的数值数据（营收/利润/资产负债表指标）、定期披露</td>
+                                <td>营业收入、净利润、同比增长、EPS、ROE、资产负债率</td>
+                            </tr>
+                            <tr>
+                                <td><strong>分析师报告</strong></td>
+                                <td><code>Analyst Report</code></td>
+                                <td>券商研究所/分析师</td>
+                                <td>投资评级（买入/持有/卖出）、目标价、估值模型、行业深度分析</td>
+                                <td>维持评级、目标价、PE估值、DCF模型、投资建议、盈利预测</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="section-subtitle">分类难点与边界情况</h3>
+                <p>
+                    实际业务中，这四个类别之间并非总是泾渭分明。以下是常见的边界模糊场景及处理策略：
+                </p>
+
+                <ul class="content-list">
+                    <li><strong>公司公告 vs 财务公告</strong>：两者发布主体相同，关键区别在于<strong>内容重心</strong>。如果文本以定性描述为主（如人事变动、股权激励方案），归入公司公告；如果以定量财务数据为核心（如年报摘要、季度业绩快报），归入财务公告。</li>
+                    <li><strong>新闻报道 vs 分析师报告</strong>：新闻是客观报道（即使包含分析师引语），而分析师报告本身带有明确的投资建议和评级判断。判断标准：<strong>是否有独立的投资评级和目标价</strong>。</li>
+                    <li><strong>混合型文本</strong>：一篇报道同时引用了公司公告内容和分析师点评。处理原则——<strong>以主要论述对象和信息来源为准</strong>，若无法判定则选择占比最大的成分。</li>
+                </ul>
+
+                <div class="highlight-box warning">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        注意事项
+                    </div>
+                    <div class="highlight-box-content">
+                        不同教材/视频教程可能采用略有差异的四分类命名（如宏观经济/行业公司/市场行情/政策法规 vs 新闻报道/公司公告/财务公告/分析师报告）。
+                        分类体系的设计取决于具体业务需求，没有绝对的对错之分。<strong>关键是保持一致性</strong>——一旦确定了分类体系，
+                        所有 Few-Shot 示例和评估标准都必须与之对齐。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== Section 3: 角色 Prompt 设计 ==================== -->
+        <article class="section-card accent-bar-info" id="s3" data-animate>
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2 class="section-title">金融分析师角色 Prompt 设计</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    现在我们来设计完整的 System Prompt。一个好的角色 Prompt 应当包含四个核心要素：
+                    <strong>Identity（身份定位）→ Expertise（专业能力）→ Task（任务描述）→ Constraints（行为约束）</strong>。
+                    这四个要素层层递进，共同构成一个完整的角色画像。
+                </p>
+
+                <h3 class="section-subtitle">完整 System Prompt 代码</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">System Prompt — 资深金融分析师角色</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>system_prompt = <span class="code-string">"""
+## 身份（Identity）
+你是一名拥有 15 年从业经验的**资深金融分析师**，
+曾任职于头部券商研究所（中信/中金/华泰级别），
+擅长宏观经济分析、行业研究和公司基本面分析。
+你对 A 股市场、港股、美股的财经信息有深刻的理解和敏锐的判断力。
+
+## 专业能力（Expertise）
+- **文本分类**：能够快速准确地将财经文本归类到正确类别
+- **多维度分析**：从发布主体、内容特征、写作风格、数据密度等角度综合判断
+- **边界处理**：对混合型和模糊边界的文本有成熟的判别策略
+- **金融术语**：精通各类金融专业术语和行业黑话
+
+## 任务（Task）
+你是一个**金融文本四分类器**。对用户输入的中文财经文本，
+准确判断其所属类别并输出结构化结果。
+
+### 分类体系（4 类）
+| 类别 | 英文名 | 定义 |
+|------|--------|------|
+| 新闻报道 | News Report | 媒体发布的第三方财经新闻报道 |
+| 公司公告 | Company Announcement | 企业官方发布的公告性文件 |
+| 财务公告 | Financial Report | 以财务数据和业绩为核心的披露文件 |
+| 分析师报告 | Analyst Report | 券商/研究机构发布的投资研究报告 |
+
+## 行为规范（Constraints）
+1. 必须且仅能从上述 4 个类别中选择 **1 个**最匹配的类别
+2. 若文本涉及多个领域，以**主要论述对象和信息来源**为准
+3. 输出必须为严格的 JSON 格式，不包含任何其他文字
+4. 每条结果附带 confidence（置信度）和 reasoning（分类理由）
+5. confidence 取值范围：高 / 中 / 低
+"""</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">Prompt 设计要点解析</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">📋 具体化身份</div>
+                        <div class="info-item-value">「15年经验」「头部券商」「中信/中金/华泰级别」——越具体的背景描述，模型激活的知识子空间越精准</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🎯 能力清单</div>
+                        <div class="info-item-value">列出4项专业能力，每项都直接服务于分类任务，避免泛泛而谈的空话</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">📊 表格化分类体系</div>
+                        <div class="info-item-value">用 Markdown 表格呈现4个类别，比纯文本列表更清晰，模型解析更稳定</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🔒 行为硬约束</div>
+                        <div class="info-item-value">5条编号规则，涵盖单选限制、边界策略、输出格式、字段要求——消除歧义</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        经验法则：角色 Prompt 的「黄金比例」
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
+                            <li style="margin-bottom:0.3rem;"><strong>Identity 占 ~20%</strong>：简短有力，1-3句话建立可信度</li>
+                            <li style="margin-bottom:0.3rem;"><strong>Expertise 占 ~25%</strong>：列举与任务直接相关的技能清单</li>
+                            <li style="margin-bottom:0.3rem;"><strong>Task 占 ~35%</strong>：这是核心！详细定义分类体系和每个类别的含义</li>
+                            <li><strong>Constraints 占 ~20%</strong>：用编号列表给出不可违反的规则</li>
+                        </ul>
+                        <p style="margin-top:0.75rem;margin-bottom:0;">总长度控制在 300-500 字（中文）为宜，过长会导致关键信息被稀释。</p>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== Section 4: Few-Shot 示例设计 ==================== -->
+        <article class="section-card accent-bar-teal" id="s4" data-animate>
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2 class="section-title">Few-Shot 少样本示例设计与编排</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    <strong>Few-Shot Learning（少样本学习）</strong>在提示词工程中的含义是：
+                    不更新模型参数，仅通过在 Prompt 中提供少量<strong>输入-输出示例对</strong>，
+                    让模型理解任务的期望行为模式。对于分类任务而言，Few-Shot 的价值尤为突出——
+                    它能让模型从「猜测你的意思」转变为「模仿正确的模式」。
+                </p>
+
+                <h3 class="section-subtitle">Zero-Shot vs Few-Shot 对比实验</h3>
+                <p>
+                    让我们用一个直观的对比来感受 Few-Shot 的威力。假设我们要分类这条文本：
+                </p>
+
+                <div class="highlight-box">
+                    <div class="highlight-box-title">测试文本</div>
+                    <div class="highlight-box-content" style="font-style:italic;">
+                        "比亚迪发布2025年度报告，全年新能源汽车销量突破400万辆，同比增长42%，实现归属于上市公司股东的净利润380亿元，同比增长35%。"
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>方法</th>
+                                <th>Prompt 策略</th>
+                                <th>预期表现</th>
+                                <th>原因分析</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Zero-Shot</strong></td>
+                                <td>仅给出4个类别名称，无任何示例</td>
+                                <td><code style="background:rgba(220,90,80,0.1);color:var(--danger);">不稳定</code></td>
+                                <td>模型只能靠预训练知识的「直觉」猜测，容易混淆公司公告和财务公告</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Few-Shot</strong></td>
+                                <td>每类提供1-2个带理由的示例</td>
+                                <td><code style="background:rgba(85,180,130,0.1);color:var(--success);">稳定准确</code></td>
+                                <td>模型学会了「看数据密度→判断是否为财务公告」的模式</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="section-subtitle">四类别的 Few-Shot 示例集</h3>
+                <p>
+                    下面展示针对我们四分类体系精心设计的 Few-Shot 示例。
+                    每个示例都包含了<strong>输入文本 + 正确标签 + 分类理由</strong>三元组，
+                    理由部分尤为重要——它教会模型「怎么思考」，而不只是「记住答案」。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Few-Shot Examples — 金融四分类示例集</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>few_shot_examples = <span class="code-string">"""
+
+### 示例 1 — 新闻报道
+文本：今日央行发布公告宣布下调存款准备金率0.5个百分点，
+以支持实体经济发展。市场人士普遍认为此次降准将释放长期资金约1万亿元，
+有利于提振市场信心。截至收盘，沪指上涨1.2%。
+分类：新闻报道
+理由：媒体第三方视角叙述，引用"市场人士"观点，具有时效性和新闻叙事特征
+
+### 示例 2 — 公司公告
+文本：本公司董事会及全体董事保证本公告内容不存在任何虚假记载、
+误导性陈述或者重大遗漏，并对其内容的真实性、准确性和完整性承担法律责任。
+经公司股东大会审议通过，聘任张三为公司总经理，任期三年。
+分类：公司公告
+理由：典型的上市公司公告格式，包含"本公司""董事会""保证...真实性"等法定措辞
+
+### 示例 3 — 财务公告
+文本：贵州茅台发布2024年年报，报告期内实现营业收入1505亿元，
+同比增长15.4%；归属于母公司净利润747亿元，同比增长16.2%；
+基本每股收益59.49元。拟向全体股东每10股派发现金红利308.56元（含税）。
+分类：财务公告
+理由：核心内容为密集的财务数据（营收/净利/EPS/分红），属于定期财务信息披露
+
+### 示例 4 — 分析师报告
+文本：【中金公司】宁德时代（300750.SZ）维持"跑赢行业"评级
+目标价上调至280元。考虑到公司在全球动力电池市场的龙头地位稳固，
+海外产能扩张顺利，我们上调2025-2027年EPS预测至12.5/15.2/18.1元。
+当前股价对应2025年PE为18x，具备安全边际，建议积极配置。
+分类：分析师报告
+理由：包含券商署名、投资评级（"跑赢行业"）、目标价、EPS预测和PE估值等典型研报要素
+
+"""</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">Few-Shot 设计的五大原则</h3>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">📌 原则一：覆盖全类别</div>
+                        <div class="info-item-value">4个类别<strong>每个至少1个示例</strong>，避免某一类缺失导致模型对该类的理解偏差</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🚫 原则二：包含负例暗示</div>
+                        <div class="info-item-value">通过理由说明某文本<strong>为什么不属于</strong>其他类别（如"虽有数据但非核心→非财务公告"）</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">⚖️ 原则三：平衡分布</div>
+                        <div class="info-item-value">各类示例数量尽量均衡，避免位置偏差（Position Bias）导致某类被过度偏好</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🧠 原则四：理由驱动</div>
+                        <div class="info-item-value">每个示例必须附<strong>分类理由</strong>，教的是推理过程而非死记硬背</div>
+                    </div>
+                </div>
+
+                <div class="info-grid" style="margin-top: 0;">
+                    <div class="info-item">
+                        <div class="info-item-label">📏 原则五：长度匹配</div>
+                        <div class="info-item-value">示例文本长度应接近真实输入的平均长度，避免分布偏移影响模型判断</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box danger">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y2="9" x2="15" y2="15"/></svg>
+                        常见陷阱：Recency Bias（近因偏差）
+                    </div>
+                    <div class="highlight-box-content">
+                        大模型对 Prompt 中<strong>最后出现的示例赋予更高的权重</strong>（Recency Bias）。
+                        这意味着如果你把「分析师报告」的示例放在最后，模型可能会倾向于将更多文本分类为分析师报告。
+                        <strong>应对策略</strong>：(1) 将最重要的或最容易混淆的类别放在最后；(2)
+                        或者在实际使用中随机打乱示例顺序进行多次投票取多数。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== Section 5: 完整 Prompt 组合 ==================== -->
+        <article class="section-card accent-bar-accent" id="s5" data-animate>
+            <div class="section-header">
+                <span class="section-number">05</span>
+                <h2 class="section-title">完整分类 Prompt 与 Python 实现</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    将前面设计的 System Prompt（角色设定）与 Few-Shot 示例组合，
+                    再加上输出格式约束，就构成了一个<strong>可直接投入使用的完整分类 Prompt</strong>。
+                    下面同时给出 Prompt 模板和基于 OpenAI 兼容接口调用 Qwen/DeepSeek 模型的 Python 可运行代码。
+                </p>
+
+                <div class="figure-container">
+                    <div class="diagram-architecture">
+                        <div class="arch-layer arch-layer-1">
+                            <div class="arch-box">📋 Layer 1：System Prompt（角色定义 + 分类体系 + 输出约束）</div>
+                        </div>
+                        <div class="arch-connector"><div class="arch-conn-line"></div><div class="arch-conn-label">注入上下文</div></div>
+                        <div class="arch-layer arch-layer-2">
+                            <div class="arch-box">📚 Layer 2：Few-Shot Examples（4类标注示例 + 分类理由）</div>
+                        </div>
+                        <div class="arch-connector"><div class="arch-conn-line"></div><div class="arch-conn-label">模式学习</div></div>
+                        <div class="arch-layer arch-layer-3">
+                            <div class="arch-box arch-input-box">📝 User Input<br><span style="font-size:0.7rem;opacity:0.8;">待分类文本</span></div>
+                            <div class="arch-box arch-llm-box">🧠 LLM 推理<br><span style="font-size:0.7rem;opacity:0.8;">temperature=0.1</span></div>
+                        </div>
+                        <div class="arch-connector"><div class="arch-conn-line"></div><div class="arch-conn-label">结构化输出</div></div>
+                        <div class="arch-output-row">
+                            <span class="arch-output-badge">{ "category": "...", "confidence": "...", "reasoning": "..." }</span>
+                        </div>
+                    </div>
+                    <p class="figure-caption">图 3：基于 Few-Shot 的金融文本分类器架构 —— System Prompt + Examples + LLM API 三层协作</p>
+                </div>
+
+                <h3 class="section-subtitle">完整 Prompt 模板（最终版）</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Complete Prompt Template</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>FINANCIAL_CLASSIFICATION_PROMPT = <span class="code-string">"""
+## 角色
+你是一名拥有15年从业经验的资深金融分析师，曾任职于头部券商研究所，
+擅长对财经文本进行精准的多类别分类。
+
+## 分类体系（4选1）
+| 类别 | 英文 | 判别要点 |
+|------|------|----------|
+| 新闻报道 | News Report | 第三人称媒体叙述，引用多方观点，时效性强 |
+| 公司公告 | Company Announcement | 企业官方发布，含"本公司/董事会/特此公告"等法定措辞 |
+| 财务公告 | Financial Report | 以财务数据为核心（营收/利润/EPS/ROE等），定期披露 |
+| 分析师报告 | Analyst Report | 含投资评级、目标价、估值模型、券商署名 |
+
+## 示例
+
+### [示例 1]
+文本：今日央行宣布降准0.5个百分点，市场人士认为将释放万亿级长期资金...
+分类：新闻报道
+理由：媒体第三方叙述视角，引用"市场人士"观点，具新闻时效性特征
+
+### [示例 2]
+文本：本公司董事会及全体董事保证本公告内容不存在虚假记载...
+聘任张三为公司总经理，任期三年。
+分类：公司公告
+理由：含"本公司""董事会""保证真实性"等上市公司公告法定格式
+
+### [示例 3]
+文本：贵州茅台2024年报：营收1505亿元(+15.4%)，净利747亿元(+16.2%)，
+EPS 59.49元，拟每10股派308.56元。
+分类：财务公告
+理由：全文围绕财务数据展开，含营收/净利润/EPS/分红等核心财务指标
+
+### [示例 4]
+文本：【中金公司】宁德时代维持"跑赢行业"评级，目标价上调至280元，
+上调2025-2027 EPS至12.5/15.2/18.1元，当前PE 18x，建议配置。
+分类：分析师报告
+理由：含券商署名、投资评级、目标价、EPS预测、PE估值等研报标志性元素
+
+## 待分类文本
+{text_to_classify}
+
+## 输出要求
+严格按以下JSON格式输出，不要包含任何其他文字：
+```json
+{{
+  "category": "类别名称",
+  "category_en": "English Name",
+  "confidence": "高/中/低",
+  "reasoning": "一句话说明分类依据"
+}}
+```
+"""</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">Python 实现代码（OpenAI 兼容接口）</h3>
+                <p>
+                    以下代码使用 <code>openai</code> Python SDK，通过阿里云百炼平台调用 <strong>Qwen-Max</strong> 模型执行分类任务。
+                    该代码同样兼容 DeepSeek、智谱 GLM 等支持 OpenAI API 格式的模型服务。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python — financial_classifier.py</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">import</span> os
+<span class="code-keyword">import</span> json
+<span class="code-keyword">from</span> dotenv <span class="code-keyword">import</span> load_dotenv
+<span class="code-keyword">from</span> openai <span class="code-keyword">import</span> OpenAI
+
+load_dotenv()
+
+<span class="code-comment"># ========== 配置 ==========
+<span class="code-comment"># 支持任意 OpenAI 兼容接口：Qwen / DeepSeek / GLM 等</span></span>
+client = OpenAI(
+    api_key=os.getenv(<span class="code-string">"DASHSCOPE_API_KEY"</span>, <span class="code-string">"your-api-key-here"</span>),
+    base_url=<span class="code-string">"https://dashscope.aliyuncs.com/compatible-mode/v1"</span>,
+)
+
+MODEL_NAME = <span class="code-string">"qwen-max"</span>  <span class="code-comment"># 或 qwen-plus / deepseek-chat / glm-4 等</span>
+
+<span class="code-comment"># ========== Prompt 模板 ==========
+<span class="code-comment"># （此处为上文 FINANCIAL_CLASSIFICATION_PROMPT 的完整内容，略）</span></span>
+PROMPT_TEMPLATE = <span class="code-string">"""...（同上完整模板）..."""</span>
+
+
+<span class="code-keyword">def</span> <span class="code-function">classify_financial_text</span>(<span class="code-param">text</span>: <span class="code-class">str</span>) -> <span class="code-class">dict</span>:
+    <span class="code-string">"""对单条金融文本执行四分类"""
+</span>
+    prompt = PROMPT_TEMPLATE.format(text_to_classify=text)
+
+    response = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[
+            {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, <span class="code-string">"content"</span>: prompt},
+        ],
+        temperature=<span class="code-variable">0.1</span>,       <span class="code-comment"># 分类任务用低温度保证确定性</span>
+        max_tokens=<span class="code-variable">512</span>,
+    )
+
+    result_text = response.choices[<span class="code-variable">0</span>].message.content.strip()
+    <span class="code-comment"># 提取 JSON（处理可能的 markdown 代码块包裹）</span>
+    <span class="code-keyword">if</span> <span class="code-string">"```"</span> <span class="code-keyword">in</span> result_text:
+        json_str = result_text.split(<span class="code-string">"```"</span>)[<span class="code-variable">1</span>]
+        <span class="code-keyword">if</span> json_str.startswith(<span class="code-string">"json"</span>):
+            json_str = json_str[<span class="code-variable">4</span>:]
+        result = json.loads(json_str.strip())
+    <span class="code-keyword">else</span>:
+        result = json.loads(result_text)
+
+    <span class="code-keyword">return</span> result
+
+
+<span class="code-keyword">def</span> <span class="code-function">batch_classify</span>(<span class="code-param">texts</span>: <span class="code-class">list</span>[<span class="code-class">str</span>]) -> <span class="code-class">list</span>[<span class="code-class">dict</span>]:
+    <span class="code-string">"""批量分类多条文本"""
+</span>
+    results = []
+    <span class="code-keyword">for</span> i, text <span class="code-keyword">in</span> enumerate(texts):
+        <span class="code-keyword">print</span>(f<span class="code-string">"[{i+1}/{len(texts)}] 正在分类..."</span>)
+        result = classify_financial_text(text)
+        results.append(result)
+        <span class="code-keyword">print</span>(f"  → {result[<span class="code-string">'category'</span>]} ({result[<span class="code-string">'confidence'</span>]})")
+    <span class="code-keyword">return</span> results
+
+
+<span class="code-comment"># ========== 测试数据 ==========
+<span class="code-comment"># 来自真实财经场景的测试样本</span></span>
+test_questions = [
+    <span class="code-string">"今日，央行发布公告宣布降低利率，以刺激经济增长。这一降息举措将影响贷款利率，并在未来几个季度内对金融市场产生影响。"</span>,
+    <span class="code-string">"ABC公司今日发布公告称，已成功完成对XYZ公司股权的收购交易。本次交易总对价为人民币50亿元，资金来源为公司自有资金和银行贷款。"</span>,
+    <span class="code-string">"招商银行公布2025年一季度财报：营业收入892亿元，同比下滑5.2%；净利润289亿元，同比下降3.8%；不良贷款率0.94%，较上年末上升0.02个百分点。"</span>,
+    <span class="code-string">"【中信建投】比亚迪(002594.SZ)深度报告：维持'买入'评级，目标价350元。预计2025-2027年归母净利润分别为480/580/680亿元，当前对应PE仅22x，全球化布局进入收获期。"</span>,
+]
+
+
+<span class="code-keyword">if</span> __name__ == <span class="code-string">"__main__"</span>:
+    <span class="code-keyword">print</span>(<span class="code-string">"=" * 60)</span>
+    <span class="code-keyword">print</span>(<span class="code-string">"金融文本分类系统启动"</span>)
+    <span class="code-keyword">print</span>(<span class="code-string">"模型:"</span>, MODEL_NAME)
+    <span class="code-keyword">print</span>(<span class="code-string">"=" * 60)</span>
+
+    results = batch_classify(test_questions)
+
+    <span class="code-keyword">print</span>(<span class="code-string">"\n"</span> + <span class="code-string">"=" * 60)</span>
+    <span class="code-keyword">print</span>(<span class="code-string">"分类结果汇总："</span>)
+    <span class="code-keyword">for</span> i, (q, r) <span class="code-keyword">in</span> enumerate(zip(test_questions, results)):
+        <span class="code-keyword">print</span>(f<span class="code-string">"\n[{i+1}] {q[:40]}..."</span>)
+        <span class="code-keyword">print</span>(f"    分类: {r.get('category', 'N/A')} | 置信度: {r.get('confidence', 'N/A')}"</span>)
+        <span class="code-keyword">print</span>(f"    理由: {r.get('reasoning', 'N/A')}"</span>)</code></pre>
+                </div>
+
+                <h3 class="section-subtitle">代码关键参数说明</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>参数</th>
+                                <th>值</th>
+                                <th>作用</th>
+                                <th>调参建议</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>temperature</code></td>
+                                <td><code>0.1</code></td>
+                                <td>控制输出的随机性/创造性</td>
+                                <td>分类任务用低值(0~0.3)保证确定性；生成任务用高值(0.7~1.0)</td>
+                            </tr>
+                            <tr>
+                                <td><code>model</code></td>
+                                <td><code>qwen-max</code></td>
+                                <td>选择底座大模型</td>
+                                <td>qwen-max(最强) > qwen-plus(性价比) > qwen-turbo(最快)</td>
+                            </tr>
+                            <tr>
+                                <td><code>base_url</code></td>
+                                <td><code>dashscope...</code></td>
+                                <td>API 服务端点</td>
+                                <td>换 DeepSeek 改为 api.deepseek.com，换智谱改 open.bigmodel.cn</td>
+                            </tr>
+                            <tr>
+                                <td><code>max_tokens</code></td>
+                                <td><code>512</code></td>
+                                <td>最大输出 token 数</td>
+                                <td>JSON 输出通常 50-200 tokens 即够，512 留足余量</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== Section 6: 结果评估与小节 ==================== -->
+        <article class="section-card" id="s6" data-animate>
+            <div class="section-header">
+                <span class="section-number">06</span>
+                <h2 class="section-title">分类结果评估 &amp; 本集小结</h2>
+            </div>
+            <div class="section-content">
+
+                <h3 class="section-subtitle">如何评估分类器的效果？</h3>
+                <p>
+                    构建好分类器后，我们需要一套系统的评估方法来衡量其准确性。
+                    对于四分类任务，推荐以下评估流程：
+                </p>
+
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        四步评估法
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:none;padding:0;margin:0;">
+                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
+                                <strong>Step 1 — 准备金标数据集</strong><br>
+                                <span style="color:var(--text-muted);font-size:0.8125rem;">人工标注 30-50 条真实金融文本作为测试集，确保每个类别至少 5-10 条样本</span>
+                            </li>
+                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
+                                <strong>Step 2 — 运行批量分类</strong><br>
+                                <span style="color:var(--text-muted);font-size:0.8125rem;">用分类器对所有测试样本逐一打标签，记录每条的 category 和 confidence</span>
+                            </li>
+                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
+                                <strong>Step 3 — 计算核心指标</strong><br>
+                                <span style="color:var(--text-muted);font-size:0.8125rem;">准确率(Accuracy)=正确数/总数 · 每类精确率(Precision)=TP/(TP+FP) · 每类召回率(Recall)=TP/(TP+FN)</span>
+                            </li>
+                            <li style="padding:0.4rem 0;">
+                                <strong>Step 4 — 分析错误案例</strong><br>
+                                <span style="color:var(--text-muted);font-size:0.8125rem;">重点查看被错误分类的样本，归纳错误模式 → 将典型案例加入 Few-Shot 示例库迭代优化</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">常见错误类型与优化方向</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>错误类型</th>
+                                <th>典型表现</th>
+                                <th>优化策略</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>相邻类混淆</strong></td>
+                                <td>公司公告 ↔ 财务公告（两者发布主体相同）</td>
+                                <td>在 Few-Shot 中增加对比示例，强调两者的区分特征</td>
+                            </tr>
+                            <tr>
+                                <td><strong>混合文本误判</strong></td>
+                                <td>含数据的新闻被归为财务公告</td>
+                                <td>增加「主要论述对象」判断规则的权重</td>
+                            </tr>
+                            <tr>
+                                <td><strong>JSON 解析失败</strong></td>
+                                <td>模型输出了非 JSON 文本</td>
+                                <td>加强输出格式约束，或在后处理层加 JSON 提取逻辑</td>
+                            </tr>
+                            <tr>
+                                <td><strong>置信度过高</strong></td>
+                                <td>明显困难的样本仍输出"高"置信度</td>
+                                <td>在 Prompt 中增加置信度校准指导（什么情况应为"中/低"）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="section-subtitle">本集知识要点总结</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">🎭 核心技巧</div>
+                        <div class="info-item-value"><strong>Role Playing 角色扮演</strong>——通过 Identity + Expertise + Task + Constraints 四要素构建高质量角色 Prompt</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">📊 实战场景</div>
+                        <div class="info-item-value"><strong>金融文本四分类</strong>——新闻报道 / 公司公告 / 财务公告 / 分析师报告</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🔑 关键技术</div>
+                        <div class="info-item-value"><strong>Few-Shot 示例驱动</strong>——覆盖全类别 + 理由驱动 + 平衡分布 + 长度匹配 + 注意 Recency Bias</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">💻 工程落地</div>
+                        <div class="info-item-value"><strong>OpenAI 兼容接口</strong>——用 python-openai SDK 调用 Qwen/DeepSeek/GLM，temperature=0.1 保证确定性</div>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">实践 Checklist</h3>
+                <div class="highlight-box teal" style="margin-top: 1.25rem;">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        金融分类器自检清单
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:none;padding:0;margin:0;">
+                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(80,180,160,0.1);color:var(--teal);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;System Prompt 是否包含 Identity / Expertise / Task / Constraints 四要素？
+                            </li>
+                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(80,180,160,0.1);color:var(--teal);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;Four-Shot 示例是否覆盖全部 4 个类别？每个示例是否附带分类理由？
+                            </li>
+                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(80,180,160,0.1);color:var(--teal);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;输出格式是否严格约束为 JSON？是否包含 category / category_en / confidence / reasoning？
+                            </li>
+                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(80,180,160,0.1);color:var(--teal);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;API 调用的 temperature 是否设为低值（0~0.3）？是否处理了 JSON 提取的边缘情况？
+                            </li>
+                            <li style="padding:0.3rem 0;">
+                                <code style="background:rgba(80,180,160,0.1);color:var(--teal);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;是否用至少 20 条金标数据测试过准确率？是否分析了错误案例并迭代优化了示例库？
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">下集预告</h3>
+                <p>
+                    下一集我们将深入探讨 <strong>Few-Shot 少样本学习</strong> 的更多高级技巧——
+                    包括如何动态选择最优示例（Example Selection）、如何利用 Chain-of-Thought 思维链增强分类推理能力、
+                    以及如何在少样本场景下进一步提升模型的表现力。
+                    从「手工编写固定示例」到<strong>「智能动态示例检索」</strong>，
+                    Few-Shot 的进阶玩法值得期待~
+                </p>
+            </div>
+        </article>
+
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="footer-container">
+        <nav class="footer-nav">
+            <a href="02-结构化提示词.html" class="footer-link">
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">&larr; 上一集</div>
+                    <div>第 02 集 - 结构化提示词</div>
+                </div>
+            </a>
+            <a href="04-Few-Shot少样本学习.html" class="footer-link next">
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">下一集 &rarr;</div>
+                    <div>第 04 集 - Few-Shot 少样本学习</div>
+                </div>
+            </a>
+        </nav>
+        <div class="footer-reference">
+            课程来源：<a href="https://www.bilibili.com/video/BV1yjz5BLEoY" target="_blank">B站视频 BV1yjz5BLEoY</a> &middot;
+            P13 起始 &middot;
+            参考：<a href="https://dontla.blog.csdn.net/article/details/157844042" target="_blank">CSDN @dontla 笔记</a>
+        </div>
+    </div>
+</footer>
+
+<div class="tweaks-panel" id="tweaksPanel">
+    <button class="tweaks-toggle" onclick="toggleTweaks()" title="调整字体大小">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+    </button>
+    <span class="tweaks-label">字号</span>
+    <input type="range" class="tweaks-slider" id="fontSlider" min="12" max="22" value="16" step="1" oninput="adjustFontSize(this.value)">
+    <span class="tweaks-value" id="fontValue">16px</span>
+</div>
+
+<script>
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 20) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -50px 0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, index * 100);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.section-card[data-animate]').forEach(card => {
+        observer.observe(card);
+    });
+
+    function copyCode(btn) {
+        const codeBlock = btn.closest('.code-block');
+        const code = codeBlock.querySelector('code').textContent;
+
+        navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copied!';
+            btn.style.color = 'var(--success)';
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+                btn.style.color = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Copy failed:', err);
+        });
+    }
+
+    let tweaksExpanded = true;
+
+    function toggleTweaks() {
+        const panel = document.getElementById('tweaksPanel');
+        tweaksExpanded = !tweaksExpanded;
+        if (tweaksExpanded) {
+            panel.classList.remove('collapsed');
+        } else {
+            panel.classList.add('collapsed');
+        }
+    }
+
+    function adjustFontSize(size) {
+        document.documentElement.style.setProperty('--font-size-base', size + 'px');
+        document.getElementById('fontValue').textContent = size + 'px';
+    }
+</script>
+
+</body>
+</html>

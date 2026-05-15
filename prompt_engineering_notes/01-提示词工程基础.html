@@ -1,0 +1,2070 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第01集 - 提示词工程基础 | 提示词工程学习笔记</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8f9fc;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f1f3f8;
+            --text-primary: #1a1d26;
+            --text-secondary: #5a6072;
+            --text-muted: #949aad;
+            --primary: oklch(0.55 0.22 250);
+            --primary-light: oklch(0.75 0.15 250);
+            --accent: oklch(0.70 0.18 85);
+            --success: oklch(0.55 0.16 155);
+            --danger: oklch(0.55 0.20 25);
+            --info: oklch(0.55 0.15 230);
+            --teal: oklch(0.55 0.14 180);
+            --border-color: #e2e5ef;
+            --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+            --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 4px rgba(26,29,38,0.04);
+            --shadow-lg: 0 8px 24px rgba(26,29,38,0.12), 0 4px 8px rgba(26,29,38,0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --font-size-base: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: var(--font-size-base);
+            -webkit-font-smoothing: antialiased;
+            transition: font-size 0.2s ease;
+        }
+
+        /* ===== Header Navigation ===== */
+        .header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(248, 249, 252, 0.85);
+            border-bottom: 1px solid var(--border-color);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .header.scrolled { box-shadow: var(--shadow-md); }
+
+        .nav-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0.875rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-brand-icon {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            max-width: 600px;
+            justify-content: flex-end;
+        }
+
+        .nav-link {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover { color: var(--primary); }
+        .nav-link.active { color: var(--primary); font-weight: 600; }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 0; right: 0;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 1px;
+        }
+
+        .nav-anchor {
+            background: rgba(79,110,247,0.10);
+            color: var(--primary) !important;
+            font-weight: 600;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        /* ===== Main Container ===== */
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ===== Hero Section ===== */
+        .hero {
+            padding: 7rem 0 3rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--teal));
+            color: white;
+            padding: 0.375rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.25rem, 5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.1s forwards;
+        }
+
+        .hero-title-accent {
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 620px;
+            margin: 0 auto 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.2s forwards;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.3s forwards;
+        }
+
+        .meta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 0.875rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .meta-tag-icon { width: 16px; height: 16px; opacity: 0.7; }
+
+        /* ===== Content Section ===== */
+        .content-section { padding-bottom: 4rem; }
+
+        .section-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .section-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .section-card.accent-bar-success { border-left-color: var(--success); }
+        .section-card.accent-bar-accent { border-left-color: var(--accent); }
+        .section-card.accent-bar-info { border-left-color: var(--info); }
+        .section-card.accent-bar-teal { border-left-color: var(--teal); }
+        .section-card.accent-bar-danger { border-left-color: var(--danger); }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-subtle);
+        }
+
+        .section-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            color: white;
+            border-radius: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-content {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .section-content p { margin-bottom: 1rem; }
+        .section-content p:last-child { margin-bottom: 0; }
+
+        .section-subtitle {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--text-primary);
+        }
+
+        /* ===== Highlight Box ===== */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(85, 120, 250, 0.06), rgba(100, 140, 255, 0.04));
+            border-left: 4px solid var(--primary);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 1.25rem 1.5rem;
+            margin: 1.25rem 0;
+        }
+
+        .highlight-box.success {
+            background: linear-gradient(135deg, rgba(85, 180, 130, 0.06), rgba(100, 200, 150, 0.04));
+            border-left-color: var(--success);
+        }
+
+        .highlight-box.warning {
+            background: linear-gradient(135deg, rgba(220, 160, 60, 0.06), rgba(235, 180, 80, 0.04));
+            border-left-color: var(--accent);
+        }
+
+        .highlight-box.danger {
+            background: linear-gradient(135deg, rgba(220, 90, 80, 0.06), rgba(235, 105, 95, 0.04));
+            border-left-color: var(--danger);
+        }
+
+        .highlight-box.teal {
+            background: linear-gradient(135deg, rgba(80, 180, 160, 0.06), rgba(100, 200, 180, 0.04));
+            border-left-color: var(--teal);
+        }
+
+        .highlight-box-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .highlight-box.success .highlight-box-title { color: var(--success); }
+        .highlight-box.warning .highlight-box-title { color: var(--accent); }
+        .highlight-box.danger .highlight-box-title { color: var(--danger); }
+        .highlight-box.teal .highlight-box-title { color: var(--teal); }
+
+        .highlight-box-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ===== Code Block ===== */
+        .code-block {
+            position: relative;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-md);
+            margin: 1.25rem 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.25rem;
+            background: rgba(26, 29, 38, 0.03);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-lang {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .code-copy-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.625rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+
+        .code-block:hover .code-copy-btn { opacity: 1; }
+
+        .code-copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.05);
+        }
+
+        .code-body {
+            padding: 1.25rem;
+            overflow-x: auto;
+        }
+
+        .code-body pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.84375rem;
+            line-height: 1.65;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .code-body code { font-family: inherit; }
+
+        .code-keyword { color: #c678dd; }
+        .code-string { color: #98c379; }
+        .code-comment { color: #5c6370; font-style: italic; }
+        .code-function { color: #61afef; }
+        .code-class { color: #e5c07b; }
+        .code-variable { color: #e06c75; }
+        .code-param { color: #d19a66; }
+        .code-operator { color: #56b6c2; }
+
+        /* ===== Table ===== */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.25rem 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            color: white;
+        }
+
+        th {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        tbody tr:nth-child(even) { background: var(--bg-subtle); }
+        tbody tr:hover { background: rgba(85, 120, 250, 0.04); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        td code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: rgba(85, 120, 250, 0.08);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        /* ===== List Styles ===== */
+        .content-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 1rem 0;
+        }
+
+        .content-list li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .content-list li::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0.6rem;
+            width: 8px; height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .content-list li strong { color: var(--text-primary); font-weight: 600; }
+
+        /* ===== Info Grid ===== */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0;
+        }
+
+        .info-item {
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .info-item:hover {
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.03);
+        }
+
+        .info-item-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.375rem;
+        }
+
+        .info-item-value {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .info-item-value code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: rgba(85, 120, 250, 0.08);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        /* ===== Figure / Image ===== */
+        .figure-container {
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .figure-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .figure-caption {
+            margin-top: 0.75rem;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* ===== Timeline ===== */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 1.25rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px; top: 0; bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--primary), var(--teal));
+            border-radius: 1px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.25rem;
+        }
+
+        .timeline-item:last-child { padding-bottom: 0; }
+
+        .timeline-dot {
+            position: absolute;
+            left: -2rem; top: 0.35rem;
+            width: 16px; height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            border: 3px solid var(--bg-surface);
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .timeline-year {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .timeline-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* ===== Framework Card ===== */
+        .framework-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0;
+        }
+
+        .framework-card {
+            background: var(--bg-subtle);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-top: 3px solid var(--primary);
+            transition: all 0.2s ease;
+        }
+
+        .framework-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .framework-card.accent-success { border-top-color: var(--success); }
+        .framework-card.accent-teal { border-top-color: var(--teal); }
+        .framework-card.accent-info { border-top-color: var(--info); }
+        .framework-card.accent-danger { border-top-color: var(--danger); }
+
+        .framework-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .framework-full {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .framework-desc {
+            font-size: 0.84375rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+
+        .framework-elements {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+        }
+
+        .framework-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            padding: 0.2rem 0.5rem;
+            background: rgba(85, 120, 250, 0.08);
+            color: var(--primary);
+            border-radius: 4px;
+            border: 1px solid rgba(85, 120, 250, 0.15);
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            padding: 2.5rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .footer-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .footer-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(85, 120, 250, 0.04);
+            transform: translateX(4px);
+        }
+
+        .footer-link.next {
+            flex-direction: row-reverse;
+        }
+
+        .footer-link.next:hover {
+            transform: translateX(-4px);
+        }
+
+        .footer-reference {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .footer-reference a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer-reference a:hover { text-decoration: underline; }
+
+        /* ===== Tweaks Panel ===== */
+        .tweaks-panel {
+            position: fixed;
+            bottom: 2rem; right: 2rem;
+            z-index: 999;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .tweaks-panel.collapsed {
+            padding: 0.625rem 0.875rem;
+        }
+
+        .tweaks-panel.collapsed .tweaks-label,
+        .tweaks-panel.collapsed .tweaks-slider,
+        .tweaks-panel.collapsed .tweaks-value {
+            display: none;
+        }
+
+        .tweaks-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .tweaks-toggle:hover { color: var(--primary); }
+
+        .tweaks-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px; height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .tweaks-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 2.5rem;
+            text-align: center;
+        }
+
+        .tweaks-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        /* ===== Animations ===== */
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero { padding: 5.5rem 0 2.5rem; }
+            .section-card { padding: 1.75rem; border-radius: var(--radius-md); }
+            .section-title { font-size: 1.175rem; }
+            .table-wrapper { font-size: 0.8125rem; }
+            th, td { padding: 0.625rem 0.75rem; }
+            .footer-nav { flex-direction: column; }
+            .footer-link { width: 100%; justify-content: center; }
+            .tweaks-panel { bottom: 1rem; right: 1rem; }
+            .framework-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ===== Scrollbar ===== */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-page); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* ===== CSS Diagram: Timeline (Prompt Engineering Evolution) ===== */
+        .css-diagram {
+            margin: 1.5rem 0;
+        }
+        .diagram-timeline {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+            padding: 1.5rem 0.5rem;
+            overflow-x: auto;
+            background: linear-gradient(135deg, rgba(85,120,250,0.03), rgba(80,180,160,0.03));
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+        .diagram-timeline::before {
+            content: '';
+            position: absolute;
+            top: 28px;
+            left: 40px;
+            right: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, #4f78fa, #50b4a0);
+            border-radius: 2px;
+            z-index: 0;
+        }
+        .tl-node {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 140px;
+            text-align: center;
+            flex: 1;
+        }
+        .tl-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px, 0 2px 8px rgba(0,0,0,0.12);
+            margin-bottom: 0.6rem;
+            flex-shrink: 0;
+        }
+        .tl-node:nth-child(1) .tl-dot { background: #4f78fa; box-shadow: 0 0 0 2px #4f78fa, 0 2px 8px rgba(79,120,250,0.3); }
+        .tl-node:nth-child(2) .tl-dot { background: #5b8def; box-shadow: 0 0 0 2px #5b8def, 0 2px 8px rgba(91,141,239,0.3); }
+        .tl-node:nth-child(3) .tl-dot { background: #42b883; box-shadow: 0 0 0 2px #42b883, 0 2px 8px rgba(66,184,131,0.3); }
+        .tl-node:nth-child(4) .tl-dot { background: #36a89a; box-shadow: 0 0 0 2px #36a89a, 0 2px 8px rgba(54,168,154,0.3); }
+        .tl-node:nth-child(5) .tl-dot { background: #50b4a0; box-shadow: 0 0 0 2px #50b4a0, 0 2px 8px rgba(80,180,160,0.3); }
+        .tl-year {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+        }
+        .tl-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.3;
+            margin-bottom: 0.25rem;
+        }
+        .tl-desc {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            max-width: 130px;
+        }
+
+        /* ===== CSS Diagram: Four Elements Model (2x2 Grid) ===== */
+        .diagram-four-elements {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 12px;
+            padding: 1.25rem;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        .de-card {
+            border-radius: var(--radius-sm);
+            padding: 1.15rem 1rem;
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .de-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .de-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+        }
+        .de-card.instruction { background: linear-gradient(135deg, rgba(79,120,250,0.10), rgba(79,120,250,0.04)); border: 1px solid rgba(79,120,250,0.2); }
+        .de-card.instruction::before { background: linear-gradient(90deg, #4f78fa, #6b9bff); }
+        .de-card.context { background: linear-gradient(135deg, rgba(66,184,131,0.10), rgba(66,184,131,0.04)); border: 1px solid rgba(66,184,131,0.2); }
+        .de-card.context::before { background: linear-gradient(90deg, #42b883, #5dd1a0); }
+        .de-card.input-data { background: linear-gradient(135deg, rgba(230,150,50,0.10), rgba(230,150,50,0.04)); border: 1px solid rgba(230,150,50,0.2); }
+        .de-card.input-data::before { background: linear-gradient(90deg, #e69632, #f0ad48); }
+        .de-card.output { background: linear-gradient(135deg, rgba(155,100,220,0.10), rgba(155,100,220,0.04)); border: 1px solid rgba(155,100,220,0.2); }
+        .de-card.output::before { background: linear-gradient(90deg, #9b64dc, #b584ee); }
+        .de-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 0.6rem;
+            font-size: 1.15rem;
+            color: white;
+            font-weight: 700;
+        }
+        .de-card.instruction .de-icon { background: linear-gradient(135deg, #4f78fa, #6b9bff); }
+        .de-card.context .de-icon { background: linear-gradient(135deg, #42b883, #5dd1a0); }
+        .de-card.input-data .de-icon { background: linear-gradient(135deg, #e69632, #f0ad48); }
+        .de-card.output .de-icon { background: linear-gradient(135deg, #9b64dc, #b584ee); }
+        .de-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.2rem;
+        }
+        .de-name-en {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+        .de-question {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* Center arrow overlay for four elements */
+        .de-center {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 44px; height: 44px;
+            background: var(--bg-surface);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2;
+            box-shadow: var(--shadow-sm);
+        }
+        .de-center-inner {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        /* ===== CSS Diagram: Framework Comparison (6-grid) ===== */
+        .diagram-framework-compare {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 1.15rem;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+        .fc-card {
+            border-radius: var(--radius-sm);
+            padding: 0.85rem 0.75rem;
+            text-align: center;
+            border-top: 3px solid;
+            background: var(--bg-surface);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .fc-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .fc-card.fc-rtf { border-top-color: #4f78fa; }
+        .fc-card.fc-costar { border-top-color: #e69632; }
+        .fc-card.fc-broke { border-top-color: #42b883; }
+        .fc-card.fc-risen { border-top-color: #50b4a0; }
+        .fc-card.fc-create { border-top-color: #dc5a50; }
+        .fc-card.fc-ape { border-top-color: #9b64dc; }
+        .fc-acronym {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.15rem;
+        }
+        .fc-card.fc-rtf .fc-acronym { color: #4f78fa; }
+        .fc-card.fc-costar .fc-acronym { color: #e69632; }
+        .fc-card.fc-broke .fc-acronym { color: #42b883; }
+        .fc-card.fc-risen .fc-acronym { color: #50b4a0; }
+        .fc-card.fc-create .fc-acronym { color: #dc5a50; }
+        .fc-card.fc-ape .fc-acronym { color: #9b64dc; }
+        .fc-full-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5625rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+            line-height: 1.3;
+        }
+        .fc-count {
+            display: inline-block;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.1rem 0.45rem;
+            border-radius: 10px;
+            margin-bottom: 0.35rem;
+        }
+        .fc-card.fc-rtf .fc-count { background: rgba(79,120,250,0.10); color: #4f78fa; }
+        .fc-card.fc-costar .fc-count { background: rgba(230,150,50,0.10); color: #c07828; }
+        .fc-card.fc-broke .fc-count { background: rgba(66,184,131,0.10); color: #2d9968; }
+        .fc-card.fc-risen .fc-count { background: rgba(80,180,160,0.10); color: #3a9a8a; }
+        .fc-card.fc-create .fc-count { background: rgba(220,90,80,0.10); color: #c04840; }
+        .fc-card.fc-ape .fc-count { background: rgba(155,100,220,0.10); color: #7a48b0; }
+        .fc-usecase {
+            font-size: 0.6875rem;
+            color: var(--text-secondary);
+            line-height: 1.35;
+        }
+
+        @media (max-width: 768px) {
+            .diagram-timeline { flex-direction: column; gap: 0.5rem; padding: 1rem; }
+            .diagram-timeline::before { display: none; }
+            .tl-node { min-width: auto; flex-direction: row; align-items: center; text-align: left; gap: 0.75rem; padding-left: 1rem; padding-bottom: 0.75rem; border-left: 3px solid var(--primary); margin-left: 10px; }
+            .tl-dot { margin-bottom: 0; flex-shrink: 0; width: 14px; height: 14px; }
+            .tl-desc { max-width: none; }
+            .diagram-four-elements { grid-template-columns: 1fr; }
+            .de-center { display: none; }
+            .diagram-framework-compare { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="header">
+    <div class="nav-container">
+        <a href="../index-prompt.html" class="nav-brand">
+            <span class="nav-brand-icon">PE</span>
+            提示词工程 Notes
+        </a>
+        <nav class="nav-links">
+            <a href="#s1" class="nav-anchor">&sect;1 Prompt本质</a>
+            <a href="#s2" class="nav-link active">P01 基础</a>
+            <a href="#" class="nav-link">P02 结构化</a>
+            <a href="#" class="nav-link">P03 角色设定</a>
+            <a href="#" class="nav-link">P04 Few-Shot</a>
+            <a href="#" class="nav-link">P05 思维链</a>
+            <a href="#" class="nav-link">P06 高级技巧</a>
+        </nav>
+    </div>
+</header>
+
+<main class="main-container">
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-badge">P01 / Chapter 01 &middot; Prompt Engineering Fundamentals</div>
+        <h1 class="hero-title">
+            第01集：<span class="hero-title-accent">提示词工程基础</span>
+        </h1>
+        <p class="hero-subtitle">
+            从 Prompt 的本质定义出发，系统掌握提示词工程的核心设计原则、四要素模型与主流设计框架，建立完整的 Prompt Engineering 知识体系地基
+        </p>
+        <div class="hero-meta">
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M10 8l6 4-6 4V8z"/></svg>
+                入门篇 P01
+            </span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                阅读约 25min
+            </span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                含 5 大知识模块
+            </span>
+        </div>
+    </section>
+
+    <!-- Content -->
+    <div class="content-section">
+
+        <!-- ==================== CARD 1: Prompt的本质与定义 ==================== -->
+        <article class="section-card" id="s1" data-animate>
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2 class="section-title">Prompt 的本质与定义</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    <strong>提示词（Prompt）</strong>是大语言模型（Large Language Model, LLM）的<strong>输入接口</strong>——它是用户以自然语言形式向模型传达意图、提供上下文、约束输出行为的全部文本内容。
+                    从技术本质上讲，Prompt 是 LLM 推理引擎的<strong>「编程语言」</strong>：
+                    你不需要写 Python 或 C++，但你需要用自然语言精确地「编程」模型的思维过程。
+                </p>
+
+                <h3 class="section-subtitle">从 GPT-3 到现在：Prompt Engineering 的演进脉络</h3>
+
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-year">2020.06 — GPT-3 发布</div>
+                        <div class="timeline-content">
+                            OpenAI 发布 <strong>1750 亿参数</strong>的 GPT-3，首次展现出<strong>Few-Shot Learning</strong>（少样本学习）能力。
+                            研究者发现：通过在输入中提供少量示例（in-context examples），模型无需微调即可完成新任务——<strong>Prompt Engineering 的雏形由此诞生</strong>。
+                            Brown et al. 在论文中系统性地描述了 "prompting" 这一范式。
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-year">2021-2022 — 探索期</div>
+                        <div class="timeline-content">
+                            学术界涌现大量 prompting 研究：<strong>Chain-of-Thought (Wei et al., 2022)</strong> 提出「思维链」推理；
+                            <strong>Zero-Shot CoT (Kojima et al., 2022)</strong> 发现仅加一句 "Let's think step by step" 就能显著提升推理能力；
+                            <strong>Self-Consistency (Wang et al., 2022)</strong> 通过多次采样投票提升准确率。Prompt 开始被视为一门<strong>可研究的科学</strong>。
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-year">2022.11 — ChatGPT 爆发</div>
+                        <div class="timeline-content">
+                            ChatGPT 面向公众开放，<strong>Prompt Engineering 从学术研究走向大众实践</strong>。
+                            数亿用户开始用自然语言与 AI 对话，「如何写好 prompt」成为全民关注的话题。
+                            GitHub 上 prompt 相关仓库星数激增，社区开始沉淀最佳实践。
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-year">2023-2024 — 工程化成熟期</div>
+                        <div class="timeline-content">
+                            <strong>LangChain、LlamaIndex</strong> 等 Prompt 编排框架出现；企业级应用中 Prompt 变成需要版本管理、A/B 测试、监控追踪的<strong>一等公民</strong>；
+                            System Prompt 与 User Prompt 分离、Prompt Template 引擎、Prompt Cache 等工程概念逐渐标准化。
+                            Microsoft、Google、Anthropic 各自发布官方 Prompt Engineering Guide。
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-year">2025+ — Agent 时代</div>
+                        <div class="timeline-content">
+                            随着 LLM 能力边界不断拓展，Prompt Engineering 正在向 <strong>Agent Design</strong> 演进——
+                            不再只是单轮对话优化，而是涉及多步推理规划、工具调用编排、记忆管理、自我反思等更复杂的<strong>系统级 Prompt 设计</strong>。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="css-diagram">
+                    <div class="diagram-timeline">
+                        <div class="tl-node">
+                            <div class="tl-dot"></div>
+                            <div class="tl-year">2020</div>
+                            <div class="tl-label">GPT-3 发布</div>
+                            <div class="tl-desc">1750亿参数 · Few-Shot Learning 雏形诞生</div>
+                        </div>
+                        <div class="tl-node">
+                            <div class="tl-dot"></div>
+                            <div class="tl-year">2021-22</div>
+                            <div class="tl-label">探索期</div>
+                            <div class="tl-desc">CoT / Zero-Shot CoT / Self-Consistency</div>
+                        </div>
+                        <div class="tl-node">
+                            <div class="tl-dot"></div>
+                            <div class="tl-year">2022.11</div>
+                            <div class="tl-label">ChatGPT 爆发</div>
+                            <div class="tl-desc">从学术走向大众实践</div>
+                        </div>
+                        <div class="tl-node">
+                            <div class="tl-dot"></div>
+                            <div class="tl-year">2023-24</div>
+                            <div class="tl-label">工程化成熟</div>
+                            <div class="tl-desc">LangChain · Prompt Cache · 版本管理</div>
+                        </div>
+                        <div class="tl-node">
+                            <div class="tl-dot"></div>
+                            <div class="tl-year">2025+</div>
+                            <div class="tl-label">Agent 时代</div>
+                            <div class="tl-desc">多步推理 · 工具调用 · 系统级设计</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="figure-caption" style="text-align:center;margin-top:0.75rem;font-size:0.8125rem;color:var(--text-muted);font-style:italic;">图 1-1：Prompt Engineering 从 2020 年 GPT-3 到 2025+ Agent 时代的演进脉络</p>
+
+                <h3 class="section-subtitle">什么是「提示词工程」（Prompt Engineering）？</h3>
+                <p>
+                    <strong>提示词工程</strong>是指<strong>设计和优化输入给大语言模型的文本指令</strong>，
+                    以引导模型产生期望输出的系统性方法与实践。它不是简单的「提问技巧」，而是一门融合了：
+                </p>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">语言学</div>
+                        <div class="info-item-value">理解自然语言的歧义性、指代消解、语用含义对模型行为的影响</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">认知心理学</div>
+                        <div class="info-item-value">借鉴人类沟通中的框架效应、锚定效应、启发式原则来设计指令</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">软件工程</div>
+                        <div class="info-item-value">将 Prompt 视为代码进行版本控制、测试、迭代和团队协作管理</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">机器学习</div>
+                        <div class="info-item-value">理解 Transformer 注意力机制、tokenization、temperature 等底层原理</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box teal">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        核心认知：Prompt = LLM 的源代码
+                    </div>
+                    <div class="highlight-box-content">
+                        把 Prompt 想象成你写给一个<strong>极其博学但完全不了解你背景的超强实习生</strong>的工作指令。
+                        这个实习生能理解几乎所有领域的知识，但他不知道你的具体需求、不知道你的受众是谁、不知道你对输出格式的要求。
+                        <strong>Prompt Engineering 就是学会如何给这个实习生写一份清晰、完整、无歧义的工作说明书。</strong>
+                        写得越好，他的产出就越符合预期——这和写代码让计算机执行逻辑在本质上是同一件事。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== CARD 2: 核心设计原则 ==================== -->
+        <article class="section-card accent-bar-success" id="s2" data-animate>
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2 class="section-title">提示词设计的核心原则</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    经过学术界和工业界的大量实践验证，以下三大核心原则构成了高质量 Prompt 设计的基石。
+                    这些原则并非孤立存在，而是相互补充、协同作用的——一个好的 Prompt 通常会同时满足多条原则。
+                </p>
+
+                <h3 class="section-subtitle">原则一：清晰且具体（Be Specific &amp; Explicit）</h3>
+                <p>
+                    这是最基础也最重要的原则。<strong>模糊的指令迫使模型「猜测」你的意图</strong>，
+                    而猜测的结果往往不尽如人意。清晰的指令应当包含：
+                    任务类型、目标受众、输出格式、长度约束、风格要求等<strong>可量化、可验证</strong>的具体参数。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Bad vs Good — 清晰度对比：文本摘要任务</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment"># ❌ Bad — 模型不知道：摘要给谁看？多长？什么格式？保留什么信息？</span>
+prompt_bad = <span class="code-string">"帮我总结一下这篇文章"</span>
+
+<span class="code-comment"># ✅ Good — 六个维度全面明确</span>
+prompt_good = <span class="code-string">"""
+【任务】请为以下科技新闻撰写一段执行摘要。
+
+【目标读者】非技术背景的公司高管，他们关注商业影响而非技术细节。
+
+【要求】
+1. 字数控制在 150-200 字之间
+2. 必须包含以下要素：核心事件（1句话）、影响范围（谁受影响）、
+   商业意义（为什么重要）、关键数据（如有）
+3. 使用专业但不晦涩的语言，避免行话缩写
+4. 采用「倒金字塔」结构——最重要信息放在最前面
+
+【输出格式】纯文本段落，不要使用列表或 Markdown 格式
+
+【待处理文本】
+{article_text}
+"""</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">原则二：提供充分上下文（Provide Context）</h3>
+                <p>
+                    LLM 是一个<strong>无状态的无记忆系统</strong>——每次调用之间没有持久化的上下文。
+                    <strong>你认为显而易见的信息，对模型来说可能完全未知。</strong>
+                    上下文就像是模型的「临时工作记忆」，你注入的信息越丰富、结构化程度越高，
+                    模型的推理质量就越好。有效的上下文应覆盖以下四个维度：
+                </p>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">👤 角色身份</div>
+                        <div class="info-item-value">"你是一名有 10 年经验的资深后端架构师，精通分布式系统设计"</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🎯 使用场景</div>
+                        <div class="info-item-value">"这段代码将被集成到一个日活千万的电商交易链路中"</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">📋 背景信息</div>
+                        <div class="info-item-value">"我们使用 Spring Boot 3.x + MySQL 8.0 + Redis Cluster 架构"</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">⚠️ 约束条件</div>
+                        <div class="info-item-value">"不能引入新的中间件依赖，改动范围限制在 Service 层以内"</div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Bad vs Good — 上下文丰富度对比：代码审查任务</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment"># ❌ Bad — 零上下文，模型只能做泛泛的语法检查</span>
+prompt_bad = <span class="code-string">"审查这段代码有没有问题：\n{code_snippet}"</span>
+
+<span class="code-comment"># ✅ Good — 完整上下文让模型做出有针对性的深度审查</span>
+prompt_good = <span class="code-string">"""
+【角色】你是一位专注于高并发系统的资深代码审查专家，
+       有 15 年 Java 后端开发经验，曾主导过双11大促的核心链路优化。
+
+【项目背景】
+这是一个电商订单服务的库存扣减模块，当前面临以下问题：
+- QPS 峰值达到 50000，现有实现存在超卖风险
+- 数据库连接池经常耗尽，导致服务熔断
+- 团队中有 3 名初级开发者会参与维护此代码
+
+【审查重点】
+1. 并发安全性：是否存在竞态条件或数据不一致风险？
+2. 性能瓶颈：是否有不必要的数据库查询或锁竞争？
+3. 可维护性：代码是否足够清晰，便于初级开发者理解和修改？
+4. 异常处理：边界情况是否都考虑到了？
+
+【约束】
+- 不要建议重构整个模块（业务方不允许大改）
+- 只指出 P0 和 P1 级别的问题
+- 每个问题给出具体的修复代码示例
+
+【待审查代码】
+```java
+{code_snippet}
+```
+"""</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">原则三：分解复杂任务（Decompose Complex Tasks）</h3>
+                <p>
+                    当面对复杂的多步骤任务时，<strong>将其拆解为多个独立的子任务</strong>是提升输出质量的关键策略。
+                    这背后的原理是：LLM 的注意力机制（Attention Mechanism）在处理长文本时会出现<strong>信息稀释</strong>现象——
+                    当 Prompt 超过一定长度（通常 500+ token 的指令部分），模型对各子指令的关注度会下降，
+                    导致遗漏要求或执行不完整。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Bad vs Good — 任务分解对比：技术文档生成</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment"># ❌ Bad — 一个 Prompt 塞入 5 个子任务，模型容易遗漏</span>
+prompt_bad = <span class="code-string">"""
+根据这个 API 项目，生成完整的技术文档，包括：
+1. API 接口列表和参数说明
+2. 数据库 ER 图描述
+3. 部署指南
+4. 故障排查手册
+5. 性能调优建议
+"""</span>
+
+<span class="code-comment"># ✅ Good — 分步骤执行，每步聚焦单一目标</span><span class="code-comment">
+# Step 1: 先提取 API 信息</span>
+prompt_step1 = <span class="code-string">"""
+分析以下代码，提取所有 API 端点信息。
+输出 JSON 数组，每个元素包含：method, path, parameters, return_type。
+只做提取，不做其他分析。
+"""</span>
+
+<span class="code-comment"># Step 2: 基于 Step 1 输出生成接口文档</span>
+prompt_step2 = <span class="code-string">"""
+基于以下 API 端点信息，生成 OpenAPI 3.0 规格的接口文档。
+每个接口需包含：描述、请求参数表、响应示例、错误码说明。
+"""</span>
+
+<span class="code-comment"># Step 3: 单独处理部署相关内容</span>
+prompt_step3 = <span class="code-string">"""
+基于项目配置文件（Dockerfile, docker-compose.yml, README），
+生成部署指南。包含环境变量清单、启动命令、健康检查端点。
+"""</span></code></pre>
+                </div>
+
+                <div class="highlight-box warning">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        新手常犯的 5 个错误
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul class="content-list" style="margin:0;">
+                            <li><strong>「万能 Prompt」陷阱</strong>：试图用一个超长 Prompt 覆盖所有需求，结果每个需求都被敷衍处理</li>
+                            <li><strong>矛盾指令冲突</strong>：同时要求「详细深入」和「简洁精炼」，模型陷入两难</li>
+                            <li><strong>假设模型知道背景</strong>：不说清楚自己的行业、场景、术语含义，指望模型自动猜对</li>
+                            <li><strong>忽略输出格式约束</strong>：不指定 JSON schema / 表格列名 / 字段含义，然后抱怨解析报错</li>
+                            <li><strong>一次性定型不复盘</strong>：写完 Prompt 就不再测试不同输入，错过了通过迭代优化的机会</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== CARD 3: 四要素模型 ==================== -->
+        <article class="section-card accent-bar-info" id="s3" data-animate>
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2 class="section-title">四要素模型：Instruction + Context + Input + Output</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    无论 Prompt 以何种形态呈现（纯文本、Markdown、JSON、XML Tag），
+                    一个结构良好的 Prompt 在逻辑上总是由<strong>四个核心要素</strong>构成。
+                    这个四要素模型最早由 OpenAI 和 DeepMind 的研究人员在实践中总结提出，
+                    如今已成为 Prompt 设计领域最广泛接受的<strong>概念框架（Conceptual Framework）</strong>。
+                </p>
+
+                <div class="css-diagram">
+                    <div class="diagram-four-elements">
+                        <div class="de-center"><div class="de-center-inner">Prompt<br>Model</div></div>
+                        <div class="de-card instruction">
+                            <div class="de-icon">⚡</div>
+                            <div class="de-name">指令</div>
+                            <div class="de-name-en">Instruction</div>
+                            <div class="de-question">做什么？</div>
+                        </div>
+                        <div class="de-card context">
+                            <div class="de-icon">📂</div>
+                            <div class="de-name">上下文</div>
+                            <div class="de-name-en">Context</div>
+                            <div class="de-question">为什么？谁在看？</div>
+                        </div>
+                        <div class="de-card input-data">
+                            <div class="de-icon">📄</div>
+                            <div class="de-name">输入数据</div>
+                            <div class="de-name-en">Input Data</div>
+                            <div class="de-question">处理什么？</div>
+                        </div>
+                        <div class="de-card output">
+                            <div class="de-icon">↗</div>
+                            <div class="de-name">输出指示</div>
+                            <div class="de-name-en">Output Indicator</div>
+                            <div class="de-question">怎么输出？</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="figure-caption" style="text-align:center;margin-top:0.75rem;font-size:0.8125rem;color:var(--text-muted);font-style:italic;">图 3-1：Prompt 四要素模型 —— Instruction（指令）、Context（上下文）、Input Data（输入数据）、Output Indicator（输出指示）</p>
+
+                <h3 class="section-subtitle">四要素详解</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>要素</th>
+                                <th>英文</th>
+                                <th>核心问题</th>
+                                <th>作用</th>
+                                <th>典型写法</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>指令</strong></td>
+                                <td><code>Instruction</code></td>
+                                <td>做什么？</td>
+                                <td>定义任务的行动动词和目标</td>
+                                <td>"翻译"、"总结"、"分类"、"分析"、"重写"</td>
+                            </tr>
+                            <tr>
+                                <td><strong>上下文</strong></td>
+                                <td><code>Context</code></td>
+                                <td>为什么？谁在看？</td>
+                                <td>提供背景信息、角色设定、领域知识</td>
+                                <td>"你是一名..."/"这是用于..."/"目标读者是..."</td>
+                            </tr>
+                            <tr>
+                                <td><strong>输入数据</strong></td>
+                                <td><code>Input Data</code></td>
+                                <td>处理什么？</td>
+                                <td>需要模型操作的具体内容</td>
+                                <td>待翻译文本 / 待分析代码 / 用户提问内容</td>
+                            </tr>
+                            <tr>
+                                <td><strong>输出指示</strong></td>
+                                <td><code>Output Indicator</code></td>
+                                <td>怎么输出？</td>
+                                <td>约束格式、风格、长度、结构</td>
+                                <td>"JSON格式"/"不超过200字"/"表格呈现"/"正式语气"</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="section-subtitle">完整实战示例：情感分析 + 商业洞察</h3>
+                <p>
+                    下面是一个在实际产品反馈分析场景中应用的<strong>全四要素 Prompt</strong>，
+                    展示了各要素如何在真实业务中协同工作：
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">四要素完整 Prompt — 产品评价情感分析</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment">╔══════════════════════════════════════════════════════════╗</span>
+<span class="code-comment">║           要素 1：Instruction（指令 — 做什么）          ║</span>
+<span class="code-comment">╚══════════════════════════════════════════════════════════╝</span>
+<span class="code-string">请对以下用户产品评价进行多维度分析：
+1. 判断整体情感倾向（正面/负面/中性）
+2. 提取用户提到的具体功能点或痛点
+3. 评估该评价对潜在购买者的参考价值
+
+<span class="code-comment">╔══════════════════════════════════════════════════════════╗</span>
+<span class="code-comment">║         要素 2：Context（上下文 — 为什么/谁看）        ║</span>
+<span class="code-comment">╚══════════════════════════════════════════════════════════╝</span>
+【产品背景】这是一款面向 25-40 岁城市白领的智能降噪耳机，
+售价 1299 元，主打通勤和办公场景。上市已 6 个月，
+累计销量超过 50 万台。
+
+【分析目的】分析结果将用于：
+- 产品经理：识别需要优先改进的功能点
+- 市场团队：提炼用户好评用于营销素材
+- 客服团队：预判常见客诉并准备标准回复
+
+【角色设定】你是一名专业的用户体验研究员，
+擅长从用户反馈中提炼可行动的商业洞察。
+
+<span class="code-comment">╔══════════════════════════════════════════════════════════╗</span>
+<span class="code-comment">║      要素 3：Input Data（输入数据 — 处理什么）         ║</span>
+<span class="code-comment">╚══════════════════════════════════════════════════════════╝</span>
+【待分析的用户评价】
+"用了两周了，降噪效果确实不错，地铁上基本听不到环境音。
+但是佩戴超过 2 小时耳朵会有点疼，夹头感比较明显。
+APP 里的均衡器预设挺多的，不过自定义选项太少。
+续航方面官宣 30 小时实际大概 22-23 小时左右，够用了。
+总体来说这个价位还是值得推荐的，希望后续固件能改善舒适度。"
+
+<span class="code-comment">╔══════════════════════════════════════════════════════════╗</span>
+<span class="code-comment">║   要素 4：Output Indicator（输出指示 — 怎么输出）     ║</span>
+<span class="code-comment">╚══════════════════════════════════════════════════════════╝</span>
+【输出要求 — 严格遵循以下 JSON Schema】
+{
+  "sentiment_analysis": {
+    "overall": "positive|negative|neutral",
+    "confidence_score": 0.0~1.0,
+    "reasoning": "判断依据简述"
+  },
+  "feature_mentions": [
+    {"feature": "功能名称", "sentiment": "+/-/ neutral", "detail": "用户原话摘录"}
+  ],
+  "business_insights": {
+    "product_improvement": ["优先改进项1", "优先改进项2"],
+    "marketing_assets": ["可用于营销的好评摘录"],
+    "cs_preparation": ["客服可能遇到的投诉点"]
+  },
+  "purchase_influence_score": 1~10
+}</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">四要素的设计要点与权衡</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">指令 (Instruction)</div>
+                        <div class="info-item-value">用强动词开头 · 避免被动语态 · 一个 Prompt 一个核心动作 · 可叠加子指令但要分层</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">上下文 (Context)</div>
+                        <div class="info-item-value">按 角色→场景→约束 顺序组织 · 只放相关信息避免噪声 · 复杂上下文可用独立段落</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">输入数据 (Input)</div>
+                        <div class="info-item-value">用分隔符明确界定边界 · 超长输入先做预处理 · 敏感数据注意脱敏</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">输出指示 (Output)</div>
+                        <div class="info-item-value">指定格式必附示例 · 给出字段语义说明 · 设定明确的验收标准</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        四要素使用的关键经验
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
+                            <li style="margin-bottom:0.3rem;"><strong>不必每次四要素齐全</strong>：简单翻译任务只需「指令 + 输入 + 输出格式」，复杂的分析任务才需要全部四个</li>
+                            <li style="margin-bottom:0.3rem;"><strong>推荐排列顺序</strong>：Instruction → Context → Input Data → Output Indicator，这与人类的阅读习惯一致</li>
+                            <li style="margin-bottom:0.3rem;"><strong>用视觉分隔符增强结构感知</strong>：=== 、### 、--- 、【】等标记帮助模型（和你自己）快速定位各区域</li>
+                            <li style="margin-bottom:0.3rem;"><strong>Output Indicator 是最被低估的要素</strong>：花 80% 的时间构思指令，却只用 5 秒想输出要求——这是最常见的低效模式</li>
+                            <li><strong>Context 和 Input 的边界要清晰</strong>：Context 是「元信息」（关于任务的信息），Input 是「原始数据」（要被处理的内容），混在一起会让模型困惑</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== CARD 4: 主流 Prompt 设计框架 ==================== -->
+        <article class="section-card accent-bar-accent" id="s4" data-animate>
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2 class="section-title">主流 Prompt 设计框架</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    除了通用的四要素模型，业界还衍生出了多种<strong>特定场景下的 Prompt 设计框架（Framework）</strong>。
+                    这些框架本质上是四要素的不同组合方式和命名体系，各自适用于不同的任务类型和使用习惯。
+                    选择合适的框架可以让 Prompt 设计更加<strong>系统化和可复现</strong>。
+                </p>
+
+                <h3 class="section-subtitle">框架总览</h3>
+
+                <div class="framework-grid">
+                    <div class="framework-card">
+                        <div class="framework-name">🎯 RTF 框架</div>
+                        <div class="framework-full">Role — Task — Format</div>
+                        <div class="framework-desc">
+                            最经典的三段式框架。先设定角色身份（Role），再明确任务（Task），
+                            最后规定输出格式（Format）。简单易记，适合绝大多数日常场景。
+                            是新手入门的首选框架。
+                        </div>
+                        <div class="framework-elements">
+                            <span class="framework-tag">Role</span>
+                            <span class="framework-tag">Task</span>
+                            <span class="framework-tag">Format</span>
+                        </div>
+                    </div>
+
+                    <div class="framework-card accent-success">
+                        <div class="framework-name">⭐ CO-STAR 框架</div>
+                        <div class="framework-full">Context — Objective — Style — Tone — Audience — Response</div>
+                        <div class="framework-desc">
+                            由新加坡 Google Developer Group 提出，在 RTF 基础上增加了
+                            <strong>Style（风格）</strong>、<strong>Tone（语气）</strong>、
+                            <strong>Audience（受众）</strong>三个维度，特别适合营销文案、
+                            内容创作等需要精细控制输出风格的场景。
+                        </div>
+                        <div class="framework-elements">
+                            <span class="framework-tag">Context</span>
+                            <span class="framework-tag">Objective</span>
+                            <span class="framework-tag">Style</span>
+                            <span class="framework-tag">Tone</span>
+                            <span class="framework-tag">Audience</span>
+                            <span class="framework-tag">Response</span>
+                        </div>
+                    </div>
+
+                    <div class="framework-card accent-teal">
+                        <div class="framework-name">💥 BROKE 框架</div>
+                        <div class="framework-full">Background — Role — Objectives — Key Results — Evolve</div>
+                        <div class="framework-desc">
+                            受 OKR 管理方法论启发的框架，强调<strong>可衡量的结果（Key Results）</strong>
+                            和<strong>持续迭代（Evolve）</strong>。
+                            特别适合复杂的项目规划、方案设计类任务，
+                            让 Prompt 本身具有「项目管理」的思维结构。
+                        </div>
+                        <div class="framework-elements">
+                            <span class="framework-tag">Background</span>
+                            <span class="framework-tag">Role</span>
+                            <span class="framework-tag">Objectives</span>
+                            <span class="framework-tag">Key Results</span>
+                            <span class="framework-tag">Evolve</span>
+                        </div>
+                    </div>
+
+                    <div class="framework-card accent-info">
+                        <div class="framework-name">📋 RISEN 框架</div>
+                        <div class="framework-full">Role — Input — Steps — Examples — Nuance</div>
+                        <div class="framework-desc">
+                            强调<strong>步骤分解（Steps）</strong>和<strong>示例驱动（Examples）</strong>的框架，
+                            适合需要精确控制推理过程的技术类任务（代码生成、数据分析、数学推导）。
+                            <strong>Nuance（细微差别）</strong>要素提醒注意边界条件和特殊情况。
+                        </div>
+                        <div class="framework-elements">
+                            <span class="framework-tag">Role</span>
+                            <span class="framework-tag">Input</span>
+                            <span class="framework-tag">Steps</span>
+                            <span class="framework-tag">Examples</span>
+                            <span class="framework-tag">Nuance</span>
+                        </div>
+                    </div>
+
+                    <div class="framework-card accent-danger">
+                        <div class="framework-name">🔄 CREATE 框架</div>
+                        <div class="framework-full">Character — Request — Example — Adjust — Type — Evaluation</div>
+                        <div class="framework-desc">
+                            一个<strong>迭代式</strong>框架，内置了 Adjust（调整）和
+                            Evaluation（评估）环节。不只是「一次生成」，
+                            而是「生成 → 评估 → 调整 → 再生成」的循环流程，
+                            适合对输出质量要求极高的创意写作和专业内容生产。
+                        </div>
+                        <div class="framework-elements">
+                            <span class="framework-tag">Character</span>
+                            <span class="framework-tag">Request</span>
+                            <span class="framework-tag">Example</span>
+                            <span class="framework-tag">Adjust</span>
+                            <span class="framework-tag">Type</span>
+                            <span class="framework-tag">Evaluation</span>
+                        </div>
+                    </div>
+
+                    <div class="framework-card">
+                        <div class="framework-name">🧩 APE 框架</div>
+                        <div class="framework-full">Action — Purpose — Expectation</div>
+                        <div class="framework-desc">
+                            最精简的三要素框架，来自 Andrej Karpathy 等人的实践总结。
+                            <strong>Action</strong>（做什么动作）、<strong>Purpose</strong>（为什么做）、
+                            <strong>Expectation</strong>（期望什么结果）。
+                            适合快速原型设计和轻量级任务，是「最小可行 Prompt」的最佳模板。
+                        </div>
+                        <div class="framework-elements">
+                            <span class="framework-tag">Action</span>
+                            <span class="framework-tag">Purpose</span>
+                            <span class="framework-tag">Expectation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="css-diagram">
+                    <div class="diagram-framework-compare">
+                        <div class="fc-card fc-rtf">
+                            <div class="fc-acronym">RTF</div>
+                            <div class="fc-full-name">Role — Task — Format</div>
+                            <div class="fc-count">3 要素</div>
+                            <div class="fc-usecase">日常问答 / 新手入门首选</div>
+                        </div>
+                        <div class="fc-card fc-costar">
+                            <div class="fc-acronym">CO-STAR</div>
+                            <div class="fc-full-name">Context — Objective — Style<br>Tone — Audience — Response</div>
+                            <div class="fc-count">6 要素</div>
+                            <div class="fc-usecase">文案创作 / 营销内容</div>
+                        </div>
+                        <div class="fc-card fc-broke">
+                            <div class="fc-acronym">BROKE</div>
+                            <div class="fc-full-name">Background — Role — Objectives<br>Key Results — Evolve</div>
+                            <div class="fc-count">5 要素</div>
+                            <div class="fc-usecase">项目方案 / 战略规划</div>
+                        </div>
+                        <div class="fc-card fc-risen">
+                            <div class="fc-acronym">RISEN</div>
+                            <div class="fc-full-name">Role — Input — Steps<br>Examples — Nuance</div>
+                            <div class="fc-count">5 要素</div>
+                            <div class="fc-usecase">代码生成 / 技术分析</div>
+                        </div>
+                        <div class="fc-card fc-create">
+                            <div class="fc-acronym">CREATE</div>
+                            <div class="fc-full-name">Character — Request — Example<br>Adjust — Type — Evaluation</div>
+                            <div class="fc-count">6 要素</div>
+                            <div class="fc-usecase">高质量内容 / 迭代打磨</div>
+                        </div>
+                        <div class="fc-card fc-ape">
+                            <div class="fc-acronym">APE</div>
+                            <div class="fc-full-name">Action — Purpose — Expectation</div>
+                            <div class="fc-count">3 要素</div>
+                            <div class="fc-usecase">快速原型 / 轻量任务</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="figure-caption" style="text-align:center;margin-top:0.75rem;font-size:0.8125rem;color:var(--text-muted);font-style:italic;">图 4-1：六大主流 Prompt 设计框架对比概览 —— 从最精简的 APE（3 要素）到最全面的 CO-STAR（6 要素）</p>
+
+                <h3 class="section-subtitle">框架选用指南</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>场景类型</th>
+                                <th>推荐框架</th>
+                                <th>选择理由</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>日常问答 / 快速任务</td>
+                                <td><code>APE</code> 或 <code>RTF</code></td>
+                                <td>结构简洁，30秒内可写出有效 Prompt</td>
+                            </tr>
+                            <tr>
+                                <td>文案创作 / 营销内容</td>
+                                <td><code>CO-STAR</code></td>
+                                <td>Style/Tone/Audience 三要素精准控制文风</td>
+                            </tr>
+                            <tr>
+                                <td>代码生成 / 技术分析</td>
+                                <td><code>RISEN</code></td>
+                                <td>Steps + Examples 确保推理过程可控</td>
+                            </tr>
+                            <tr>
+                                <td>项目方案 / 战略规划</td>
+                                <td><code>BROKE</code></td>
+                                <td>Key Results + Evolve 引入 OKR 思维</td>
+                            </tr>
+                            <tr>
+                                <td>高质量内容生产</td>
+                                <td><code>CREATE</code></td>
+                                <td>内置迭代循环，适合反复打磨</td>
+                            </tr>
+                            <tr>
+                                <td>通用场景 / 新手入门</td>
+                                <td><code>RTF</code></td>
+                                <td>学习成本最低，适用面最广</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight-box warning">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        重要提醒：框架是工具，不是教条
+                    </div>
+                    <div class="highlight-box-content">
+                        这些框架的价值在于<strong>提供结构化的思考 checklist</strong>，而不是让你机械地填空。
+                        高手往往是<strong>内化了框架之后跳出框架</strong>——你可能不会显式地标注「Role:」「Task:」这样的标签，
+                        但你的 Prompt 结构天然地涵盖了这些要素。学习的正确路径是：
+                        <strong>先用框架规范自己 → 熟练后形成直觉 → 最终根据场景自由组合。</strong>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== CARD 5: 总结与实践 Checklist ==================== -->
+        <article class="section-card accent-bar-danger" id="s5" data-animate>
+            <div class="section-header">
+                <span class="section-number">05</span>
+                <h2 class="section-title">本集小结 &amp; 实践 Checklist</h2>
+            </div>
+            <div class="section-content">
+                <h3 class="section-subtitle">知识地图：本集五大核心模块</h3>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">① Prompt 本质</div>
+                        <div class="info-item-value">LLM 的输入接口 / 自然语言形式的「源代码」/ 从 trial-and-error 到 systematic design 的工程学科</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">② 演进脉络</div>
+                        <div class="info-item-value">GPT-3(2020) → 探索期(21-22) → ChatGPT爆发(22.11) → 工程化(23-24) → Agent时代(25+)</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">③ 三大原则</div>
+                        <div class="info-item-value">Be Specific（清晰具体）→ Provide Context（提供上下文）→ Decompose（分解复杂任务）</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">④ 四要素模型</div>
+                        <div class="info-item-value">Instruction + Context + Input Data + Output Indicator</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">⑤ 设计框架</div>
+                        <div class="info-item-value">RTF / CO-STAR / BROKE / RISEN / CREATE / APE —— 六大框架按场景选型</div>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">📋 Prompt 自检 Checklist（写完必查）</h3>
+                <div class="highlight-box success" style="margin-top: 1.25rem;">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        生产级 Prompt 质量检查清单
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:none;padding:0;margin:0;">
+                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
+                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
+                                &nbsp;<strong>单一职责</strong>：这个 Prompt 是否只聚焦于一个核心任务？（避免一 Prompt 多任务）
+                            </li>
+                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
+                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
+                                &nbsp;<strong>指令清晰</strong>：任务动词是否明确？（翻译/总结/分类/生成/分析……而不是"看一下"）
+                            </li>
+                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
+                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
+                                &nbsp;<strong>上下文充分</strong>：是否说明了谁在使用、什么场景、什么约束？（角色/背景/限制条件）
+                            </li>
+                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
+                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
+                                &nbsp;<strong>输出格式确定</strong>：是否指定了 JSON/Table/List/纯文本？是否给了字段说明或示例？
+                            </li>
+                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
+                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
+                                &nbsp;<strong>长度约束</strong>：是否有字数/Token 数/条目数量的上限或下限？
+                            </li>
+                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
+                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
+                                &nbsp;<strong>结构分明</strong>：四要素是否用分隔符清晰划分？（模型和你自己都能快速定位）
+                            </li>
+                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
+                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
+                                &nbsp;<strong>无矛盾指令</strong>：是否存在互相冲突的要求？（如"详细"vs"简洁"、"正式"vs"活泼"）
+                            </li>
+                            <li style="padding:0.4rem 0;">
+                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
+                                &nbsp;<strong>鲁棒性验证</strong>：是否用至少 3 种不同的输入测试过？（正常/边界/异常 case）
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">下集预告 🔮</h3>
+                <p>
+                    下一集我们将进入<strong>结构化提示词（Structured Prompting）</strong>的深度实践——
+                    学习如何使用 XML Tag、JSON Schema、Markdown 表格等<strong>结构化标记</strong>来组织 Prompt，
+                    显著提升模型对复杂指令的理解准确率。同时将通过<strong>真实案例改造演示</strong>，
+                    展示一个「散装 Prompt」如何被逐步重构为「生产级结构化 Prompt」的全过程。
+                    我们还将介绍 <strong>Prompt Template 模板化管理</strong> 的基础方法——
+                    把 Prompt 从硬编码字符串升级为可维护、可复用的工程资产~
+                </p>
+            </div>
+        </article>
+
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <nav class="footer-nav">
+            <div style="color:var(--text-muted);font-family:'Space Grotesk',sans-serif;font-size:0.875rem;display:inline-flex;align-items:center;gap:0.5rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg>
+                这是第一集，暂无上一集
+            </div>
+            <a href="02-结构化提示词.html" class="footer-link next">
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">下一集 &rarr;</div>
+                    <div>第 02 集 - 结构化提示词</div>
+                </div>
+            </a>
+        </nav>
+        <div class="footer-reference">
+            参考来源：<a href="https://www.promptingguide.ai/" target="_blank">Prompt Engineering Guide</a> &middot;
+            <a href="https://platform.openai.com/docs/guides/prompt-engineering" target="_blank">OpenAI Prompt Engineering</a> &middot;
+            <a href="https://ai.google.dev/gemini-api/docs/prompting-intro" target="_blank">Google AI Prompt Guidelines</a>
+        </div>
+    </div>
+</footer>
+
+<!-- Tweaks Panel -->
+<div class="tweaks-panel" id="tweaksPanel">
+    <button class="tweaks-toggle" onclick="toggleTweaks()" title="调整字体大小">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+    </button>
+    <span class="tweaks-label">字号</span>
+    <input type="range" class="tweaks-slider" id="fontSlider" min="12" max="22" value="16" step="1" oninput="adjustFontSize(this.value)">
+    <span class="tweaks-value" id="fontValue">16px</span>
+</div>
+
+<script>
+    // Header scroll effect
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 20) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    // Intersection Observer for fade-up animations
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -50px 0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, index * 100);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.section-card[data-animate]').forEach(card => {
+        observer.observe(card);
+    });
+
+    // Copy code function
+    function copyCode(btn) {
+        const codeBlock = btn.closest('.code-block');
+        const code = codeBlock.querySelector('code').textContent;
+
+        navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copied!';
+            btn.style.color = 'var(--success)';
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+                btn.style.color = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Copy failed:', err);
+        });
+    }
+
+    // Tweaks Panel
+    let tweaksExpanded = true;
+
+    function toggleTweaks() {
+        const panel = document.getElementById('tweaksPanel');
+        tweaksExpanded = !tweaksExpanded;
+        if (tweaksExpanded) {
+            panel.classList.remove('collapsed');
+        } else {
+            panel.classList.add('collapsed');
+        }
+    }
+
+    function adjustFontSize(size) {
+        document.documentElement.style.setProperty('--font-size-base', size + 'px');
+        document.getElementById('fontValue').textContent = size + 'px';
+    }
+</script>
+
+</body>
+</html>

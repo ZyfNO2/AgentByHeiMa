@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第05集 - Chain-of-Thought思维链 | 提示词工程学习笔记</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8f9fc;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f1f3f8;
+            --text-primary: #1a1d26;
+            --text-secondary: #5a6072;
+            --text-muted: #949aad;
+            --primary: oklch(0.55 0.22 250);
+            --primary-light: oklch(0.75 0.15 250);
+            --accent: oklch(0.70 0.18 85);
+            --success: oklch(0.55 0.16 155);
+            --danger: oklch(0.55 0.20 25);
+            --info: oklch(0.55 0.15 230);
+            --teal: oklch(0.55 0.14 180);
+            --border-color: #e2e5ef;
+            --shadow-sm: 0 1px 3px rgba(26,29,38,0.06), 0 1px 2px rgba(26,29,38,0.04);
+            --shadow-md: 0 4px 12px rgba(26,29,38,0.08), 0 2px 4px rgba(26,29,38,0.04);
+            --shadow-lg: 0 8px 24px rgba(26,29,38,0.12), 0 4px 8px rgba(26,29,38,0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --font-size-base: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: var(--font-size-base);
+            -webkit-font-smoothing: antialiased;
+            transition: font-size 0.2s ease;
+        }
+
+        .header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(248, 249, 252, 0.85);
+            border-bottom: 1px solid var(--border-color);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .header.scrolled { box-shadow: var(--shadow-md); }
+
+        .nav-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0.875rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-brand-icon {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            max-width: 600px;
+            justify-content: flex-end;
+        }
+
+        .nav-link {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover { color: var(--primary); }
+        .nav-link.active { color: var(--primary); font-weight: 600; }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 0; right: 0;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 1px;
+        }
+
+        .nav-anchor {
+            background: rgba(79,110,247,0.10);
+            color: var(--primary) !important;
+            font-weight: 600;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .hero {
+            padding: 7rem 0 3rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--teal));
+            color: white;
+            padding: 0.375rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.25rem, 5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.1s forwards;
+        }
+
+        .hero-title-accent {
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 620px;
+            margin: 0 auto 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.2s forwards;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease 0.3s forwards;
+        }
+
+        .meta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 0.875rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .meta-tag-icon { width: 16px; height: 16px; opacity: 0.7; }
+
+        .content-section { padding-bottom: 4rem; }
+
+        .section-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .section-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .section-card.accent-bar-success { border-left-color: var(--success); }
+        .section-card.accent-bar-accent { border-left-color: var(--accent); }
+        .section-card.accent-bar-info { border-left-color: var(--info); }
+        .section-card.accent-bar-teal { border-left-color: var(--teal); }
+        .section-card.accent-bar-danger { border-left-color: var(--danger); }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-subtle);
+        }
+
+        .section-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            color: white;
+            border-radius: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-content {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .section-content p { margin-bottom: 1rem; }
+        .section-content p:last-child { margin-bottom: 0; }
+
+        .section-subtitle {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(85, 120, 250, 0.06), rgba(100, 140, 255, 0.04));
+            border-left: 4px solid var(--primary);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 1.25rem 1.5rem;
+            margin: 1.25rem 0;
+        }
+
+        .highlight-box.success {
+            background: linear-gradient(135deg, rgba(85, 180, 130, 0.06), rgba(100, 200, 150, 0.04));
+            border-left-color: var(--success);
+        }
+
+        .highlight-box.warning {
+            background: linear-gradient(135deg, rgba(220, 160, 60, 0.06), rgba(235, 180, 80, 0.04));
+            border-left-color: var(--accent);
+        }
+
+        .highlight-box.danger {
+            background: linear-gradient(135deg, rgba(220, 90, 80, 0.06), rgba(235, 105, 95, 0.04));
+            border-left-color: var(--danger);
+        }
+
+        .highlight-box.teal {
+            background: linear-gradient(135deg, rgba(80, 180, 160, 0.06), rgba(100, 200, 180, 0.04));
+            border-left-color: var(--teal);
+        }
+
+        .highlight-box-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .highlight-box.success .highlight-box-title { color: var(--success); }
+        .highlight-box.warning .highlight-box-title { color: var(--accent); }
+        .highlight-box.danger .highlight-box-title { color: var(--danger); }
+        .highlight-box.teal .highlight-box-title { color: var(--teal); }
+
+        .highlight-box-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .code-block {
+            position: relative;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-md);
+            margin: 1.25rem 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.25rem;
+            background: rgba(26, 29, 38, 0.03);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-lang {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .code-copy-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.625rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+
+        .code-block:hover .code-copy-btn { opacity: 1; }
+
+        .code-copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.05);
+        }
+
+        .code-body {
+            padding: 1.25rem;
+            overflow-x: auto;
+        }
+
+        .code-body pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.84375rem;
+            line-height: 1.65;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .code-body code { font-family: inherit; }
+
+        .code-keyword { color: #c678dd; }
+        .code-string { color: #98c379; }
+        .code-comment { color: #5c6370; font-style: italic; }
+        .code-function { color: #61afef; }
+        .code-class { color: #e5c07b; }
+        .code-variable { color: #e06c75; }
+        .code-param { color: #d19a66; }
+        .code-operator { color: #56b6c2; }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.25rem 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            color: white;
+        }
+
+        th {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        tbody tr:nth-child(even) { background: var(--bg-subtle); }
+        tbody tr:hover { background: rgba(85, 120, 250, 0.04); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        td code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: rgba(85, 120, 250, 0.08);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        .content-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 1rem 0;
+        }
+
+        .content-list li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .content-list li::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0.6rem;
+            width: 8px; height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .content-list li strong { color: var(--text-primary); font-weight: 600; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0;
+        }
+
+        .info-item {
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .info-item:hover {
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.03);
+        }
+
+        .info-item-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.375rem;
+        }
+
+        .info-item-value {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .info-item-value code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: rgba(85, 120, 250, 0.08);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        .figure-container {
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .figure-container img {
+            max-width: 100%;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .figure-caption {
+            margin-top: 0.75rem;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .footer {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            padding: 2.5rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .footer-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .footer-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(85, 120, 250, 0.04);
+            transform: translateX(4px);
+        }
+
+        .footer-link.next {
+            flex-direction: row-reverse;
+        }
+
+        .footer-link.next:hover {
+            transform: translateX(-4px);
+        }
+
+        .footer-reference {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .footer-reference a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer-reference a:hover { text-decoration: underline; }
+
+        .tweaks-panel {
+            position: fixed;
+            bottom: 2rem; right: 2rem;
+            z-index: 999;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .tweaks-panel.collapsed {
+            padding: 0.625rem 0.875rem;
+        }
+
+        .tweaks-panel.collapsed .tweaks-label,
+        .tweaks-panel.collapsed .tweaks-slider,
+        .tweaks-panel.collapsed .tweaks-value {
+            display: none;
+        }
+
+        .tweaks-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .tweaks-toggle:hover { color: var(--primary); }
+
+        .tweaks-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px; height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .tweaks-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .tweaks-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 2.5rem;
+            text-align: center;
+        }
+
+        .tweaks-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero { padding: 5.5rem 0 2.5rem; }
+            .section-card { padding: 1.75rem; border-radius: var(--radius-md); }
+            .section-title { font-size: 1.175rem; }
+            .table-wrapper { font-size: 0.8125rem; }
+            th, td { padding: 0.625rem 0.75rem; }
+            .footer-nav { flex-direction: column; }
+            .footer-link { width: 100%; justify-content: center; }
+            .tweaks-panel { bottom: 1rem; right: 1rem; }
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-page); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* ════════════════════════════════════════ */
+        /*  图表 1: CoT 推理流程图 - 纵向时间线    */
+        /* ════════════════════════════════════════ */
+        .cot-flow-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            padding: 2rem 1rem;
+            background: linear-gradient(135deg, #f8f9fc 0%, #eef2f9 100%);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            margin: 1.5rem 0;
+        }
+        .cot-flow-step {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            max-width: 520px;
+            padding: 0.875rem 1.25rem;
+            background: var(--bg-surface);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.25s ease;
+            z-index: 1;
+        }
+        .cot-flow-step:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateX(4px);
+            border-color: var(--primary);
+        }
+        .cot-flow-step.input-step { border-left: 4px solid var(--accent); }
+        .cot-flow-step.process-step { border-left: 4px solid var(--primary); }
+        .cot-flow-step.output-step { border-left: 4px solid var(--success); }
+        .cot-step-num {
+            flex-shrink: 0;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.8125rem;
+            color: white;
+        }
+        .input-step .cot-step-num { background: linear-gradient(135deg, var(--accent), #e8b84a); }
+        .process-step .cot-step-num { background: linear-gradient(135deg, var(--primary), var(--teal)); }
+        .output-step .cot-step-num { background: linear-gradient(135deg, var(--success), #3db87a); }
+        .cot-step-content { flex: 1; min-width: 0; }
+        .cot-step-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+        .cot-step-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .cot-flow-arrow {
+            display: flex;
+            justify-content: center;
+            padding: 0.25rem 0;
+            color: var(--primary);
+            opacity: 0.6;
+            z-index: 0;
+        }
+        .cot-flow-arrow svg {
+            width: 24px; height: 24px;
+        }
+
+        /* ════════════════════════════════════════ */
+        /*  图表 2: Pipeline 架构图 - 横向步骤条   */
+        /* ════════════════════════════════════════ */
+        .pipeline-diagram {
+            padding: 1.75rem 1rem;
+            background: linear-gradient(135deg, #f8f9fc 0%, #eef2f9 100%);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+        .pipeline-track {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            min-width: max-content;
+            padding: 0 0.5rem;
+        }
+        .pipeline-node {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 0.875rem;
+            min-width: 120px;
+            max-width: 150px;
+            background: var(--bg-surface);
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.25s ease;
+        }
+        .pipeline-node:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-3px);
+        }
+        .pipeline-node.node-raw { border-color: var(--accent); }
+        .pipeline-node.node-preprocess { border-color: var(--info); }
+        .pipeline-node.node-cot { border-color: var(--primary); }
+        .pipeline-node.node-schema { border-color: #9b6dff; }
+        .pipeline-node.node-output { border-color: var(--success); }
+        .pipeline-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            color: white;
+        }
+        .node-raw .pipeline-icon { background: linear-gradient(135deg, var(--accent), #e8b84a); }
+        .node-preprocess .pipeline-icon { background: linear-gradient(135deg, var(--info), #5b9cf6); }
+        .node-cot .pipeline-icon { background: linear-gradient(135deg, var(--primary), var(--teal)); }
+        .node-schema .pipeline-icon { background: linear-gradient(135deg, #9b6dff, #7c4ddb); }
+        .node-output .pipeline-icon { background: linear-gradient(135deg, var(--success), #3db87a); }
+        .pipeline-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+            line-height: 1.3;
+        }
+        .pipeline-sublabel {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        .pipeline-connector {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            padding: 0 0.25rem;
+            color: var(--primary);
+            opacity: 0.45;
+        }
+        .pipeline-connector svg {
+            width: 28px; height: 20px;
+        }
+
+        /* ════════════════════════════════════════ */
+        /*  图表 3: 处理效果对比图 - 左右布局       */
+        /* ════════════════════════════════════════ */
+        .compare-diagram {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8f9fc 0%, #eef2f9 100%);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            margin: 1.5rem 0;
+        }
+        .compare-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .compare-panel-header {
+            padding: 0.625rem 1rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-align: center;
+            color: white;
+        }
+        .compare-panel.input-panel .compare-panel-header {
+            background: linear-gradient(135deg, #6b7280, #9ca3af);
+        }
+        .compare-panel.output-panel .compare-panel-header {
+            background: linear-gradient(135deg, var(--success), #3db87a);
+        }
+        .compare-panel-body {
+            flex: 1;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            line-height: 1.55;
+            overflow: hidden;
+        }
+        .input-panel .compare-panel-body {
+            background: #1e1e2e;
+            color: #cdd6f4;
+        }
+        .output-panel .compare-panel-body {
+            background: #0d1f17;
+            color: #a6e3a1;
+        }
+        .compare-arrow-col {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 0.75rem;
+            flex-shrink: 0;
+        }
+        .compare-arrow-col svg {
+            width: 32px; height: 32px;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+        @media (max-width: 768px) {
+            .compare-diagram { flex-direction: column; }
+            .compare-arrow-col {
+                padding: 0.5rem 0;
+                transform: rotate(90deg);
+            }
+            .pipeline-track { flex-wrap: wrap; justify-content: center; }
+            .pipeline-connector { transform: rotate(90deg); padding: 0.35rem 0; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header" id="header">
+    <div class="nav-container">
+        <a href="../index-prompt.html" class="nav-brand">
+            <span class="nav-brand-icon">PE</span>提示词工程 Notes
+        </a>
+        <nav class="nav-links">
+            <a href="#s1" class="nav-anchor">&sect;1 CoT原理</a>
+            <a href="01-Prompt基础语法.html" class="nav-link">P01 基础</a>
+            <a href="02-角色设定.html" class="nav-link">P02 角色</a>
+            <a href="03-结构化输出.md" class="nav-link">P03 输出</a>
+            <a href="04-Few-Shot少样本学习.html" class="nav-link">P04 Few-Shot</a>
+            <a href="#" class="nav-link active">P05 CoT</a>
+            <a href="06-输出格式控制.html" class="nav-link">P06 格式</a>
+        </nav>
+    </div>
+</header>
+
+<main class="main-container">
+
+    <section class="hero">
+        <div class="hero-badge">P05 / Chapter 05 &middot; Chain-of-Thought 思维链推理</div>
+        <h1 class="hero-title">
+            第05集：<span class="hero-title-accent">Chain-of-Thought 思维链</span><br>金融文本信息抽取实战
+        </h1>
+        <p class="hero-subtitle">
+            深入理解 CoT 推理的本质原理与三种主流模式，以金融文本信息抽取为实战场景，
+            构建从原始文档到结构化 JSON 的端到端智能 Pipeline
+        </p>
+        <div class="hero-meta">
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M10 8l6 4-6 4V8z"/></svg>
+                集 P05
+            </span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                时长 ~45min
+            </span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                核心技术 + 实战代码
+            </span>
+        </div>
+    </section>
+
+    <div class="content-section">
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- SECTION 01: CoT 核心原理                    -->
+        <!-- ═══════════════════════════════════════════ -->
+        <article class="section-card" id="s1" data-animate>
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2 class="section-title">CoT 核心原理：为什么「思考过程」能提升准确率</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    <strong>Chain-of-Thought（CoT，思维链）</strong> 是由 Google Research 团队（Wei et al., 2022）
+                    在论文《Chain-of-Thought Prompting Elicits Reasoning in Large Language Models》中首次系统提出的一种提示策略。
+                    其核心思想极其朴素却威力巨大：<strong>让大语言模型在给出最终答案之前，先显式地展示中间推理步骤</strong>。
+                </p>
+
+                <h3 class="section-subtitle">直觉类比：人类是如何解决复杂问题的？</h3>
+                <p>
+                    想象一道小学数学应用题：「一个商店进了 50 箱苹果，每箱有 24 个。
+                    第一天卖掉了总数的 30%，第二天又卖掉了剩下的一半。请问还剩多少个苹果？」
+                </p>
+                <p>
+                    如果你直接脱口而出答案，大概率会算错。但如果你<strong>一步步写下来</strong>：
+                    总数 = 50 × 24 = 1200 → 第一天卖出 = 1200 × 0.3 = 360 → 剩余 = 1200 - 360 = 840
+                    → 第二天卖出 = 840 ÷ 2 = 420 → 最终剩余 = 840 - 420 = <strong>420 个</strong>。
+                    这种「把思考过程展开」的方式，就是 CoT 的本质。
+                </p>
+
+                <div class="figure-container">
+                    <div class="cot-flow-diagram">
+                        <div class="cot-flow-step input-step">
+                            <span class="cot-step-num">Q</span>
+                            <div class="cot-step-content">
+                                <div class="cot-step-label">Input</div>
+                                <div class="cot-step-title">Input Question 输入问题</div>
+                            </div>
+                        </div>
+                        <div class="cot-flow-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></div>
+                        <div class="cot-flow-step process-step">
+                            <span class="cot-step-num">1</span>
+                            <div class="cot-step-content">
+                                <div class="cot-step-label">Step 1</div>
+                                <div class="cot-step-title">理解题意 · 解构问题</div>
+                            </div>
+                        </div>
+                        <div class="cot-flow-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></div>
+                        <div class="cot-flow-step process-step">
+                            <span class="cot-step-num">2</span>
+                            <div class="cot-step-content">
+                                <div class="cot-step-label">Step 2</div>
+                                <div class="cot-step-title">制定计划 · 规划路径</div>
+                            </div>
+                        </div>
+                        <div class="cot-flow-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></div>
+                        <div class="cot-flow-step process-step">
+                            <span class="cot-step-num">3</span>
+                            <div class="cot-step-content">
+                                <div class="cot-step-label">Step 3</div>
+                                <div class="cot-step-title">逐步推导 · 中间推理</div>
+                            </div>
+                        </div>
+                        <div class="cot-flow-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></div>
+                        <div class="cot-flow-step output-step">
+                            <span class="cot-step-num">A</span>
+                            <div class="cot-step-content">
+                                <div class="cot-step-label">Output</div>
+                                <div class="cot-step-title">Final Answer 最终答案</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="figure-caption">图 1-1：Chain-of-Thought 推理流程 —— 从问题输入到逐步推理再到最终答案的完整链条</p>
+                </div>
+
+                <h3 class="section-subtitle">为什么 CoT 有效？三个层面的解释</h3>
+                <ul class="content-list">
+                    <li>
+                        <strong>计算分配效应（Computational Allocation）</strong><br>
+                        大模型的注意力机制和前向传播计算量是固定的。不使用 CoT 时，模型必须在一个 forward pass 中
+                        同时完成「理解题意 + 规划解题路径 + 执行计算 + 验证结果」四个子任务，每个子任务分到的「认知带宽」有限。
+                        CoT 通过增加中间 token 数量，<strong>实质上给模型分配了更多的计算步骤</strong>，每一步可以更专注地处理单一子任务。
+                    </li>
+                    <li>
+                        <strong>错误定位与自我纠错（Error Localization）</strong><br>
+                        当模型将完整推理过程写出来时，中间步骤的错误更容易被模型自身或外部校验机制发现。
+                        这类似于程序调试中的「打印日志」——你不需要猜测哪里出错了，因为每一步的结果都清晰可见。
+                        后续研究（Self-Consistency, Reflexion）进一步利用了这一特性来实现自动纠错。
+                    </li>
+                    <li>
+                        <strong>知识激活与关联（Knowledge Activation）</strong><br>
+                        推理过程中的自然语言描述会激活模型训练数据中相关的领域知识和模式。
+                        例如提到「同比增长率」时，模型会更倾向于激活财务分析相关的知识簇，
+                        而非通用的文本生成模式。这种上下文引导效应显著提升了专业领域的推理质量。
+                    </li>
+                </ul>
+
+                <div class="highlight-box warning">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        重要前提：CoT 的效果依赖于模型规模
+                    </div>
+                    <div class="highlight-box-content">
+                        Wei et al. (2022) 的实验表明：<strong>CoT 在小规模模型（如 GPT-3 175B 以下的版本）上几乎没有提升，
+                        只有当模型规模超过某个阈值（约 100B 参数）后，CoT 才开始展现出显著的性能增益。</strong>
+                        这一现象被称为「突现能力」（Emergent Ability）——CoT 不是通过微调学到的技能，
+                        而是足够大的语言模型在 in-context learning 场景下自发涌现出的推理能力。
+                        因此，使用 CoT 前请确认你的底层模型具备足够的参数规模（建议 ≥ 30B 或等效能力）。
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">CoT 的三种主要模式对比</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>模式</th>
+                                <th>触发方式</th>
+                                <th>优点</th>
+                                <th>缺点</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Zero-Shot CoT</strong></td>
+                                <td><code>"Let's think step by step"</code></td>
+                                <td>零示例成本、即插即用</td>
+                                <td>推理链质量不稳定</td>
+                                <td>快速原型验证、通用推理任务</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Manual CoT</strong></td>
+                                <td>手动编写 Few-Shot 推理链示例</td>
+                                <td>推理链质量高、可控性强</td>
+                                <td>需要人工设计示例、成本较高</td>
+                                <td>生产级应用、复杂专业任务</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Auto-CoT</strong></td>
+                                <td>自动生成推理链（聚类+采样）</td>
+                                <td>无需人工标注、可扩展性好</td>
+                                <td>可能引入噪声推理步骤</td>
+                                <td>大规模部署、多领域泛化</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="section-subtitle">模式一：Zero-Shot CoT —— 一句话触发推理</h3>
+                <p>
+                    这是 CoT 最简单的形式。Kojima et al. (2022) 在论文《Large Language Models are Zero-Shot Reasoners》中
+                    发现了一个惊人的事实：<strong>仅仅在 Prompt 末尾加上 "Let's think step by step" 这一句话，
+                    就能让模型在各种推理任务上的准确率大幅提升。</strong>
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Zero-Shot CoT 示例</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment"># 传统 Zero-Shot（直接问答案）</span>
+<span class="code-string">"""Q: 罗杰有5个网球。他又买了2罐网球，每罐3个。他现在有多少个网球？
+A: """</span>
+<span class="code-comment"># 模型输出: "11" （可能正确也可能错误，没有推理过程）</span>
+
+
+<span class="code-comment"># Zero-Shot CoT（加一句魔法短语）</span>
+<span class="code-string">"""Q: 罗杰有5个网球。他又买了2罐网球，每罐3个。他现在有多少个网球？
+Let's think step by step.
+A: """</span>
+<span class="code-comment"># 模型输出:</span>
+<span class="code-string">"""
+罗杰一开始有5个网球。
+他买了2罐网球，每罐3个，所以是 2 * 3 = 6 个网球。
+5 + 6 = 11 个网球。
+所以答案是11。
+"""</span></code></pre>
+                </div>
+
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        魔法短语的变体
+                    </div>
+                    <div class="highlight-box-content">
+                        除了经典的 <code>"Let's think step by step"</code>，以下变体同样有效：
+                        <br>&#x25B6; <code>"让我们一步一步来分析"</code>（中文场景推荐）
+                        <br>&#x25B6; <code>"First, ... Then, ... Finally, ..."</code>（英文结构化提示）
+                        <br>&#x25B6; <code>"请先给出推理过程，再给出最终结论"</code>（中文指令式）
+                        <br>
+                        关键不在于具体措辞，而在于<strong>向模型传递「我需要看到你的思考过程」这一信号</strong>。
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">模式二：Manual CoT —— 手动构建高质量推理链</h3>
+                <p>
+                    Manual CoT 是最经典也最强大的形式。你需要为模型提供<strong>包含完整推理过程的 Few-Shot 示例</strong>，
+                    让模型模仿这种「逐步推理 → 得出结论」的模式来处理新问题。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Manual CoT 金融推理示例</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-string">"""
+=== 示例 1 ===
+
+【问题】
+某公司2023年营业收入为100亿元，2024年营业收入增长至130亿元。
+请问该公司2024年的营收同比增速是多少？
+
+【思考过程】
+步骤1：确认已知条件——2023年营收（基期）= 100亿元，2024年营收（报告期）= 130亿元
+步骤2：确定计算公式——同比增速 = (报告期数值 - 基期数值) / 基期数值 × 100%
+步骤3：代入数值计算——(130 - 100) / 100 × 100% = 30 / 100 × 100% = 30%
+步骤4：合理性检验——30%的增长属于合理范围，无异常
+
+【答案】
+该公司2024年营收同比增速为30%。
+
+---
+
+=== 示例 2 ===
+
+【问题】
+投资者A以每股10元买入某股票1000股，后以每股15元卖出800股，
+又以每股12元补仓200股。若当前股价为14元，投资者的持仓盈亏是多少？
+
+【思考过程】
+步骤1：梳理交易流水
+  - 初始买入：1000股 × 10元 = 10000元
+  - 卖出部分：800股 × 15元 = 12000元（实现盈利2000元）
+  - 补仓操作：200股 × 12元 = 2400元
+步骤2：计算当前持仓
+  - 剩余持股：1000 - 800 + 200 = 400股
+  - 当前市值：400股 × 14元 = 5600元
+步骤3：计算总投入成本
+  - 净投入 = 10000 - 12000 + 2400 = 400元
+步骤4：计算总体盈亏
+  - 浮动盈亏 = 当前市值 - 净投入 = 5600 - 400 = 5200元
+  - 含已实现利润的总盈亏 = 5200 + 2000 = 7200元
+
+【答案】
+投资者当前总盈亏为+7200元（含已实现盈利2000元），浮动盈亏为+5200元。
+
+"""</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">模式三：Auto-CoT —— 自动化推理链生成</h3>
+                <p>
+                    Zhang et al. (2022) 提出了 Auto-CoT 框架，旨在<strong>自动化地生成推理链示例</strong>，
+                    解决 Manual CoT 中人工编写示例的高成本问题。其核心流程分为两步：
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Auto-CoT 核心算法伪代码</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">def</span> <span class="code-function">auto_cot_pipeline</span>(<span class="code-param">questions</span>, <span class="code_param">llm</span>, <span class="code-param">k</span>=<span class="code-variable">8</span>):
+    <span class="code-string">"""
+    Auto-CoT 自动推理链生成管线
+    
+    Args:
+        questions: 问题列表
+        llm: 大语言模型接口
+        k: 最终选取的示例数量
+    
+    Returns:
+        demos: 包含自动生成推理链的示例集合
+    """</span>
+    <span class="code-comment"># Phase 1: 问题划分（Question Partition）</span>
+    <span class="code-comment"># 使用 K-Means / DBSCAN 对问题进行语义聚类</span>
+    embeddings = <span class="code-function">get_embeddings</span>(questions)
+    clusters = <span class="code-function">cluster_questions</span>(
+        embeddings,
+        method=<span class="code-string">"kmeans"</span>,
+        n_clusters=k
+    )
+    
+    demos = []
+    <span class="code-comment"># Phase 2: 推理链生成与示例选择</span>
+    <span class="code-keyword">for</span> cluster_id, cluster_questions <span class="code-keyword">in</span> <span class="code-function">enumerate</span>(clusters):
+        <span class="code-comment"># 从每个聚类中选择距离质心最近的问题</span>
+        question = <span class="code-function">select_representative</span>(cluster_questions)
+        
+        <span class="code-comment"># 用 Zero-Shot CoT 触发器自动生成推理链</span>
+        prompt = <span class="code-string">f"{question}\nLet's think step by step.\n"</span>
+        reasoning_chain = llm.<span class="code-function">generate</span>(prompt)
+        
+        demos.<span class="code-function">append</span>({
+            <span class="code-string">"question"</span>: question,
+            <span class="code-string">"reasoning"</span>: reasoning_chain,
+            <span class="code-string">"cluster"</span>: cluster_id
+        })
+    
+    <span class="code-keyword">return</span> demos</code></pre>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">&#x1F4A1; Zero-Shot CoT</div>
+                        <div class="info-item-value">适合快速实验和原型验证。<code>"Let's think step by step"</code> 一行搞定</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#x1F3AF; Manual CoT</div>
+                        <div class="info-item-value">生产环境首选。精心设计的推理链示例带来最高的准确率和可控性</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#x2699;&#xFE0F; Auto-CoT</div>
+                        <div class="info-item-value">大规模部署利器。自动聚类+自动生成，降低人工标注成本 80%+</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#x1F4CA; 选型建议</div>
+                        <div class="info-item-value">金融等高风险领域用 Manual CoT；通用 NLP 任务先用 Zero-Shot 快速验证</div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- SECTION 02: 金融文本信息抽取实战           -->
+        <!-- ═══════════════════════════════════════════ -->
+        <article class="section-card accent-bar-success" id="s2" data-animate>
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2 class="section-title">金融文本信息抽取：CoT + 结构化输出的完美结合</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    信息抽取（Information Extraction, IE）是从非结构化或半结构化文本中识别并提取预定义类型实体信息的任务。
+                    在金融领域，IE 的价值尤为突出——每天海量的研报、公告、新闻、财报解读中蕴含着关键商业情报，
+                    人工逐篇阅读摘录既低效又容易遗漏。<strong>CoT + PydanticOutputParser 的组合</strong>，
+                    为金融 IE 提供了一种兼顾推理深度和输出规范性的解决方案。
+                </p>
+
+                <h3 class="section-subtitle">任务定义：从金融新闻中提取什么？</h3>
+                <p>
+                    本节聚焦于一个典型的金融 IE 场景：<strong>给定一篇中文金融新闻/公告/财报文章，
+                    自动提取出公司名称、股票代码、财务指标、关键事件、情感倾向等结构化字段</strong>。
+                    这不是简单的关键词匹配或正则提取，而是需要模型理解语义后进行归纳和推理的信息抽取任务。
+                </p>
+
+                <div class="figure-container">
+                    <div class="pipeline-diagram">
+                        <div class="pipeline-track">
+                            <div class="pipeline-node node-raw">
+                                <div class="pipeline-icon">📄</div>
+                                <div class="pipeline-label">Raw Document</div>
+                                <div class="pipeline-sublabel">PDF / News / 公告</div>
+                            </div>
+                            <div class="pipeline-connector"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                            <div class="pipeline-node node-preprocess">
+                                <div class="pipeline-icon">⚙️</div>
+                                <div class="pipeline-label">MarkItDown</div>
+                                <div class="pipeline-sublabel">文档预处理</div>
+                            </div>
+                            <div class="pipeline-connector"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                            <div class="pipeline-node node-cot">
+                                <div class="pipeline-icon">🧠</div>
+                                <div class="pipeline-label">CoT 引擎</div>
+                                <div class="pipeline-sublabel">思维链推理</div>
+                            </div>
+                            <div class="pipeline-connector"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                            <div class="pipeline-node node-schema">
+                                <div class="pipeline-icon">✅</div>
+                                <div class="pipeline-label">Pydantic</div>
+                                <div class="pipeline-sublabel">Schema 校验</div>
+                            </div>
+                            <div class="pipeline-connector"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                            <div class="pipeline-node node-output">
+                                <div class="pipeline-icon">📊</div>
+                                <div class="pipeline-label">JSON Output</div>
+                                <div class="pipeline-sublabel">结构化输出</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="figure-caption">图 2-1：金融文本信息抽取端到端 Pipeline 架构 —— 从原始文档到结构化 JSON 的完整数据流</p>
+                </div>
+
+                <h3 class="section-subtitle">输入样本：真实金融新闻原文</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">输入样本 / 财报类金融新闻</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-string">【贵州茅台发布2024年一季报】
+4月27日晚间，贵州茅台（600519.SH）披露2024年一季度报告。报告期内，
+公司实现营业收入387.56亿元，同比增长18.01%；归属于上市公司股东的净利润
+为207.95亿元，同比增长20.59%。基本每股收益16.53元。
+
+分产品看，茅台酒收入332.28亿元，同比增长17.46%；系列酒收入48.73亿元，
+同比增长21.77%。分渠道看，直销收入178.10亿元，占比提升至45.96%；
+批发代理收入209.45亿元。
+
+公司表示，一季度坚持稳中求进工作总基调，聚焦高质量发展目标，
+市场表现符合预期。分析师普遍认为，i茅台数字营销平台持续发力，
+直销渠道占比提升是利润增速高于营收增速的主要原因。</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">期望输出：强类型结构化 JSON</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">期望输出 / Pydantic Schema 约束的 JSON</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>{
+  "company_name": "贵州茅台",
+  "stock_code": "600519.SH",
+  "report_type": "季度报告",
+  "report_period": "2024Q1",
+  "financial_metrics": [
+    {"metric_name": "营业收入", "value": 387.56, "unit": "亿元", "yoy_change": "+18.01%"},
+    {"metric_name": "归母净利润", "value": 207.95, "unit": "亿元", "yoy_change": "+20.59%"},
+    {"metric_name": "基本每股收益", "value": 16.53, "unit": "元", "yoy_change": null},
+    {"metric_name": "茅台酒收入", "value": 332.28, "unit": "亿元", "yoy_change": "+17.46%"},
+    {"metric_name": "系列酒收入", "value": 48.73, "unit": "亿元", "yoy_change": "+21.77%"}
+  ],
+  "key_events": [
+    "直销渠道占比提升至45.96%",
+    "i茅台数字营销平台持续发力",
+    "利润增速高于营收增速"
+  ],
+  "sentiment_analysis": {
+    "overall_sentiment": "正面",
+    "confidence": 0.93,
+    "reasoning": "营收和利润均双位数增长，渠道结构持续优化"
+  },
+  "extraction_metadata": {
+    "source_type": "财报新闻",
+    "extraction_timestamp": "2024-04-27T22:00:00Z",
+    "model_version": "gpt-4o-cot-v1"
+  }
+}</code></pre>
+                </div>
+
+                <h3 class="section-subtitle">System Prompt 设计：融合角色设定 + CoT + 格式约束</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">System Prompt / 金融信息提取专家人格</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>SYSTEM_PROMPT = <span class="code-string">"""你是一位拥有15年投行研究和财务分析经验的资深金融信息提取专家。
+
+## 专业背景
+- 曾任职于头部券商研究所，覆盖消费/科技行业
+- 熟悉中国资本市场规则（A股/港股/新三板），精通各类财务报表分析方法
+- 具备严谨的数据敏感度，对不确定信息会主动标注置信度
+
+## 提取规则（严格遵守）
+1. **准确性优先**：只提取文中明确提及的数据，绝不编造未陈述的内容
+2. **单位标准化**：金额统一转换为「亿元」，百分比保留两位小数
+3. **实体规范化**：公司名用全称，股票代码格式 XXXXXX.SH/SZ
+4. **情感综合判断**：基于全文语义加权判断（标题权重0.3 + 正文权重0.7）
+
+## CoT 分析流程（必须按此顺序执行）
+&#9312; 步骤一：快速浏览全文 &#8594; 识别文档类型（财报/公告/新闻/研报）
+&#9313; 步骤二：定位所有公司实体 &#8594; 提取全称 + 股票代码（注意括号内格式）
+&#9314; 步骤三：逐一扫描财务数据 &#8594; 记录指标名/数值/单位/同比变化
+&#9315; 步骤四：提取关键事件 &#8594; 归纳管理层表述和市场关注点
+&#9316; 步骤五：情感倾向评估 &#8594; 综合正负面信号给出判断及置信度
+&#9317; 步骤六：格式化输出 &#8594; 按照下方 JSON Schema 组织结果
+
+{format_instructions}
+"""</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">Few-Shot 示例：覆盖多种文档模式</h3>
+                <p>
+                    高质量的 Few-Shot 示例是信息提取准确率的决定性因素。
+                    下面提供两个覆盖不同模式的完整示例——标准财报型 和风险事件型：
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Few-Shot Examples / 多模式覆盖</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>FEW_SHOT_EXAMPLES = <span class="code-string">"""
+
+=== 示例 A：标准财报新闻模式 ===
+
+【输入文档】
+宁德时代发布2023年度报告，全年实现营业收入4009.17亿元，
+同比增长22.02%；归母净利润441.21亿元，同比增长43.58%。
+扣非后净利润400.93亿元，同比增长42.14%。公司拟每10股派发现金红利50.28元（含税）。
+
+【CoT 推理过程】
+&#9312; 文档类型识别：年度业绩公告，属于标准财报披露类
+&#9313; 公司实体定位：宁德时代，股票代码需根据上下文推断为 300750.SZ（创业板）
+&#9314; 财务数据扫描：
+   - 营业收入：4009.17 亿元，同比 +22.02%
+   - 归母净利润：441.21 亿元，同比 +43.58%
+   - 扣非净利润：400.93 亿元，同比 +42.14%
+&#9315; 关键事件：拟每10股派发50.28元现金红利（股东回报举措）
+&#9316; 情感评估：营收利润双增且利润增速远超营收增速，明显正面
+&#9317; 格式化输出如下：
+
+【期望输出】
+{
+  "company_name": "宁德时代",
+  "stock_code": "300750.SZ",
+  "report_type": "年度报告",
+  "report_period": "2023全年",
+  "financial_metrics": [
+    {"metric_name": "营业收入", "value": 4009.17, "unit": "亿元", "yoy_change": "+22.02%"},
+    {"metric_name": "归母净利润", "value": 441.21, "unit": "亿元", "yoy_change": "+43.58%"},
+    {"metric_name": "扣非净利润", "value": 400.93, "unit": "亿元", "yoy_change": "+42.14%"}
+  ],
+  "key_events": ["拟每10股派发50.28元现金红利"],
+  "sentiment_analysis": {
+    "overall_sentiment": "正面",
+    "confidence": 0.96,
+    "reasoning": "营收利润双双高速增长，且启动高分红方案"
+  }
+}
+
+---
+
+=== 示例 B：风险事件公告模式 ===
+
+【输入文档】
+ST爱迪尔（002740.SZ）公告称，因公司2022年度财务会计报告被出具了
+无法表示意见的审计报告，根据《深圳证券交易所股票上市规则》相关规定，
+公司股票将于2023年5月4日起被实施退市风险警示（*ST）。
+截至目前，公司涉及诉讼事项累计金额约3.2亿元。
+
+【CoT 推理过程】
+&#9312; 文档类型识别：风险警示公告，属于监管合规类负面消息
+&#9313; 公司实体定位：爱迪尔（ST爱迪尔），002740.SZ（中小板）
+&#9314; 财务数据扫描：无常规财务指标，仅涉及诉讼金额 3.2 亿元
+&#9315; 关键事件：
+   - 2022年报被出具「无法表示意见」审计报告
+   - 股票将被实施退市风险警示（*ST）
+   - 涉诉累计金额约3.2亿元
+&#9316; 情感评估：多重负面信号叠加，明确负面
+&#9317; 格式化输出如下：
+
+【期望输出】
+{
+  "company_name": "爱迪尔",
+  "stock_code": "002740.SZ",
+  "report_type": "风险公告",
+  "report_period": "2023年5月",
+  "financial_metrics": [],
+  "key_events": [
+    "2022年报被出具无法表示意见的审计报告",
+    "股票将被实施退市风险警示(*ST)",
+    "涉及诉讼累计金额约3.2亿元"
+  ],
+  "sentiment_analysis": {
+    "overall_sentiment": "负面",
+    "confidence": 0.94,
+    "reasoning": "审计非标意见+退市风险警示+大额诉讼三重利空"
+  }
+}
+
+"""</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">字段设计策略表</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>字段组</th>
+                                <th>字段名</th>
+                                <th>Pydantic 类型</th>
+                                <th>提取策略</th>
+                                <th>难度</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>基础标识</strong></td>
+                                <td>company_name</td>
+                                <td><code>str (必填)</code></td>
+                                <td>首句实体识别 + 全文确认</td>
+                                <td>&#x2605;&#x2605;</td>
+                            </tr>
+                            <tr>
+                                <td><strong>基础标识</strong></td>
+                                <td>stock_code</td>
+                                <td><code>Optional[str]</code></td>
+                                <td>括号内代码模式匹配</td>
+                                <td>&#x2605;&#x2605;&#x2605;</td>
+                            </tr>
+                            <tr>
+                                <td><strong>财务核心</strong></td>
+                                <td>financial_metrics[]</td>
+                                <td><code>list[Metric]</code></td>
+                                <td>CoT 逐步扫描 + 单位归一化</td>
+                                <td>&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</td>
+                            </tr>
+                            <tr>
+                                <td><strong>事件归纳</strong></td>
+                                <td>key_events[]</td>
+                                <td><code>list[str]</code></td>
+                                <td>语义理解 + 要点压缩</td>
+                                <td>&#x2605;&#x2605;&#x2605;&#x2605;</td>
+                            </tr>
+                            <tr>
+                                <td><strong>情感研判</strong></td>
+                                <td>sentiment</td>
+                                <td><code>SentimentEnum</code></td>
+                                <td>全文信号加权聚合</td>
+                                <td>&#x2605;&#x2605;&#x2605;</td>
+                            </tr>
+                            <tr>
+                                <td><strong>质量控制</strong></td>
+                                <td>confidence</td>
+                                <td><code>float (0-1)</code></td>
+                                <td>模型不确定性自评</td>
+                                <td>&#x2605;&#x2605;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight-box teal">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        核心洞察：黄金三角架构
+                    </div>
+                    <div class="highlight-box-content">
+                        <strong>CoT + Few-Shot + Pydantic Parser = 金融信息提取的黄金三角。</strong><br><br>
+                        &#x25B6; <strong>CoT</strong> 解决「怎么想」——六步分析法强制模型逐步拆解，避免跳步遗漏<br>
+                        &#x25B6; <strong>Few-Shot</strong> 解决「怎么学」——多模式示例教会模型处理不同类型的金融文档<br>
+                        &#x25B6; <strong>Pydantic Parser</strong> 解决「怎么输出」——强类型 Schema 保证输出可直接被下游系统消费<br><br>
+                        三者缺一不可。只用 CoT 不用 Parser，得到的是漂亮但难以解析的自由文本；
+                        只用 Parser 不用 CoT，得到的是格式正确但内容空洞甚至幻觉的 JSON。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- SECTION 03: 端到端 Pipeline 实现              -->
+        <!-- ═══════════════════════════════════════════ -->
+        <article class="section-card accent-bar-info" id="s3" data-animate>
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2 class="section-title">端到端 Pipeline 实现：从预处理到 JSON 输出</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    设计好 Prompt 之后，下一步是用 LangChain 将其组装成可执行的完整 Pipeline。
+                    本节展示从<strong>原始文档预处理 → CoT 推理 → 结构化抽取 → 结果校验</strong>的全链路代码实现，
+                    并特别介绍 <code>markitdown</code> 这个在生产环境中极为实用的文档预处理工具。
+                </p>
+
+                <h3 class="section-subtitle">Step 0：文档预处理 —— markitdown 的妙用</h3>
+                <p>
+                    金融文档来源多样：PDF 财报、Word 公告、网页新闻、Excel 数据表……
+                    直接将这些格式的原始内容喂给 LLM 效果往往不佳。<strong>markitdown</strong> 是微软开源的一个轻量工具，
+                    能将各种文件格式统一转换为干净的 Markdown 文本，保留表格结构和层级关系。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python / markitdown 预处理</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> markitdown <span class="code-keyword">import</span> MarkItDown
+<span class="code-keyword">from</span> pathlib <span class="code-keyword">import</span> Path
+
+<span class="code-keyword">def</span> <span class="code-function">preprocess_financial_doc</span>(<span class="code-param">file_path</span>: <span class="code-variable">str</span>) -> <span class="code-variable">str</span>:
+    <span class="code-string">"""
+    使用 markitdown 将各类金融文档统一转换为 Markdown 文本
+    
+    支持格式：PDF, DOCX, XLSX, PPTX, HTML, 图片(OCR), EPUB 等
+    
+    Args:
+        file_path: 原始文档路径
+        
+    Returns:
+        清洗后的 Markdown 文本
+    """</span>
+    md = MarkItDown()
+    result = md.<span class="code-function">convert</span>(Path(file_path))
+    
+    raw_text = result.text_content
+    
+    <span class="code-comment"># 后处理清洗：去除多余空白、合并断行</span>
+    cleaned_lines = []
+    <span class="code-keyword">for</span> line <span class="code-keyword">in</span> raw_text.<span class="code-function">split</span>(<span class="code-string">'\n'</span>):
+        stripped = line.<span class="code-function">strip</span>()
+        <span class="code-keyword">if</span> stripped:
+            cleaned_lines.<span class="code-function">append</span>(stripped)
+    
+    <span class="code-keyword">return</span> <span class="code-string">'\n'</span>.<span class="code-function">join</span>(cleaned_lines)
+
+
+<span class="code-comment"># 使用示例</span>
+markdown_text = <span class="code-function">preprocess_financial_doc</span>(<span class="code-string">"./reports/贵州茅台_2024Q1_季报.pdf"</span>)
+<span class="code-function">print</span>(<span class="code-string">f"预处理完成，共 {len(markdown_text)} 字符"</span>)</code></pre>
+                </div>
+
+                <div class="highlight-box warning">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        为什么 markitdown 比 PDF 解析库更适合 LLM 预处理？
+                    </div>
+                    <div class="highlight-box-content">
+                        传统 PDF 解析（如 PyPDF2、pdfplumber）提取的是纯文本流，丢失了表格结构、标题层级等语义信息。
+                        markitdown 会将 PDF 表格转换为 Markdown 表格格式（<code>| 列1 | 列2 |</code>）、
+                        将标题转换为 <code># ## ###</code> 层级标记，这些结构化标记能被 LLM 更好地理解和利用，
+                        显著提升后续信息抽取的准确率。
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">Step 1：定义 Pydantic 输出 Schema</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python / Pydantic Schema 定义</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> pydantic <span class="code-keyword">import</span> BaseModel, Field
+<span class="code-keyword">from</span> typing <span class="code-keyword">import</span> Optional
+<span class="code-keyword">from</span> enum <span class="code-keyword">import</span> Enum
+
+
+<span class="code-keyword">class</span> <span class="code-class">Sentiment</span>(<span class="code-class">str</span>, Enum):
+    <span class="code-string">"""情感倾向枚举"""</span>
+    POSITIVE = <span class="code-string">"正面"</span>
+    NEGATIVE = <span class="code-string">"负面"</span>
+    NEUTRAL = <span class="code-string">"中性"</span>
+
+
+<span class="code-keyword">class</span> <span class="code-class">FinancialMetric</span>(BaseModel):
+    <span class="code-string">"""单个财务指标"""</span>
+    metric_name: <span class="code-variable">str</span> = Field(..., description=<span class="code-string">"指标名称，如'营业收入'"</span>)
+    value: Optional[<span class="code-variable">float</span>] = Field(None, description=<span class="code-string">"数值"</span>)
+    unit: Optional[<span class="code-variable">str</span>] = Field(None, description=<span class="code-string">"单位，如'亿元'"</span>)
+    yoy_change: Optional[<span class="code-variable">str</span>] = Field(None, description=<span class="code-string">"同比变化率，如'+18.01%'"</span>)
+
+
+<span class="code-keyword">class</span> <span class="code-class">SentimentAnalysis</span>(BaseModel):
+    <span class="code-string">"""情感分析结果"""</span>
+    overall_sentiment: Sentiment
+    confidence: <span class="code-variable">float</span> = Field(ge=<span class="code-variable">0.0</span>, le=<span class="code-variable">1.0</span>, description=<span class="code-string">"置信度 0~1"</span>)
+    reasoning: <span class="code-variable">str</span> = Field(..., description=<span class="code-string">"情感判断的理由说明"</span>)
+
+
+<span class="code-keyword">class</span> <span class="code-class">ExtractionResult</span>(BaseModel):
+    <span class="code-string">"""
+    金融信息抽取的完整输出 Schema
+    
+    设计原则：
+    - 必填字段确保核心信息不缺失
+    - Optional 字段允许部分信息不存在时优雅降级
+    - 嵌套模型保证结构清晰和类型安全
+    """</span>
+    company_name: <span class="code-variable">str</span> = Field(..., description=<span class="code-string">"公司全称"</span>)
+    stock_code: Optional[<span class="code-variable">str</span>] = Field(None, description=<span class="code-string">"股票代码，如600519.SH"</span>)
+    report_type: <span class="code-variable">str</span> = Field(..., description=<span class="code-string">"报告类型：季度报告/年度报告/风险公告等"</span>)
+    report_period: <span class="code-variable">str</span> = Field(..., description=<span class="code-string">"报告期间，如2024Q1"</span>)
+    financial_metrics: <span class="code-variable">list</span>[FinancialMetric] = Field(
+        default_factory=<span class="code-class">list</span>,
+        description=<span class="code-string">"财务指标列表"</span>
+    )
+    key_events: <span class="code-variable">list</span>[<span class="code-variable">str</span>] = Field(
+        default_factory=<span class="code-class">list</span>,
+        description=<span class="code-string">"关键事件要点列表"</span>
+    )
+    sentiment_analysis: SentimentAnalysis = Field(
+        ...,
+        description=<span class="code-string">"情感分析结果"</span>
+    )
+    extraction_confidence: <span class="code-variable">float</span> = Field(
+        ge=<span class="code-variable">0.0</span>, le=<span class="code-variable">1.0</span>,
+        default=<span class="code-variable">0.8</span>,
+        description=<span class="code-string">"整体提取置信度"</span>
+    )</code></pre>
+                </div>
+
+                <h3 class="section-subtitle">Step 2：组装 LangChain Chain 并执行</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python / 完整 Pipeline 主逻辑</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
+<span class="code-keyword">from</span> langchain_core.output_parsers <span class="code-keyword">import</span> PydanticOutputParser
+<span class="code-keyword">from</span> langchain_openai <span class="code-keyword">import</span> ChatOpenAI
+
+
+<span class="code-comment"># ═══ 创建 Parser 并获取格式指令 ═══</span>
+parser = PydanticOutputParser(pydantic_object=ExtractionResult)
+format_instructions = parser.<span class="code-function">get_format_instructions</span>()
+
+<span class="code-comment"># ═══ 组装 Prompt Template ═══</span>
+prompt = ChatPromptTemplate.<span class="code-function">from_messages</span>([
+    (<span class="code-string">"system"</span>, SYSTEM_PROMPT.<span class="code-function">format</span>(
+        format_instructions=format_instructions
+    )),
+    (<span class="code-string">"human"</span>, <span class="code-string">"""以下是参考示例：
+
+{few_shot_examples}
+
+=== 待分析的金融文档 ===
+{document_text}
+"""</span>)
+])
+
+<span class="code-comment"># ═══ 构建 LLM 与 Chain ═══</span>
+llm = ChatOpenAI(
+    model=<span class="code-string">"gpt-4o"</span>,
+    temperature=<span class="code-variable">0</span>,      <span class="code-comment"># 信息抽取任务 temperature=0 保证稳定性</span>
+    request_timeout=<span class="code-variable">60</span>,
+)
+
+chain = prompt | llm | parser
+
+
+<span class="code-comment"># ═══ 执行抽取 ═══</span>
+<span class="code-keyword">def</span> <span class="code-function">extract_financial_info</span>(
+    <span class="code-param">document_text</span>: <span class="code-variable">str</span>,
+    <span class="code_param">verbose</span>: <span class="code-variable">bool</span> = <span class="code-keyword">True</span>
+) -> ExtractionResult:
+    <span class="code-string">"""
+    执行金融信息抽取的主函数
+    
+    Args:
+        document_text: 预处理后的文档文本
+        verbose: 是否打印详细过程
+        
+    Returns:
+        ExtractionResult: 强类型的抽取结果对象
+    """</span>
+    result: ExtractionResult = chain.<span class="code-function">invoke</span>({
+        <span class="code-string">"few_shot_examples"</span>: FEW_SHOT_EXAMPLES,
+        <span class="code-string">"document_text"</span>: document_text,
+    })
+    
+    <span class="code-keyword">if</span> verbose:
+        <span class="code-function">print</span>(<span class="code-string">f"\n{'='*50}"</span>)
+        <span class="code-function">print</span>(<span class="code-string">f"&#x1F3E0; 公司: {result.company_name} ({result.stock_code or 'N/A'})"</span>)
+        <span class="code-function">print</span>(<span class="code-string">f"&#x1F4CB; 报告: {result.report_type} | {result.report_period}"</span>)
+        <span class="code-function">print</span>(<span class="code-string">f"&#x1F4CA; 财务指标 ({len(result.financial_metrics)}项):"</span>)
+        <span class="code-keyword">for</span> m <span class="code-keyword">in</span> result.financial_metrics:
+            yoy_str = <span class="code-string">f" ({m.yoy_change})"</span> <span class="code-keyword">if</span> m.yoy_change <span class="code-keyword">else</span> <span class="code-string">""</span>
+            <span class="code-function">print</span>(<span class="code-string">f"  · {m.metric_name}: {m.value}{m.unit}{yoy_str}"</span>)
+        <span class="code-function">print</span>(<span class="code-string">f"&#x1F4A1; 情感: {result.sentiment_analysis.overall_sentiment.value} "</span>
+              <span class="code-string">f"(置信度: {result.sentiment_analysis.confidence:.0%})"</span>)
+        <span class="code-function">print</span>(<span class="code-string">f"&#x2705; 整体置信度: {result.extraction_confidence:.0%}"</span>)
+        <span class="code-function">print</span>(<span class="code-string">f"{'='*50}\n"</span>)
+    
+    <span class="code-keyword">return</span> result
+
+
+<span class="code-comment"># 使用示例</span>
+result = <span class="code-function">extract_financial_info</span>(markdown_text)
+
+<span class="code-comment"># 导出为字典（可直接写入数据库或发送 API）</span>
+output_dict = result.model_dump()
+<span class="code-keyword">import</span> json
+<span class="code-function">print</span>(json.<span class="code-function">dumps</span>(output_dict, ensure_ascii=<span class="code-keyword">False</span>, indent=<span class="code-variable">2</span>))</code></pre>
+                </div>
+
+                <h3 class="section-subtitle">Step 3：结果校验与质量控制</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python / 业务层二次校验</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-keyword">from</span> dataclasses <span class="code-keyword">import</span> dataclass, field
+<span class="code-keyword">from</span> enum <span class="code-keyword">import</span> Enum <span class="code-keyword">as</span> EnumAlias
+
+
+<span class="code-keyword">class</span> <span class="code-class">Severity</span>(<span class="code-class">str</span>, EnumAlias):
+    CRITICAL = <span class="code-string">"严重"</span>
+    WARNING = <span class="code-string">"警告"</span>
+    INFO = <span class="code-string">"提示"</span>
+
+
+<span class="code-dataclass">@dataclass</span>
+<span class="code-keyword">class</span> <span class="code-class">ValidationWarning</span>:
+    severity: Severity
+    message: <span class="code-variable">str</span>
+    field: <span class="code-variable">str</span> = <span class="code-string">""</span>
+
+
+<span class="code-keyword">def</span> <span class="code-function">validate_extraction_result</span>(<span class="code-param">result</span>: ExtractionResult) -> tuple[bool, list[ValidationWarning]]:
+    <span class="code-string">"""
+    对抽取结果进行业务层面的多层校验
+    
+    校验层次：
+    Level 1 - Schema 层面（Pydantic 已保证）：类型正确、必填不为空
+    Level 2 - 业务层面（本函数）：数值合理、逻辑自洽
+    Level 3 - 领域层面（可选）：交叉验证外部数据源
+    
+    Returns:
+        (is_valid, warnings)
+    """</span>
+    warnings: list[ValidationWarning] = []
+    
+    <span class="code-comment"># ---- 校验 1: 必填字段完整性 ----</span>
+    <span class="code-keyword">if</span> <span class="code-keyword">not</span> result.company_name <span class="code-keyword">or</span> len(result.company_name.strip()) &lt; <span class="code-variable">2</span>:
+        warnings.<span class="code-function">append</span>(ValidationWarning(
+            severity=Severity.CRITICAL,
+            message=<span class="code-string">"公司名称为空或过短"</span>,
+            field=<span class="code-string">"company_name"</span>
+        ))
+    
+    <span class="code-comment"># ---- 校验 2: 财务数据合理性 ----</span>
+    <span class="code-keyword">for</span> metric <span class="code-keyword">in</span> result.financial_metrics:
+        <span class="code-keyword">if</span> metric.value <span class="code-keyword">is not None</span>:
+            <span class="code-comment"># 负值警告（某些指标如亏损可为负，需区分）</span>
+            <span class="code-keyword">if</span> metric.value &lt; <span class="code-variable">0</span> <span class="code-keyword">and</span> metric.metric_name <span class="code-keyword">not in</span> [<span class="code-string">"净亏损"</span>, <span class="code-string">"亏损额"</span>]:
+                warnings.<span class="code-function">append</span>(ValidationWarning(
+                    severity=Severity.WARNING,
+                    message=<span class="code-string">f"{metric.metric_name} 为负值: {metric.value}"</span>,
+                    field=metric.metric_name
+                ))
+            
+            <span class="code-comment"># 异常大值检测（超过万亿级别的营收需警惕）</span>
+            <span class="code-keyword">if</span> metric.unit == <span class="code-string">"亿元"</span> <span class="code-keyword">and</span> metric.value > <span class="code-variable">100000</span>:
+                warnings.<span class="code-function">append</span>(ValidationWarning(
+                    severity=Severity.WARNING,
+                    message=<span class="code-string">f"{metric.metric_name} 数值异常偏大: {metric.value}"</span>,
+                    field=metric.metric_name
+                ))
+    
+    <span class="code-comment"># ---- 校验 3: 置信度阈值过滤 ----</span>
+    <span class="code-keyword">if</span> result.extraction_confidence &lt; <span class="code-variable">0.7</span>:
+        warnings.<span class="code-function">append</span>(ValidationWarning(
+            severity=Severity.WARNING,
+            message=<span class="code-string">f"整体置信度偏低 ({result.extraction_confidence:.0%})，建议人工复核"</span>,
+            field=<span class="code-string">"extraction_confidence"</span>
+        ))
+    
+    <span class="code-comment"># ---- 校验 4: 情感一致性检查 ----</span>
+    positive_signals = sum(<span class="code-variable">1</span> <span class="code-keyword">for</span> e <span class="code-keyword">in</span> result.key_events
+                          <span class="code-keyword">if</span> any(kw <span class="code-keyword">in</span> e <span class="code-keyword">for</span> kw <span class="code-keyword">in</span>
+                              [<span class="code-string">"增长"</span>, <span class="code-string">"提升"</span>, <span class="code-string">"创新高"</span>, <span class="code-string">"超预期"</span>]))
+    negative_signals = sum(<span class="code-variable">1</span> <span class="code-keyword">for</span> e <span class="code-keyword">in</span> result.key_events
+                           <span class="code-keyword">if</span> any(kw <span class="code-keyword">in</span> e <span class="code-keyword">for</span> kw <span class="code-keyword">in</span>
+                               [<span class="code-string">"下降"</span>, <span class="code-string">"亏损"</span>, <span class="code-string">"预警"</span>, <span class="code-string">"处罚"</span>, <span class="code-string">"退市"</span>]))
+    
+    <span class="code-keyword">if</span> result.sentiment_analysis.overall_sentiment == Sentiment.POSITIVE <span class="code-keyword">and</span> negative_signals > positive_signals:
+        warnings.<span class="code-function">append</span>(ValidationWarning(
+            severity=Severity.INFO,
+            message=<span class="code-string">"情感判断与关键事件的信号方向可能不一致"</span>,
+            field=<span class="code-string">"sentiment_analysis"</span>
+        ))
+    
+    is_valid = <span class="code-keyword">not</span> any(w.severity == Severity.CRITICAL <span class="code-keyword">for</span> w <span class="code-keyword">in</span> warnings)
+    <span class="code-keyword">return</span> is_valid, warnings
+
+
+<span class="code-comment"># 执行校验</span>
+is_valid, warnings = <span class="code-function">validate_extraction_result</span>(result)
+
+<span class="code-keyword">if</span> is_valid:
+    <span class="code-function">print</span>(<span class="code-string">"&#x2705; 校验通过，数据可入库"</span>)
+<span class="code-keyword">else</span>:
+    <span class="code-function">print</span>(<span class="code-string">"&#x274C; 发现严重问题:"</span>)
+    <span class="code-keyword">for</span> w <span class="code-keyword">in</span> warnings:
+        icon = {Severity.CRITICAL: "&#x274C;", Severity.WARNING: "&#x26A0;", Severity.INFO: "&#x2139;"}.<span class="code-function">get</span>(w.severity, "")
+        <span class="code-function">print</span>(<span class="code-string">f"  {icon} [{w.severity.value}] {w.message}"</span>)</code></pre>
+                </div>
+
+                <h3 class="section-subtitle">边界情况处理策略一览</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">&#x2753; 缺失信息</div>
+                        <div class="info-item-value">Optional 字段允许 null；必填缺失时自动降低 extraction_confidence</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#x1F9E0; 歧义数据</div>
+                        <div class="info-item-value">同一指标出现多个数值时，CoT 引导选择「最新/最权威」的版本</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#x26A0;&#xFE0F; 冲突事实</div>
+                        <div class="info-item-value">前后矛盾时在 key_events 中同时记录两版并标注冲突标记</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#x1F4DD; 超长文档</div>
+                        <div class="info-item-value">超出 token 限制时采用 Map-Reduce 分段抽取后合并的策略</div>
+                    </div>
+                </div>
+
+                <div class="figure-container">
+                    <div class="compare-diagram">
+                        <div class="compare-panel input-panel">
+                            <div class="compare-panel-header">📰 原始中文财经新闻</div>
+                            <div class="compare-panel-body">【贵州茅台发布2024年一季报】
+4月27日晚间，贵州茅台（600519.SH）
+披露2024年一季度报告。报告期内，
+公司实现营业收入387.56亿元，同比增
+长18.01%；归母净利润207.95亿元，
+同比增长20.59%。基本每股收益16.53元。
+
+分产品看，茅台酒收入332.28亿元，
+同比增长17.46%……分析师普遍认为，
+i茅台数字营销平台持续发力，
+直销渠道占比提升是利润增速高于
+营收增速的主要原因。</div>
+                        </div>
+                        <div class="compare-arrow-col"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                        <div class="compare-panel output-panel">
+                            <div class="compare-panel-header">📊 结构化 JSON 输出</div>
+                            <div class="compare-panel-body">{<br>  "company_name": "贵州茅台",<br>  "stock_code": "600519.SH",<br>  "report_type": "季度报告",<br>  "report_period": "2024Q1",<br>  "financial_metrics": [<br>    {"metric_name": "营业收入",<br>     "value": 387.56, "unit": "亿元",<br>     "yoy_change": "+18.01%"},<br>    {"metric_name": "归母净利润",<br>     "value": 207.95, "unit": "亿元",<br>     "yoy_change": "+20.59%"},<br>    ...<br>  ],<br>  "sentiment": {<br>    "overall": "正面",<br>    "confidence": 0.93<br>  }<br>}</div>
+                        </div>
+                    </div>
+                    <p class="figure-caption">图 3-1：金融文本信息抽取效果示意 —— 从非结构化新闻文本到结构化 JSON 的转换效果</p>
+                </div>
+            </div>
+        </article>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- SECTION 04: FinCoT 研究延伸与总结          -->
+        <!-- ═══════════════════════════════════════════ -->
+        <article class="section-card accent-bar-danger" id="s4" data-animate>
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2 class="section-title">FinCoT 与前沿延伸：知识要点回顾</h2>
+            </div>
+            <div class="section-content">
+                <h3 class="section-subtitle">FinCoT：面向金融领域的思维链推理</h3>
+                <p>
+                    <strong>FinCoT（Financial Chain-of-Thought）</strong> 是学术界针对金融领域推理任务提出的专门化研究方向。
+                    不同于通用 CoT 主要关注数学推理和常识问答，FinCoT 聚焦于金融文本特有的挑战：
+                </p>
+                <ul class="content-list">
+                    <li>
+                        <strong>数值精度要求极高</strong>：金融数据差一个小数点就是天壤之别（亿 vs 万亿），
+                        CoT 的中间步骤必须精确到每一个数字
+                    </li>
+                    <li>
+                        <strong>领域术语密集</strong>：「扣非净利润」「摊薄 EPS」「EBITDA」「经营性现金流」等专业术语
+                        需要模型具备深厚的金融领域知识才能正确理解
+                    </li>
+                    <li>
+                        <strong>时间维度复杂</strong>：同比（YoY）、环比（QoQ）、累计值、单季度值的区分，
+                        以及不同会计期间的口径对齐，都需要细粒度的推理
+                    </li>
+                    <li>
+                        <strong>因果关系隐含</strong>：「利润增速高于营收增速是因为毛利率提升」这类因果推理，
+                        要求模型不仅提取数据还要理解数据之间的关系
+                    </li>
+                </ul>
+
+                <div class="highlight-box danger">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        生产环境的关键提醒
+                    </div>
+                    <div class="highlight-box-content">
+                        <strong>LLM 抽取的金融数据绝不能直接用于投资决策！</strong><br><br>
+                        即使使用了 CoT + Pydantic + 校验的三重保障，LLM 仍可能产生数值幻觉（hallucination）。
+                        正确的做法是将 LLM 作为<strong>预筛选/初提取</strong>层，最终数据必须经过：
+                        <br>&#x25B6; 与原始文档的人工抽检比对（至少 10% 抽样率）
+                        <br>&#x25B6; 与Wind/同花顺等结构化数据源的交叉验证
+                        <br>&#x25B6; 数值范围的合理性检查（如某白酒公司营收不可能超过 1 万亿）
+                        <br>
+                        LLM 是提效工具，不是替代人工审慎义务的理由。
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">本集知识体系总结</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">&#x1F4AD; CoT 核心原理</div>
+                        <div class="info-item-value">通过显式中间推理步骤分配更多计算量、定位错误、激活领域知识；依赖模型规模的突现能力</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#x1F3AF; 三种 CoT 模式</div>
+                        <div class="info-item-value">Zero-Shot（一句话触发）→ Manual（手动示例）→ Auto-CoT（自动生成）；金融场景首选 Manual</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#x1F3E0; 黄金三角架构</div>
+                        <div class="info-item-value">CoT（怎么想）+ Few-Shot（怎么学）+ Pydantic Parser（怎么输出）= 可靠的信息抽取系统</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#x2699;&#xFE0F; 工程实践要点</div>
+                        <div class="info-item-value">markitdown 预处理 → 六步 CoT 分析 → 强类型 Schema → 多层校验 → 人工抽检兜底</div>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">CoT 金融信息抽取 Checklist</h3>
+                <div class="highlight-box success" style="margin-top: 1.25rem;">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        自检清单：上线前的最后一道防线
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:none;padding:0;margin:0;">
+                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;System Prompt 是否包含了完整的角色设定 + 六步 CoT 分析流程 + 提取规则？
+                            </li>
+                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;Few-Shot 示例是否覆盖了至少 3 种不同的文档模式（财报/风险/并购等）？
+                            </li>
+                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;Pydantic Schema 是否包含了所有字段的 description 注解（帮助模型理解字段含义）？
+                            </li>
+                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;是否使用了 markitdown 或类似工具做文档预处理（而非直接喂原始 PDF）？
+                            </li>
+                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;是否有置信度评分 + 业务规则校验 + 异常值检测的三层质量控制？
+                            </li>
+                            <li style="padding:0.3rem 0;">
+                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
+                                &nbsp;是否用至少 20+ 真实金融文档做过端到端的准确率测试并记录失败案例？
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">下一集预告</h3>
+                <p>
+                    下一集我们将进入<strong>P06 —— 输出格式控制与高级技巧</strong>！<br><br>
+                    在掌握了 CoT 推理和信息抽取的核心方法论之后，我们将进一步探索如何精细控制 LLM 的输出格式：
+                    包括 XML/Markdown 等结构化输出、输出长度控制、多模态输出编排等高级话题。
+                    这些技巧将让你的 Prompt 工程能力从「能用」进化到「精炼」。<br><br>
+                    <strong>准备好迎接下一章了吗？Spinning~♪ ✧(≖ ◡ ≖✿)</strong>
+                </p>
+            </div>
+        </article>
+
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="footer-container">
+        <nav class="footer-nav">
+            <a href="04-Few-Shot少样本学习.html" class="footer-link">
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">&larr; 上一集</div>
+                    <div>第 04 集 - Few-Shot 少样本学习</div>
+                </div>
+            </a>
+            <a href="06-输出格式控制.html" class="footer-link next">
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">下一集 &rarr;</div>
+                    <div>第 06 集 - 输出格式控制</div>
+                </div>
+            </a>
+        </nav>
+        <div class="footer-reference">
+            参考文献：Wei et al. (2022) "Chain-of-Thought Prompting" &middot;
+            Kojima et al. (2022) "Large Language Models are Zero-Shot Reasoners" &middot;
+            Zhang et al. (2022) "Auto-CoT: Automatic Chain-of-Thought Prompting"
+        </div>
+    </div>
+</footer>
+
+<div class="tweaks-panel" id="tweaksPanel">
+    <button class="tweaks-toggle" onclick="toggleTweaks()" title="调整字体大小">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+    </button>
+    <span class="tweaks-label">字号</span>
+    <input type="range" class="tweaks-slider" id="fontSlider" min="12" max="22" value="16" step="1" oninput="adjustFontSize(this.value)">
+    <span class="tweaks-value" id="fontValue">16px</span>
+</div>
+
+<script>
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 20) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -50px 0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, index * 100);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.section-card[data-animate]').forEach(card => {
+        observer.observe(card);
+    });
+
+    function copyCode(btn) {
+        const codeBlock = btn.closest('.code-block');
+        const code = codeBlock.querySelector('code').textContent;
+
+        navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copied!';
+            btn.style.color = 'var(--success)';
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+                btn.style.color = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Copy failed:', err);
+        });
+    }
+
+    let tweaksExpanded = true;
+
+    function toggleTweaks() {
+        const panel = document.getElementById('tweaksPanel');
+        tweaksExpanded = !tweaksExpanded;
+        if (tweaksExpanded) {
+            panel.classList.remove('collapsed');
+        } else {
+            panel.classList.add('collapsed');
+        }
+    }
+
+    function adjustFontSize(size) {
+        document.documentElement.style.setProperty('--font-size-base', size + 'px');
+        document.getElementById('fontValue').textContent = size + 'px';
+    }
+</script>
+
+</body>
+</html>
