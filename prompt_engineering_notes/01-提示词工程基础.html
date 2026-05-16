@@ -1101,13 +1101,14 @@
             提示词工程 Notes
         </a>
         <nav class="nav-links">
-            <a href="#s1" class="nav-anchor">&sect;1 Prompt本质</a>
-            <a href="#s2" class="nav-link active">P01 基础</a>
-            <a href="#" class="nav-link">P02 结构化</a>
-            <a href="#" class="nav-link">P03 角色设定</a>
-            <a href="#" class="nav-link">P04 Few-Shot</a>
-            <a href="#" class="nav-link">P05 思维链</a>
-            <a href="#" class="nav-link">P06 高级技巧</a>
+            <a href="#s0" class="nav-anchor">&sect;0 课程概览</a>
+            <a href="#s1" class="nav-link active">P01 技巧总览</a>
+            <a href="#s2" class="nav-link">T1 详细描述</a>
+            <a href="#s3" class="nav-link">T2 角色设定</a>
+            <a href="#s4" class="nav-link">T3 分隔符</a>
+            <a href="#s5" class="nav-link">T4 指定步骤</a>
+            <a href="#s6" class="nav-link">T5 Few-Shot</a>
+            <a href="#s7" class="nav-link">T6 参考文本</a>
         </nav>
     </div>
 </header>
@@ -1116,12 +1117,12 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <div class="hero-badge">P01 / Chapter 01 &middot; Prompt Engineering Fundamentals</div>
+        <div class="hero-badge">P01 / Episode 01 &middot; 提示词工程-01、大模型Prompt工程指南</div>
         <h1 class="hero-title">
-            第01集：<span class="hero-title-accent">提示词工程基础</span>
+            第01集：<span class="hero-title-accent">6大Prompt核心技巧</span>
         </h1>
         <p class="hero-subtitle">
-            从 Prompt 的本质定义出发，系统掌握提示词工程的核心设计原则、四要素模型与主流设计框架，建立完整的 Prompt Engineering 知识体系地基
+            系统学习提示词工程的 6 个基础但至关重要的技巧：详细描述、角色扮演、分隔符、步骤拆分、Few-Shot示例、参考文本（RAG雏形）。每个技巧均来自视频课程真实讲解，配有课程PPT截图。
         </p>
         <div class="hero-meta">
             <span class="meta-tag">
@@ -1130,11 +1131,11 @@
             </span>
             <span class="meta-tag">
                 <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                阅读约 25min
+                阅读约 15min
             </span>
             <span class="meta-tag">
                 <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-                含 5 大知识模块
+                含 6 大 Prompt 技巧
             </span>
         </div>
     </section>
@@ -1142,818 +1143,614 @@
     <!-- Content -->
     <div class="content-section">
 
-        <!-- ==================== CARD 1: Prompt的本质与定义 ==================== -->
-        <article class="section-card" id="s1" data-animate>
+        <!-- ==================== CARD 0: 课程概览 + 核心概念 ==================== -->
+        <article class="section-card" id="s0" data-animate>
             <div class="section-header">
-                <span class="section-number">01</span>
-                <h2 class="section-title">Prompt 的本质与定义</h2>
+                <span class="section-number">00</span>
+                <h2 class="section-title">课程概览 &amp; 核心概念</h2>
             </div>
             <div class="section-content">
                 <p>
-                    <strong>提示词（Prompt）</strong>是大语言模型（Large Language Model, LLM）的<strong>输入接口</strong>——它是用户以自然语言形式向模型传达意图、提供上下文、约束输出行为的全部文本内容。
-                    从技术本质上讲，Prompt 是 LLM 推理引擎的<strong>「编程语言」</strong>：
-                    你不需要写 Python 或 C++，但你需要用自然语言精确地「编程」模型的思维过程。
+                    本集是<strong>提示词工程系列课程的第一集</strong>，主题为「提示词工程-01、大模型Prompt工程指南」。
+                    课程系统性地介绍了 <strong>6 个 Prompt 编写的基础技巧</strong>，这些技巧是后续所有高级方法（如思维链、结构化提示词等）的基石。
                 </p>
 
-                <h3 class="section-subtitle">从 GPT-3 到现在：Prompt Engineering 的演进脉络</h3>
-
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-year">2020.06 — GPT-3 发布</div>
-                        <div class="timeline-content">
-                            OpenAI 发布 <strong>1750 亿参数</strong>的 GPT-3，首次展现出<strong>Few-Shot Learning</strong>（少样本学习）能力。
-                            研究者发现：通过在输入中提供少量示例（in-context examples），模型无需微调即可完成新任务——<strong>Prompt Engineering 的雏形由此诞生</strong>。
-                            Brown et al. 在论文中系统性地描述了 "prompting" 这一范式。
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-year">2021-2022 — 探索期</div>
-                        <div class="timeline-content">
-                            学术界涌现大量 prompting 研究：<strong>Chain-of-Thought (Wei et al., 2022)</strong> 提出「思维链」推理；
-                            <strong>Zero-Shot CoT (Kojima et al., 2022)</strong> 发现仅加一句 "Let's think step by step" 就能显著提升推理能力；
-                            <strong>Self-Consistency (Wang et al., 2022)</strong> 通过多次采样投票提升准确率。Prompt 开始被视为一门<strong>可研究的科学</strong>。
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-year">2022.11 — ChatGPT 爆发</div>
-                        <div class="timeline-content">
-                            ChatGPT 面向公众开放，<strong>Prompt Engineering 从学术研究走向大众实践</strong>。
-                            数亿用户开始用自然语言与 AI 对话，「如何写好 prompt」成为全民关注的话题。
-                            GitHub 上 prompt 相关仓库星数激增，社区开始沉淀最佳实践。
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-year">2023-2024 — 工程化成熟期</div>
-                        <div class="timeline-content">
-                            <strong>LangChain、LlamaIndex</strong> 等 Prompt 编排框架出现；企业级应用中 Prompt 变成需要版本管理、A/B 测试、监控追踪的<strong>一等公民</strong>；
-                            System Prompt 与 User Prompt 分离、Prompt Template 引擎、Prompt Cache 等工程概念逐渐标准化。
-                            Microsoft、Google、Anthropic 各自发布官方 Prompt Engineering Guide。
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-year">2025+ — Agent 时代</div>
-                        <div class="timeline-content">
-                            随着 LLM 能力边界不断拓展，Prompt Engineering 正在向 <strong>Agent Design</strong> 演进——
-                            不再只是单轮对话优化，而是涉及多步推理规划、工具调用编排、记忆管理、自我反思等更复杂的<strong>系统级 Prompt 设计</strong>。
-                        </div>
-                    </div>
+                <div class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/bNJm1wQgCn" alt="课程介绍页截图1" loading="lazy">
+                    <p class="figure-caption">图 0-1：课程 PPT 介绍页 —— 提示词工程-01、大模型Prompt工程指南</p>
                 </div>
 
-                <div class="css-diagram">
-                    <div class="diagram-timeline">
-                        <div class="tl-node">
-                            <div class="tl-dot"></div>
-                            <div class="tl-year">2020</div>
-                            <div class="tl-label">GPT-3 发布</div>
-                            <div class="tl-desc">1750亿参数 · Few-Shot Learning 雏形诞生</div>
-                        </div>
-                        <div class="tl-node">
-                            <div class="tl-dot"></div>
-                            <div class="tl-year">2021-22</div>
-                            <div class="tl-label">探索期</div>
-                            <div class="tl-desc">CoT / Zero-Shot CoT / Self-Consistency</div>
-                        </div>
-                        <div class="tl-node">
-                            <div class="tl-dot"></div>
-                            <div class="tl-year">2022.11</div>
-                            <div class="tl-label">ChatGPT 爆发</div>
-                            <div class="tl-desc">从学术走向大众实践</div>
-                        </div>
-                        <div class="tl-node">
-                            <div class="tl-dot"></div>
-                            <div class="tl-year">2023-24</div>
-                            <div class="tl-label">工程化成熟</div>
-                            <div class="tl-desc">LangChain · Prompt Cache · 版本管理</div>
-                        </div>
-                        <div class="tl-node">
-                            <div class="tl-dot"></div>
-                            <div class="tl-year">2025+</div>
-                            <div class="tl-label">Agent 时代</div>
-                            <div class="tl-desc">多步推理 · 工具调用 · 系统级设计</div>
-                        </div>
-                    </div>
+                <div class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/3Sgr1wQgCn" alt="课程介绍页截图2" loading="lazy">
+                    <p class="figure-caption">图 0-2：课程内容总览 —— 6 大技巧预览</p>
                 </div>
-                <p class="figure-caption" style="text-align:center;margin-top:0.75rem;font-size:0.8125rem;color:var(--text-muted);font-style:italic;">图 1-1：Prompt Engineering 从 2020 年 GPT-3 到 2025+ Agent 时代的演进脉络</p>
 
-                <h3 class="section-subtitle">什么是「提示词工程」（Prompt Engineering）？</h3>
+                <h3 class="section-subtitle">什么是 Prompt Engineering？</h3>
                 <p>
-                    <strong>提示词工程</strong>是指<strong>设计和优化输入给大语言模型的文本指令</strong>，
-                    以引导模型产生期望输出的系统性方法与实践。它不是简单的「提问技巧」，而是一门融合了：
+                    <strong>Prompt Engineering（提示词工程）</strong>是指通过设计和优化输入给大语言模型（LLM）的文本指令，
+                    来引导模型产生期望输出的系统性方法与技巧。简单来说，就是<strong>学会如何用自然语言精确地「编程」大模型的思维过程</strong>。
                 </p>
 
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-item-label">语言学</div>
-                        <div class="info-item-value">理解自然语言的歧义性、指代消解、语用含义对模型行为的影响</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">认知心理学</div>
-                        <div class="info-item-value">借鉴人类沟通中的框架效应、锚定效应、启发式原则来设计指令</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">软件工程</div>
-                        <div class="info-item-value">将 Prompt 视为代码进行版本控制、测试、迭代和团队协作管理</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">机器学习</div>
-                        <div class="info-item-value">理解 Transformer 注意力机制、tokenization、temperature 等底层原理</div>
-                    </div>
-                </div>
-
-                <div class="highlight-box teal">
+                <div class="highlight-box">
                     <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                        核心认知：Prompt = LLM 的源代码
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        核心理念
                     </div>
                     <div class="highlight-box-content">
-                        把 Prompt 想象成你写给一个<strong>极其博学但完全不了解你背景的超强实习生</strong>的工作指令。
-                        这个实习生能理解几乎所有领域的知识，但他不知道你的具体需求、不知道你的受众是谁、不知道你对输出格式的要求。
-                        <strong>Prompt Engineering 就是学会如何给这个实习生写一份清晰、完整、无歧义的工作说明书。</strong>
-                        写得越好，他的产出就越符合预期——这和写代码让计算机执行逻辑在本质上是同一件事。
+                        任何 Prompt 技巧都不如<strong>清晰表达需求</strong>来得重要。这就像人与人之间的沟通——
+                        如果话都说不明白，对方就不可能理解你的意思。本集的 6 个技巧，
+                        本质上都是在围绕「如何更清晰、更结构化地向大模型传达意图」这一核心目标展开。
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">本集 6 大技巧速览</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">技巧一</div>
+                        <div class="info-item-value"><strong>详细的描述</strong> — 清晰表达需求是一切的基础</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">技巧二</div>
+                        <div class="info-item-value"><strong>角色设定</strong> — 让模型以特定身份回答问题</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">技巧三</div>
+                        <div class="info-item-value"><strong>分隔符</strong> — 用标记区分输入的不同部分</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">技巧四</div>
+                        <div class="info-item-value"><strong>指定步骤</strong> — 将复杂任务拆分为有序步骤</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">技巧五</div>
+                        <div class="info-item-value"><strong>Few-Shot 示例</strong> — 先给例子让模型模仿输出</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">技巧六</div>
+                        <div class="info-item-value"><strong>参考文本（RAG雏形）</strong> — 基于文档降低幻觉</div>
                     </div>
                 </div>
             </div>
         </article>
 
-        <!-- ==================== CARD 2: 核心设计原则 ==================== -->
+        <!-- ==================== CARD 1: 技巧一 - 详细的描述 ==================== -->
         <article class="section-card accent-bar-success" id="s2" data-animate>
             <div class="section-header">
-                <span class="section-number">02</span>
-                <h2 class="section-title">提示词设计的核心原则</h2>
+                <span class="section-number">T1</span>
+                <h2 class="section-title">技巧一：详细的描述</h2>
             </div>
             <div class="section-content">
-                <p>
-                    经过学术界和工业界的大量实践验证，以下三大核心原则构成了高质量 Prompt 设计的基石。
-                    这些原则并非孤立存在，而是相互补充、协同作用的——一个好的 Prompt 通常会同时满足多条原则。
-                </p>
-
-                <h3 class="section-subtitle">原则一：清晰且具体（Be Specific &amp; Explicit）</h3>
-                <p>
-                    这是最基础也最重要的原则。<strong>模糊的指令迫使模型「猜测」你的意图</strong>，
-                    而猜测的结果往往不尽如人意。清晰的指令应当包含：
-                    任务类型、目标受众、输出格式、长度约束、风格要求等<strong>可量化、可验证</strong>的具体参数。
-                </p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Bad vs Good — 清晰度对比：文本摘要任务</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        核心原理
                     </div>
-                    <div class="code-body"><pre><code><span class="code-comment"># ❌ Bad — 模型不知道：摘要给谁看？多长？什么格式？保留什么信息？</span>
-prompt_bad = <span class="code-string">"帮我总结一下这篇文章"</span>
-
-<span class="code-comment"># ✅ Good — 六个维度全面明确</span>
-prompt_good = <span class="code-string">"""
-【任务】请为以下科技新闻撰写一段执行摘要。
-
-【目标读者】非技术背景的公司高管，他们关注商业影响而非技术细节。
-
-【要求】
-1. 字数控制在 150-200 字之间
-2. 必须包含以下要素：核心事件（1句话）、影响范围（谁受影响）、
-   商业意义（为什么重要）、关键数据（如有）
-3. 使用专业但不晦涩的语言，避免行话缩写
-4. 采用「倒金字塔」结构——最重要信息放在最前面
-
-【输出格式】纯文本段落，不要使用列表或 Markdown 格式
-
-【待处理文本】
-{article_text}
-"""</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">原则二：提供充分上下文（Provide Context）</h3>
-                <p>
-                    LLM 是一个<strong>无状态的无记忆系统</strong>——每次调用之间没有持久化的上下文。
-                    <strong>你认为显而易见的信息，对模型来说可能完全未知。</strong>
-                    上下文就像是模型的「临时工作记忆」，你注入的信息越丰富、结构化程度越高，
-                    模型的推理质量就越好。有效的上下文应覆盖以下四个维度：
-                </p>
-
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-item-label">👤 角色身份</div>
-                        <div class="info-item-value">"你是一名有 10 年经验的资深后端架构师，精通分布式系统设计"</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">🎯 使用场景</div>
-                        <div class="info-item-value">"这段代码将被集成到一个日活千万的电商交易链路中"</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">📋 背景信息</div>
-                        <div class="info-item-value">"我们使用 Spring Boot 3.x + MySQL 8.0 + Redis Cluster 架构"</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">⚠️ 约束条件</div>
-                        <div class="info-item-value">"不能引入新的中间件依赖，改动范围限制在 Service 层以内"</div>
+                    <div class="highlight-box-content">
+                        <strong>任何 Prompt 技巧都不如清晰表达需求。</strong>
+                        这类似于人与人之间的日常沟通——如果连话都说不清楚、说不完整，
+                        对方就不可能真正理解你的意思。对大模型而言同样如此：
+                        你的描述越详细、约束越明确，模型的输出就越符合预期。
                     </div>
                 </div>
 
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Bad vs Good — 上下文丰富度对比：代码审查任务</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-comment"># ❌ Bad — 零上下文，模型只能做泛泛的语法检查</span>
-prompt_bad = <span class="code-string">"审查这段代码有没有问题：\n{code_snippet}"</span>
-
-<span class="code-comment"># ✅ Good — 完整上下文让模型做出有针对性的深度审查</span>
-prompt_good = <span class="code-string">"""
-【角色】你是一位专注于高并发系统的资深代码审查专家，
-       有 15 年 Java 后端开发经验，曾主导过双11大促的核心链路优化。
-
-【项目背景】
-这是一个电商订单服务的库存扣减模块，当前面临以下问题：
-- QPS 峰值达到 50000，现有实现存在超卖风险
-- 数据库连接池经常耗尽，导致服务熔断
-- 团队中有 3 名初级开发者会参与维护此代码
-
-【审查重点】
-1. 并发安全性：是否存在竞态条件或数据不一致风险？
-2. 性能瓶颈：是否有不必要的数据库查询或锁竞争？
-3. 可维护性：代码是否足够清晰，便于初级开发者理解和修改？
-4. 异常处理：边界情况是否都考虑到了？
-
-【约束】
-- 不要建议重构整个模块（业务方不允许大改）
-- 只指出 P0 和 P1 级别的问题
-- 每个问题给出具体的修复代码示例
-
-【待审查代码】
-```java
-{code_snippet}
-```
-"""</span></code></pre>
+                <div class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/AFRR1wQgCn" alt="技巧一：详细的描述 - 课程PPT截图" loading="lazy">
+                    <p class="figure-caption">图 1-1：课程 PPT 截图 —— 技巧一「详细的描述」讲解页</p>
                 </div>
 
-                <h3 class="section-subtitle">原则三：分解复杂任务（Decompose Complex Tasks）</h3>
+                <h3 class="section-subtitle">为什么详细描述如此重要？</h3>
                 <p>
-                    当面对复杂的多步骤任务时，<strong>将其拆解为多个独立的子任务</strong>是提升输出质量的关键策略。
-                    这背后的原理是：LLM 的注意力机制（Attention Mechanism）在处理长文本时会出现<strong>信息稀释</strong>现象——
-                    当 Prompt 超过一定长度（通常 500+ token 的指令部分），模型对各子指令的关注度会下降，
-                    导致遗漏要求或执行不完整。
+                    大语言模型虽然能力强大，但它本质上是一个<strong>文本补全引擎</strong>——
+                    它根据你给出的上文来预测下一个最可能的文本。如果你给的上下文信息不足、模糊不清，
+                    模型就只能靠「猜」来填充空白，而猜测的结果往往偏离你的真实意图。
                 </p>
+                <ul class="content-list">
+                    <li><strong>字数/长度约束</strong>：告诉模型你期望多长的输出</li>
+                    <li><strong>风格/语气要求</strong>：正式还是轻松？专业还是通俗？</li>
+                    <li><strong>格式规范</strong>：段落、列表、表格、JSON？</li>
+                    <li><strong>目标受众</strong>：写给谁看的？需要什么背景知识？</li>
+                    <li><strong>具体内容要素</strong>：必须包含哪些信息点？</li>
+                </ul>
 
+                <h3 class="section-subtitle">实战示例</h3>
                 <div class="code-block">
                     <div class="code-header">
-                        <span class="code-lang">Bad vs Good — 任务分解对比：技术文档生成</span>
+                        <span class="code-lang">示例：写情书任务 — 详细描述 vs 模糊描述</span>
                         <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
-                    <div class="code-body"><pre><code><span class="code-comment"># ❌ Bad — 一个 Prompt 塞入 5 个子任务，模型容易遗漏</span>
-prompt_bad = <span class="code-string">"""
-根据这个 API 项目，生成完整的技术文档，包括：
-1. API 接口列表和参数说明
-2. 数据库 ER 图描述
-3. 部署指南
-4. 故障排查手册
-5. 性能调优建议
-"""</span>
+                    <div class="code-body"><pre><code><span class="code-comment"># ❌ Bad — 模糊描述，模型不知道风格、长度、内容要求</span>
+prompt_bad = <span class="code-string">"帮我写一封情书"</span>
 
-<span class="code-comment"># ✅ Good — 分步骤执行，每步聚焦单一目标</span><span class="code-comment">
-# Step 1: 先提取 API 信息</span>
-prompt_step1 = <span class="code-string">"""
-分析以下代码，提取所有 API 端点信息。
-输出 JSON 数组，每个元素包含：method, path, parameters, return_type。
-只做提取，不做其他分析。
-"""</span>
-
-<span class="code-comment"># Step 2: 基于 Step 1 输出生成接口文档</span>
-prompt_step2 = <span class="code-string">"""
-基于以下 API 端点信息，生成 OpenAPI 3.0 规格的接口文档。
-每个接口需包含：描述、请求参数表、响应示例、错误码说明。
-"""</span>
-
-<span class="code-comment"># Step 3: 单独处理部署相关内容</span>
-prompt_step3 = <span class="code-string">"""
-基于项目配置文件（Dockerfile, docker-compose.yml, README），
-生成部署指南。包含环境变量清单、启动命令、健康检查端点。
-"""</span></code></pre>
+<span class="code-comment"># ✅ Good — 详细描述，来自课程原文示例</span>
+prompt_good = <span class="code-string">"用一些温柔的话语写一封情书，来表达我对你的仰慕和思念。最后，我要求书写字体数要不低于500个字"</span></code></pre>
                 </div>
 
                 <div class="highlight-box warning">
                     <div class="highlight-box-title">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        新手常犯的 5 个错误
+                        要点总结
+                    </div>
+                    <div class="highlight-box-content">
+                        详细描述的关键在于：<strong>把你知道的所有约束条件都告诉模型</strong>。
+                        包括语气风格（温柔的话语）、内容方向（仰慕和思念）、量化指标（不低于500个字）。
+                        约束越具体，模型的输出就越可控。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== CARD 2: 技巧二 - 角色设定 ==================== -->
+        <article class="section-card accent-bar-info" id="s3" data-animate>
+            <div class="section-header">
+                <span class="section-number">T2</span>
+                <h2 class="section-title">技巧二：让模型充当某个角色</h2>
+            </div>
+            <div class="section-content">
+                <div class="highlight-box">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        核心原理
+                    </div>
+                    <div class="highlight-box-content">
+                        通过在 Prompt 中为模型<strong>指定一个角色身份</strong>，可以让模型以该角色的专业知识背景、
+                        语言风格和思维方式来回答问题。这相当于给模型设置了一个「人设」，
+                        使其输出更加聚焦和专业。
+                    </div>
+                </div>
+
+                <div class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/44uL1wQgCn" alt="技巧二：角色设定 - 课程PPT截图" loading="lazy">
+                    <p class="figure-caption">图 2-1：课程 PPT 截图 —— 技巧二「角色设定」讲解页</p>
+                </div>
+
+                <h3 class="section-subtitle">角色设定的作用机制</h3>
+                <p>
+                    当你告诉模型「你是一个 XXX」时，模型会从其训练数据中激活与该角色相关的知识领域、
+                    术语体系和表达习惯。这使得：
+                </p>
+                <ul class="content-list">
+                    <li><strong>回答更有专业性</strong>：AI面试官会用面试官的口吻和关注点来提问</li>
+                    <li><strong>术语使用更准确</strong>：程序员角色会使用正确的技术术语</li>
+                    <li><strong>视角更加聚焦</strong>：产品经理角色会从产品和用户角度分析问题</li>
+                    <li><strong>风格保持一致</strong>：整个对话过程中角色特征稳定</li>
+                </ul>
+
+                <h3 class="section-subtitle">实战示例</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">示例：AI算法面试官角色 — 来自课程原文</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>prompt = <span class="code-string">"我需要你充当一个AI算法面试官的角色，要求你自主的对我进行AI面试过程中常考的面试题"</span></code></pre>
+                </div>
+
+                <div class="highlight-box teal">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        常用角色类型参考
                     </div>
                     <div class="highlight-box-content">
                         <ul class="content-list" style="margin:0;">
-                            <li><strong>「万能 Prompt」陷阱</strong>：试图用一个超长 Prompt 覆盖所有需求，结果每个需求都被敷衍处理</li>
-                            <li><strong>矛盾指令冲突</strong>：同时要求「详细深入」和「简洁精炼」，模型陷入两难</li>
-                            <li><strong>假设模型知道背景</strong>：不说清楚自己的行业、场景、术语含义，指望模型自动猜对</li>
-                            <li><strong>忽略输出格式约束</strong>：不指定 JSON schema / 表格列名 / 字段含义，然后抱怨解析报错</li>
-                            <li><strong>一次性定型不复盘</strong>：写完 Prompt 就不再测试不同输入，错过了通过迭代优化的机会</li>
+                            <li><strong>面试官角色</strong>：「充当XXX面试官，自主进行面试常考题目」</li>
+                            <li><strong>专家顾问</strong>：「你是一位有10年经验的XXX领域专家」</li>
+                            <li><strong>写作助手</strong>：「你是一个专业的XXX文案撰稿人」</li>
+                            <li><strong>代码审查员</strong>：「你是一个严格的代码审查专家」</li>
+                            <li><strong>学习导师</strong>：「你是一个耐心的XXX学科老师」</li>
                         </ul>
                     </div>
                 </div>
             </div>
         </article>
 
-        <!-- ==================== CARD 3: 四要素模型 ==================== -->
-        <article class="section-card accent-bar-info" id="s3" data-animate>
+        <!-- ==================== CARD 3: 技巧三 - 分隔符 ==================== -->
+        <article class="section-card accent-bar-accent" id="s4" data-animate>
             <div class="section-header">
-                <span class="section-number">03</span>
-                <h2 class="section-title">四要素模型：Instruction + Context + Input + Output</h2>
+                <span class="section-number">T3</span>
+                <h2 class="section-title">技巧三：使用分隔符标明输入的不同部分</h2>
             </div>
             <div class="section-content">
-                <p>
-                    无论 Prompt 以何种形态呈现（纯文本、Markdown、JSON、XML Tag），
-                    一个结构良好的 Prompt 在逻辑上总是由<strong>四个核心要素</strong>构成。
-                    这个四要素模型最早由 OpenAI 和 DeepMind 的研究人员在实践中总结提出，
-                    如今已成为 Prompt 设计领域最广泛接受的<strong>概念框架（Conceptual Framework）</strong>。
-                </p>
-
-                <div class="css-diagram">
-                    <div class="diagram-four-elements">
-                        <div class="de-center"><div class="de-center-inner">Prompt<br>Model</div></div>
-                        <div class="de-card instruction">
-                            <div class="de-icon">⚡</div>
-                            <div class="de-name">指令</div>
-                            <div class="de-name-en">Instruction</div>
-                            <div class="de-question">做什么？</div>
-                        </div>
-                        <div class="de-card context">
-                            <div class="de-icon">📂</div>
-                            <div class="de-name">上下文</div>
-                            <div class="de-name-en">Context</div>
-                            <div class="de-question">为什么？谁在看？</div>
-                        </div>
-                        <div class="de-card input-data">
-                            <div class="de-icon">📄</div>
-                            <div class="de-name">输入数据</div>
-                            <div class="de-name-en">Input Data</div>
-                            <div class="de-question">处理什么？</div>
-                        </div>
-                        <div class="de-card output">
-                            <div class="de-icon">↗</div>
-                            <div class="de-name">输出指示</div>
-                            <div class="de-name-en">Output Indicator</div>
-                            <div class="de-question">怎么输出？</div>
-                        </div>
+                <div class="highlight-box warning">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        核心原理
+                    </div>
+                    <div class="highlight-box-content">
+                        在 Prompt 中使用<strong>分隔符（Delimiter）</strong>来划分不同部分的文本，
+                        帮助模型区分哪些是指令、哪些是需要处理的数据。常用的分隔符包括：
+                        <strong>三引号（'''）、中括号（[]）、XML标签（&lt;tag&gt;）、破折线（---）</strong>等。
                     </div>
                 </div>
-                <p class="figure-caption" style="text-align:center;margin-top:0.75rem;font-size:0.8125rem;color:var(--text-muted);font-style:italic;">图 3-1：Prompt 四要素模型 —— Instruction（指令）、Context（上下文）、Input Data（输入数据）、Output Indicator（输出指示）</p>
 
-                <h3 class="section-subtitle">四要素详解</h3>
+                <div class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/dPdJ1wQgCn" alt="技巧三：分隔符 - 课程PPT截图" loading="lazy">
+                    <p class="figure-caption">图 3-1：课程 PPT 截图 —— 技巧三「分隔符」讲解页</p>
+                </div>
+
+                <h3 class="section-subtitle">为什么需要分隔符？</h3>
+                <p>
+                    当你的 Prompt 中同时包含<strong>指令</strong>和<strong>待处理的文本数据</strong>时，
+                    如果没有明确的分隔标记，模型可能会混淆：
+                    把本该被处理的文本误认为是指令的一部分，或者把指令当成数据处理。
+                    分隔符的作用就是<strong>划清界限</strong>，让模型清楚地知道「这是命令，那是数据」。
+                </p>
+
+                <h3 class="section-subtitle">常用分隔符类型</h3>
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>要素</th>
-                                <th>英文</th>
-                                <th>核心问题</th>
-                                <th>作用</th>
-                                <th>典型写法</th>
+                                <th>分隔符类型</th>
+                                <th>示例</th>
+                                <th>适用场景</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>指令</strong></td>
-                                <td><code>Instruction</code></td>
-                                <td>做什么？</td>
-                                <td>定义任务的行动动词和目标</td>
-                                <td>"翻译"、"总结"、"分类"、"分析"、"重写"</td>
+                                <td><strong>三引号</strong></td>
+                                <td><code>'''文本内容'''</code></td>
+                                <td>最常用，适合包裹长文本段落</td>
                             </tr>
                             <tr>
-                                <td><strong>上下文</strong></td>
-                                <td><code>Context</code></td>
-                                <td>为什么？谁在看？</td>
-                                <td>提供背景信息、角色设定、领域知识</td>
-                                <td>"你是一名..."/"这是用于..."/"目标读者是..."</td>
+                                <td><strong>XML 标签</strong></td>
+                                <td><code>&lt;text&gt;内容&lt;/text&gt;</code></td>
+                                <td>结构化强，适合多段数据</td>
                             </tr>
                             <tr>
-                                <td><strong>输入数据</strong></td>
-                                <td><code>Input Data</code></td>
-                                <td>处理什么？</td>
-                                <td>需要模型操作的具体内容</td>
-                                <td>待翻译文本 / 待分析代码 / 用户提问内容</td>
+                                <td><strong>中括号</strong></td>
+                                <td><code>[文本内容]</code></td>
+                                <td>简洁，适合短文本</td>
                             </tr>
                             <tr>
-                                <td><strong>输出指示</strong></td>
-                                <td><code>Output Indicator</code></td>
-                                <td>怎么输出？</td>
-                                <td>约束格式、风格、长度、结构</td>
-                                <td>"JSON格式"/"不超过200字"/"表格呈现"/"正式语气"</td>
+                                <td><strong>破折线</strong></td>
+                                <td><code>--- 内容 ---</code></td>
+                                <td>视觉分隔明显</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <h3 class="section-subtitle">完整实战示例：情感分析 + 商业洞察</h3>
-                <p>
-                    下面是一个在实际产品反馈分析场景中应用的<strong>全四要素 Prompt</strong>，
-                    展示了各要素如何在真实业务中协同工作：
-                </p>
-
+                <h3 class="section-subtitle">实战示例</h3>
                 <div class="code-block">
                     <div class="code-header">
-                        <span class="code-lang">四要素完整 Prompt — 产品评价情感分析</span>
+                        <span class="code-lang">示例：用三引号分割待处理文本 — 来自课程原文</span>
                         <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
-                    <div class="code-body"><pre><code><span class="code-comment">╔══════════════════════════════════════════════════════════╗</span>
-<span class="code-comment">║           要素 1：Instruction（指令 — 做什么）          ║</span>
-<span class="code-comment">╚══════════════════════════════════════════════════════════╝</span>
-<span class="code-string">请对以下用户产品评价进行多维度分析：
-1. 判断整体情感倾向（正面/负面/中性）
-2. 提取用户提到的具体功能点或痛点
-3. 评估该评价对潜在购买者的参考价值
-
-<span class="code-comment">╔══════════════════════════════════════════════════════════╗</span>
-<span class="code-comment">║         要素 2：Context（上下文 — 为什么/谁看）        ║</span>
-<span class="code-comment">╚══════════════════════════════════════════════════════════╝</span>
-【产品背景】这是一款面向 25-40 岁城市白领的智能降噪耳机，
-售价 1299 元，主打通勤和办公场景。上市已 6 个月，
-累计销量超过 50 万台。
-
-【分析目的】分析结果将用于：
-- 产品经理：识别需要优先改进的功能点
-- 市场团队：提炼用户好评用于营销素材
-- 客服团队：预判常见客诉并准备标准回复
-
-【角色设定】你是一名专业的用户体验研究员，
-擅长从用户反馈中提炼可行动的商业洞察。
-
-<span class="code-comment">╔══════════════════════════════════════════════════════════╗</span>
-<span class="code-comment">║      要素 3：Input Data（输入数据 — 处理什么）         ║</span>
-<span class="code-comment">╚══════════════════════════════════════════════════════════╝</span>
-【待分析的用户评价】
-"用了两周了，降噪效果确实不错，地铁上基本听不到环境音。
-但是佩戴超过 2 小时耳朵会有点疼，夹头感比较明显。
-APP 里的均衡器预设挺多的，不过自定义选项太少。
-续航方面官宣 30 小时实际大概 22-23 小时左右，够用了。
-总体来说这个价位还是值得推荐的，希望后续固件能改善舒适度。"
-
-<span class="code-comment">╔══════════════════════════════════════════════════════════╗</span>
-<span class="code-comment">║   要素 4：Output Indicator（输出指示 — 怎么输出）     ║</span>
-<span class="code-comment">╚══════════════════════════════════════════════════════════╝</span>
-【输出要求 — 严格遵循以下 JSON Schema】
-{
-  "sentiment_analysis": {
-    "overall": "positive|negative|neutral",
-    "confidence_score": 0.0~1.0,
-    "reasoning": "判断依据简述"
-  },
-  "feature_mentions": [
-    {"feature": "功能名称", "sentiment": "+/-/ neutral", "detail": "用户原话摘录"}
-  ],
-  "business_insights": {
-    "product_improvement": ["优先改进项1", "优先改进项2"],
-    "marketing_assets": ["可用于营销的好评摘录"],
-    "cs_preparation": ["客服可能遇到的投诉点"]
-  },
-  "purchase_influence_score": 1~10
-}</span></code></pre>
+                    <div class="code-body"><pre><code>prompt = <span class="code-string">"用20个字符总结由三引号分割的文本。'''在此插入文本'''"</span></code></pre>
                 </div>
 
-                <h3 class="section-subtitle">四要素的设计要点与权衡</h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-item-label">指令 (Instruction)</div>
-                        <div class="info-item-value">用强动词开头 · 避免被动语态 · 一个 Prompt 一个核心动作 · 可叠加子指令但要分层</div>
+                <div class="highlight-box danger">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        注意事项
                     </div>
-                    <div class="info-item">
-                        <div class="info-item-label">上下文 (Context)</div>
-                        <div class="info-item-value">按 角色→场景→约束 顺序组织 · 只放相关信息避免噪声 · 复杂上下文可用独立段落</div>
+                    <div class="highlight-box-content">
+                        <strong>选择一种分隔符并在整个 Prompt 中保持一致。</strong>
+                        最推荐使用三引号 <code>'''</code>，因为它在大多数场景下不会与正常文本内容冲突，
+                        且视觉辨识度高。避免使用可能在文本中自然出现的符号作为分隔符。
                     </div>
-                    <div class="info-item">
-                        <div class="info-item-label">输入数据 (Input)</div>
-                        <div class="info-item-value">用分隔符明确界定边界 · 超长输入先做预处理 · 敏感数据注意脱敏</div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== CARD 4: 技巧四 - 指定步骤 ==================== -->
+        <article class="section-card accent-bar-teal" id="s5" data-animate>
+            <div class="section-header">
+                <span class="section-number">T4</span>
+                <h2 class="section-title">技巧四：对任务指定步骤</h2>
+            </div>
+            <div class="section-content">
+                <div class="highlight-box teal">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        核心原理
                     </div>
-                    <div class="info-item">
-                        <div class="info-item-label">输出指示 (Output)</div>
-                        <div class="info-item-value">指定格式必附示例 · 给出字段语义说明 · 设定明确的验收标准</div>
+                    <div class="highlight-box-content">
+                        对于可以拆分的复杂任务，<strong>尽量将其拆开，指定一系列明确的步骤</strong>让模型依次执行。
+                        这本质上是将一个大任务分解为多个小任务，每一步都有清晰的输入和输出，
+                        从而显著提升最终结果的质量和可控性。
                     </div>
+                </div>
+
+                <div class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/CWMJ1wQgCn" alt="技巧四：指定步骤 - 课程PPT截图" loading="lazy">
+                    <p class="figure-caption">图 4-1：课程 PPT 截图 —— 技巧四「指定步骤」讲解页</p>
+                </div>
+
+                <h3 class="section-subtitle">为什么要拆分步骤？</h3>
+                <p>
+                    当你给模型一个复杂的复合任务时（比如「先总结再翻译再润色」），
+                    模型需要在一次生成中完成所有子任务，容易出现：
+                </p>
+                <ul class="content-list">
+                    <li><strong>步骤遗漏</strong>：跳过了中间某个环节</li>
+                    <li><strong>质量不均</strong>：前面的步骤认真执行，后面的草草了事</li>
+                    <li><strong>逻辑混乱</strong>：各步骤之间衔接不自然</li>
+                </ul>
+                <p>
+                    通过显式地指定步骤顺序，可以让模型<strong>按部就班地执行</strong>，每个步骤都能得到充分的「注意力」。
+                </p>
+
+                <h3 class="section-subtitle">实战示例</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">示例：两步流程 — 先总结后翻译</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>prompt = <span class="code-string">"""
+请按以下步骤执行任务：
+
+步骤1：阅读下面的文本，用一句话总结其核心内容。
+
+步骤2：将步骤1的总结翻译成英文。
+
+【待处理文本】
+{your_text_here}
+"""</span></code></pre>
                 </div>
 
                 <div class="highlight-box success">
                     <div class="highlight-box-title">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
-                        四要素使用的关键经验
+                        步骤设计要点
                     </div>
                     <div class="highlight-box-content">
                         <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
-                            <li style="margin-bottom:0.3rem;"><strong>不必每次四要素齐全</strong>：简单翻译任务只需「指令 + 输入 + 输出格式」，复杂的分析任务才需要全部四个</li>
-                            <li style="margin-bottom:0.3rem;"><strong>推荐排列顺序</strong>：Instruction → Context → Input Data → Output Indicator，这与人类的阅读习惯一致</li>
-                            <li style="margin-bottom:0.3rem;"><strong>用视觉分隔符增强结构感知</strong>：=== 、### 、--- 、【】等标记帮助模型（和你自己）快速定位各区域</li>
-                            <li style="margin-bottom:0.3rem;"><strong>Output Indicator 是最被低估的要素</strong>：花 80% 的时间构思指令，却只用 5 秒想输出要求——这是最常见的低效模式</li>
-                            <li><strong>Context 和 Input 的边界要清晰</strong>：Context 是「元信息」（关于任务的信息），Input 是「原始数据」（要被处理的内容），混在一起会让模型困惑</li>
+                            <li style="margin-bottom:0.3rem;"><strong>给步骤编号</strong>：使用「步骤1」「步骤2」「Step 1」「Step 2」等明确编号</li>
+                            <li style="margin-bottom:0.3rem;"><strong>每步只做一件事</strong>：不要在一个步骤里塞入多个动作</li>
+                            <li style="margin-bottom:0.3rem;"><strong>说明每步的输出</strong>：让模型知道每一步应该产出什么</li>
+                            <li><strong>步骤间可传递信息</strong>：后续步骤可以引用前面步骤的输出结果</li>
                         </ul>
                     </div>
                 </div>
             </div>
         </article>
 
-        <!-- ==================== CARD 4: 主流 Prompt 设计框架 ==================== -->
-        <article class="section-card accent-bar-accent" id="s4" data-animate>
+        <!-- ==================== CARD 5: 技巧五 - Few-Shot 示例 ==================== -->
+        <article class="section-card accent-bar-danger" id="s6" data-animate>
             <div class="section-header">
-                <span class="section-number">04</span>
-                <h2 class="section-title">主流 Prompt 设计框架</h2>
+                <span class="section-number">T5</span>
+                <h2 class="section-title">技巧五：提供例子（Few-Shot 思想）</h2>
             </div>
             <div class="section-content">
-                <p>
-                    除了通用的四要素模型，业界还衍生出了多种<strong>特定场景下的 Prompt 设计框架（Framework）</strong>。
-                    这些框架本质上是四要素的不同组合方式和命名体系，各自适用于不同的任务类型和使用习惯。
-                    选择合适的框架可以让 Prompt 设计更加<strong>系统化和可复现</strong>。
-                </p>
-
-                <h3 class="section-subtitle">框架总览</h3>
-
-                <div class="framework-grid">
-                    <div class="framework-card">
-                        <div class="framework-name">🎯 RTF 框架</div>
-                        <div class="framework-full">Role — Task — Format</div>
-                        <div class="framework-desc">
-                            最经典的三段式框架。先设定角色身份（Role），再明确任务（Task），
-                            最后规定输出格式（Format）。简单易记，适合绝大多数日常场景。
-                            是新手入门的首选框架。
-                        </div>
-                        <div class="framework-elements">
-                            <span class="framework-tag">Role</span>
-                            <span class="framework-tag">Task</span>
-                            <span class="framework-tag">Format</span>
-                        </div>
-                    </div>
-
-                    <div class="framework-card accent-success">
-                        <div class="framework-name">⭐ CO-STAR 框架</div>
-                        <div class="framework-full">Context — Objective — Style — Tone — Audience — Response</div>
-                        <div class="framework-desc">
-                            由新加坡 Google Developer Group 提出，在 RTF 基础上增加了
-                            <strong>Style（风格）</strong>、<strong>Tone（语气）</strong>、
-                            <strong>Audience（受众）</strong>三个维度，特别适合营销文案、
-                            内容创作等需要精细控制输出风格的场景。
-                        </div>
-                        <div class="framework-elements">
-                            <span class="framework-tag">Context</span>
-                            <span class="framework-tag">Objective</span>
-                            <span class="framework-tag">Style</span>
-                            <span class="framework-tag">Tone</span>
-                            <span class="framework-tag">Audience</span>
-                            <span class="framework-tag">Response</span>
-                        </div>
-                    </div>
-
-                    <div class="framework-card accent-teal">
-                        <div class="framework-name">💥 BROKE 框架</div>
-                        <div class="framework-full">Background — Role — Objectives — Key Results — Evolve</div>
-                        <div class="framework-desc">
-                            受 OKR 管理方法论启发的框架，强调<strong>可衡量的结果（Key Results）</strong>
-                            和<strong>持续迭代（Evolve）</strong>。
-                            特别适合复杂的项目规划、方案设计类任务，
-                            让 Prompt 本身具有「项目管理」的思维结构。
-                        </div>
-                        <div class="framework-elements">
-                            <span class="framework-tag">Background</span>
-                            <span class="framework-tag">Role</span>
-                            <span class="framework-tag">Objectives</span>
-                            <span class="framework-tag">Key Results</span>
-                            <span class="framework-tag">Evolve</span>
-                        </div>
-                    </div>
-
-                    <div class="framework-card accent-info">
-                        <div class="framework-name">📋 RISEN 框架</div>
-                        <div class="framework-full">Role — Input — Steps — Examples — Nuance</div>
-                        <div class="framework-desc">
-                            强调<strong>步骤分解（Steps）</strong>和<strong>示例驱动（Examples）</strong>的框架，
-                            适合需要精确控制推理过程的技术类任务（代码生成、数据分析、数学推导）。
-                            <strong>Nuance（细微差别）</strong>要素提醒注意边界条件和特殊情况。
-                        </div>
-                        <div class="framework-elements">
-                            <span class="framework-tag">Role</span>
-                            <span class="framework-tag">Input</span>
-                            <span class="framework-tag">Steps</span>
-                            <span class="framework-tag">Examples</span>
-                            <span class="framework-tag">Nuance</span>
-                        </div>
-                    </div>
-
-                    <div class="framework-card accent-danger">
-                        <div class="framework-name">🔄 CREATE 框架</div>
-                        <div class="framework-full">Character — Request — Example — Adjust — Type — Evaluation</div>
-                        <div class="framework-desc">
-                            一个<strong>迭代式</strong>框架，内置了 Adjust（调整）和
-                            Evaluation（评估）环节。不只是「一次生成」，
-                            而是「生成 → 评估 → 调整 → 再生成」的循环流程，
-                            适合对输出质量要求极高的创意写作和专业内容生产。
-                        </div>
-                        <div class="framework-elements">
-                            <span class="framework-tag">Character</span>
-                            <span class="framework-tag">Request</span>
-                            <span class="framework-tag">Example</span>
-                            <span class="framework-tag">Adjust</span>
-                            <span class="framework-tag">Type</span>
-                            <span class="framework-tag">Evaluation</span>
-                        </div>
-                    </div>
-
-                    <div class="framework-card">
-                        <div class="framework-name">🧩 APE 框架</div>
-                        <div class="framework-full">Action — Purpose — Expectation</div>
-                        <div class="framework-desc">
-                            最精简的三要素框架，来自 Andrej Karpathy 等人的实践总结。
-                            <strong>Action</strong>（做什么动作）、<strong>Purpose</strong>（为什么做）、
-                            <strong>Expectation</strong>（期望什么结果）。
-                            适合快速原型设计和轻量级任务，是「最小可行 Prompt」的最佳模板。
-                        </div>
-                        <div class="framework-elements">
-                            <span class="framework-tag">Action</span>
-                            <span class="framework-tag">Purpose</span>
-                            <span class="framework-tag">Expectation</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="css-diagram">
-                    <div class="diagram-framework-compare">
-                        <div class="fc-card fc-rtf">
-                            <div class="fc-acronym">RTF</div>
-                            <div class="fc-full-name">Role — Task — Format</div>
-                            <div class="fc-count">3 要素</div>
-                            <div class="fc-usecase">日常问答 / 新手入门首选</div>
-                        </div>
-                        <div class="fc-card fc-costar">
-                            <div class="fc-acronym">CO-STAR</div>
-                            <div class="fc-full-name">Context — Objective — Style<br>Tone — Audience — Response</div>
-                            <div class="fc-count">6 要素</div>
-                            <div class="fc-usecase">文案创作 / 营销内容</div>
-                        </div>
-                        <div class="fc-card fc-broke">
-                            <div class="fc-acronym">BROKE</div>
-                            <div class="fc-full-name">Background — Role — Objectives<br>Key Results — Evolve</div>
-                            <div class="fc-count">5 要素</div>
-                            <div class="fc-usecase">项目方案 / 战略规划</div>
-                        </div>
-                        <div class="fc-card fc-risen">
-                            <div class="fc-acronym">RISEN</div>
-                            <div class="fc-full-name">Role — Input — Steps<br>Examples — Nuance</div>
-                            <div class="fc-count">5 要素</div>
-                            <div class="fc-usecase">代码生成 / 技术分析</div>
-                        </div>
-                        <div class="fc-card fc-create">
-                            <div class="fc-acronym">CREATE</div>
-                            <div class="fc-full-name">Character — Request — Example<br>Adjust — Type — Evaluation</div>
-                            <div class="fc-count">6 要素</div>
-                            <div class="fc-usecase">高质量内容 / 迭代打磨</div>
-                        </div>
-                        <div class="fc-card fc-ape">
-                            <div class="fc-acronym">APE</div>
-                            <div class="fc-full-name">Action — Purpose — Expectation</div>
-                            <div class="fc-count">3 要素</div>
-                            <div class="fc-usecase">快速原型 / 轻量任务</div>
-                        </div>
-                    </div>
-                </div>
-                <p class="figure-caption" style="text-align:center;margin-top:0.75rem;font-size:0.8125rem;color:var(--text-muted);font-style:italic;">图 4-1：六大主流 Prompt 设计框架对比概览 —— 从最精简的 APE（3 要素）到最全面的 CO-STAR（6 要素）</p>
-
-                <h3 class="section-subtitle">框架选用指南</h3>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>场景类型</th>
-                                <th>推荐框架</th>
-                                <th>选择理由</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>日常问答 / 快速任务</td>
-                                <td><code>APE</code> 或 <code>RTF</code></td>
-                                <td>结构简洁，30秒内可写出有效 Prompt</td>
-                            </tr>
-                            <tr>
-                                <td>文案创作 / 营销内容</td>
-                                <td><code>CO-STAR</code></td>
-                                <td>Style/Tone/Audience 三要素精准控制文风</td>
-                            </tr>
-                            <tr>
-                                <td>代码生成 / 技术分析</td>
-                                <td><code>RISEN</code></td>
-                                <td>Steps + Examples 确保推理过程可控</td>
-                            </tr>
-                            <tr>
-                                <td>项目方案 / 战略规划</td>
-                                <td><code>BROKE</code></td>
-                                <td>Key Results + Evolve 引入 OKR 思维</td>
-                            </tr>
-                            <tr>
-                                <td>高质量内容生产</td>
-                                <td><code>CREATE</code></td>
-                                <td>内置迭代循环，适合反复打磨</td>
-                            </tr>
-                            <tr>
-                                <td>通用场景 / 新手入门</td>
-                                <td><code>RTF</code></td>
-                                <td>学习成本最低，适用面最广</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="highlight-box warning">
+                <div class="highlight-box danger">
                     <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        重要提醒：框架是工具，不是教条
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                        核心原理
                     </div>
                     <div class="highlight-box-content">
-                        这些框架的价值在于<strong>提供结构化的思考 checklist</strong>，而不是让你机械地填空。
-                        高手往往是<strong>内化了框架之后跳出框架</strong>——你可能不会显式地标注「Role:」「Task:」这样的标签，
-                        但你的 Prompt 结构天然地涵盖了这些要素。学习的正确路径是：
-                        <strong>先用框架规范自己 → 熟练后形成直觉 → 最终根据场景自由组合。</strong>
+                        <strong>先给模型举例，让模型按照例子的格式和风格来输出。</strong>
+                        这种做法的本质就是机器学习中的
+                        <strong>Few-Shot Learning（少样本学习）</strong>思想在 Prompt 层面的应用——
+                        不需要微调模型参数，仅通过在输入中提供少量示例就能让模型学会新的任务模式。
+                    </div>
+                </div>
+
+                <div class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/Twng1wQgCn" alt="技巧五：Few-Shot示例 - 课程PPT截图" loading="lazy">
+                    <p class="figure-caption">图 5-1：课程 PPT 截图 —— 技巧五「提供例子/Few-Shot」讲解页</p>
+                </div>
+
+                <h3 class="section-subtitle">Few-Shot 的威力</h3>
+                <p>
+                    Few-Shot Prompting 是从 GPT-3 时代就被验证极其有效的技术。
+                    它的核心优势在于：
+                </p>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">📐 格式对齐</div>
+                        <div class="info-item-value">模型会严格模仿示例的输出格式</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🎯 风格一致</div>
+                        <div class="info-item-value">语气、用词习惯与示例保持一致</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">⚡ 零训练成本</div>
+                        <div class="info-item-value">无需微调，换几个示例即可适配新任务</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🔢 示例数量灵活</div>
+                        <div class="info-item-value">1个(One-Shot)到多个(Few-Shot)均可</div>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">实战示例</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">示例：按照评论文本格式创造新样本 — 来自课程原文</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>prompt = <span class="code-string">"""
+请按照下面这句评论文本的格式和风格，帮我创造一个新的评价样本：
+
+【示例】
+"这个产品的质量真的很好，包装也很精致，物流也很快，
+客服态度也非常好，下次还会继续购买的！"
+
+【要求】
+请仿照以上示例的格式，生成一条新的商品好评评论。
+"""</span></code></pre>
+                </div>
+
+                <div class="highlight-box">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        Few-Shot 设计技巧
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
+                            <li style="margin-bottom:0.3rem;"><strong>示例要有代表性</strong>：选的示例应该覆盖你想让模型学习的核心模式</li>
+                            <li style="margin-bottom:0.3rem;"><strong>示例数量适中</strong>：通常 1~5 个示例效果最佳，过多会占用上下文窗口</li>
+                            <li style="margin-bottom:0.3rem;"><strong>示例格式一致</strong>：所有示例应遵循相同的格式模式</li>
+                            <li><strong>多样性考虑</strong>：如果任务有多种变体，每种变体至少提供一个示例</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </article>
 
-        <!-- ==================== CARD 5: 总结与实践 Checklist ==================== -->
-        <article class="section-card accent-bar-danger" id="s5" data-animate>
+        <!-- ==================== CARD 6: 技巧六 - 参考文本(RAG雏形) ==================== -->
+        <article class="section-card" id="s7" data-animate>
             <div class="section-header">
-                <span class="section-number">05</span>
-                <h2 class="section-title">本集小结 &amp; 实践 Checklist</h2>
+                <span class="section-number">T6</span>
+                <h2 class="section-title">技巧六：使用参考文本作答（RAG 雏形）</h2>
             </div>
             <div class="section-content">
-                <h3 class="section-subtitle">知识地图：本集五大核心模块</h3>
-
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-item-label">① Prompt 本质</div>
-                        <div class="info-item-value">LLM 的输入接口 / 自然语言形式的「源代码」/ 从 trial-and-error 到 systematic design 的工程学科</div>
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                        核心原理
                     </div>
-                    <div class="info-item">
-                        <div class="info-item-label">② 演进脉络</div>
-                        <div class="info-item-value">GPT-3(2020) → 探索期(21-22) → ChatGPT爆发(22.11) → 工程化(23-24) → Agent时代(25+)</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">③ 三大原则</div>
-                        <div class="info-item-value">Be Specific（清晰具体）→ Provide Context（提供上下文）→ Decompose（分解复杂任务）</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">④ 四要素模型</div>
-                        <div class="info-item-value">Instruction + Context + Input Data + Output Indicator</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">⑤ 设计框架</div>
-                        <div class="info-item-value">RTF / CO-STAR / BROKE / RISEN / CREATE / APE —— 六大框架按场景选型</div>
+                    <div class="highlight-box-content">
+                        <strong>基于文本文档辅助大模型问答</strong>，让模型使用我们提供的参考信息来组成答案，
+                        而不是完全依赖模型自身的参数知识。这种方法可以有效降低大模型的<strong>「幻觉」（Hallucination）</strong>问题——
+                        即模型编造不存在的事实或信息。这正是 <strong>RAG（Retrieval-Augmented Generation，检索增强生成）</strong>技术的雏形。
                     </div>
                 </div>
 
-                <h3 class="section-subtitle">📋 Prompt 自检 Checklist（写完必查）</h3>
-                <div class="highlight-box success" style="margin-top: 1.25rem;">
+                <div class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/UDVL1wQgCn" alt="技巧六：参考文本/RAG雏形 - 课程PPT截图" loading="lazy">
+                    <p class="figure-caption">图 6-1：课程 PPT 截图 —— 技巧六「使用参考文本作答」讲解页</p>
+                </div>
+
+                <h3 class="section-subtitle">RAG 雏形的经典用法</h3>
+                <p>
+                    知识库问答是该技巧最典型的应用场景：
+                </p>
+                <ul class="content-list">
+                    <li><strong>提供参考材料</strong>：将文档、文章、手册等文本作为参考信息传入 Prompt</li>
+                    <li><strong>约束答案来源</strong>：要求模型<strong>仅基于提供的参考文本</strong>来回答问题</li>
+                    <li><strong>诚实处理未知</strong>：如果在参考文本中找不到答案，要求模型明确说「我找不到答案」，而不是自己编造</li>
+                </ul>
+
+                <h3 class="section-subtitle">为什么能减少幻觉？</h3>
+                <p>
+                    大模型的「幻觉」源于其本质是一个<strong>概率文本生成器</strong>——
+                    当它面对不确定的知识时，倾向于生成看起来合理但不一定正确的内容。
+                    通过提供参考文本并约束模型「只能基于这些文本作答」，
+                    相当于给了模型一个<strong>可验证的事实锚点</strong>，
+                    将生成的自由度限制在了已知正确的信息范围内。
+                </p>
+
+                <h3 class="section-subtitle">实战示例</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">示例：基于参考文档回答问题</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code>prompt = <span class="code-string">"""
+请仅基于以下参考文档中的信息来回答用户的问题。
+如果文档中没有相关信息，请直接回答"我找不到答案"，不要编造内容。
+
+【参考文档】
+'''在此插入参考文档内容'''
+
+【用户问题】
+{user_question}
+"""</span></code></pre>
+                </div>
+
+                <div class="highlight-box danger">
                     <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
-                        生产级 Prompt 质量检查清单
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        关键原则：找不到就承认找不到
                     </div>
                     <div class="highlight-box-content">
-                        <ul style="list-style:none;padding:0;margin:0;">
-                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
-                                &nbsp;<strong>单一职责</strong>：这个 Prompt 是否只聚焦于一个核心任务？（避免一 Prompt 多任务）
-                            </li>
-                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
-                                &nbsp;<strong>指令清晰</strong>：任务动词是否明确？（翻译/总结/分类/生成/分析……而不是"看一下"）
-                            </li>
-                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
-                                &nbsp;<strong>上下文充分</strong>：是否说明了谁在使用、什么场景、什么约束？（角色/背景/限制条件）
-                            </li>
-                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
-                                &nbsp;<strong>输出格式确定</strong>：是否指定了 JSON/Table/List/纯文本？是否给了字段说明或示例？
-                            </li>
-                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
-                                &nbsp;<strong>长度约束</strong>：是否有字数/Token 数/条目数量的上限或下限？
-                            </li>
-                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
-                                &nbsp;<strong>结构分明</strong>：四要素是否用分隔符清晰划分？（模型和你自己都能快速定位）
-                            </li>
-                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
-                                &nbsp;<strong>无矛盾指令</strong>：是否存在互相冲突的要求？（如"详细"vs"简洁"、"正式"vs"活泼"）
-                            </li>
-                            <li style="padding:0.4rem 0;">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;font-weight:600;">[ ]</code>
-                                &nbsp;<strong>鲁棒性验证</strong>：是否用至少 3 种不同的输入测试过？（正常/边界/异常 case）
-                            </li>
+                        使用此技巧时，<strong>务必在 Prompt 中明确告知模型：</strong>
+                        如果在提供的参考文本中找不到答案，就写「我找不到答案」，
+                        <strong>绝对不要自己编造答案</strong>。这个约束是防止幻觉的最后一道防线。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== CARD 7: 本集小结 + 下集预告 ==================== -->
+        <article class="section-card accent-bar-success" id="s-summary" data-animate>
+            <div class="section-header">
+                <span class="section-number">&#10003;</span>
+                <h2 class="section-title">本集小结 &amp; 下集预告</h2>
+            </div>
+            <div class="section-content">
+
+                <div class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/KVUV1wQgCn" alt="本集总结 - 课程PPT截图" loading="lazy">
+                    <p class="figure-caption">图 7-1：课程 PPT 截图 —— 本集总结页</p>
+                </div>
+
+                <h3 class="section-subtitle">知识回顾：6 大技巧速查表</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>编号</th>
+                                <th>技巧名称</th>
+                                <th>核心思想</th>
+                                <th>一句话口诀</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>T1</strong></td>
+                                <td>详细的描述</td>
+                                <td>清晰表达所有需求和约束</td>
+                                <td>话说得越明白，模型理解越准确</td>
+                            </tr>
+                            <tr>
+                                <td><strong>T2</strong></td>
+                                <td>角色设定</td>
+                                <td>让模型以特定身份回答</td>
+                                <td>给人设，模型就有专业范儿</td>
+                            </tr>
+                            <tr>
+                                <td><strong>T3</strong></td>
+                                <td>分隔符</td>
+                                <td>用标记区分指令和数据</td>
+                                <td>画清界限，别让模型混淆</td>
+                            </tr>
+                            <tr>
+                                <td><strong>T4</strong></td>
+                                <td>指定步骤</td>
+                                <td>将复杂任务拆分为有序步骤</td>
+                                <td>大事化小，一步步来</td>
+                            </tr>
+                            <tr>
+                                <td><strong>T5</strong></td>
+                                <td>Few-Shot 示例</td>
+                                <td>先给例子让模型模仿输出</td>
+                                <td>给样板，模型照着抄</td>
+                            </tr>
+                            <tr>
+                                <td><strong>T6</strong></td>
+                                <td>参考文本（RAG）</td>
+                                <td>基于文档辅助问答，降低幻觉</td>
+                                <td>给资料，别让它瞎编</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        本集核心收获
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
+                            <li style="margin-bottom:0.3rem;">掌握了 Prompt Engineering 的 <strong>6 个基础但至关重要的技巧</strong></li>
+                            <li style="margin-bottom:0.3rem;">理解了<strong>清晰表达需求</strong>是一切 Prompt 技巧的根本前提</li>
+                            <li style="margin-bottom:0.3rem;">学会了用<strong>角色设定</strong>让回答更专业、用<strong>分隔符</strong>划分输入边界</li>
+                            <li style="margin-bottom:0.3rem;">掌握了<strong>步骤拆分</strong>和<strong>Few-Shot 示例</strong>两个提升输出质量的利器</li>
+                            <li style="margin-bottom:0.3rem;">了解了<strong>参考文本（RAG雏形）</strong>这一降低模型幻觉的核心方法</li>
+                            <li>这些技巧是后续学习<strong>思维链（CoT）、结构化提示词、Agent 设计</strong>等高级技术的基础</li>
                         </ul>
                     </div>
                 </div>
 
                 <h3 class="section-subtitle">下集预告 🔮</h3>
                 <p>
-                    下一集我们将进入<strong>结构化提示词（Structured Prompting）</strong>的深度实践——
-                    学习如何使用 XML Tag、JSON Schema、Markdown 表格等<strong>结构化标记</strong>来组织 Prompt，
-                    显著提升模型对复杂指令的理解准确率。同时将通过<strong>真实案例改造演示</strong>，
-                    展示一个「散装 Prompt」如何被逐步重构为「生产级结构化 Prompt」的全过程。
-                    我们还将介绍 <strong>Prompt Template 模板化管理</strong> 的基础方法——
-                    把 Prompt 从硬编码字符串升级为可维护、可复用的工程资产~
+                    下一集我们将深入学习<strong>更多进阶的 Prompt 技巧与方法</strong>，
+                    在本集 6 个基础技巧的基础上进一步拓展 Prompt Engineering 的工具箱。
+                    敬请期待~
                 </p>
             </div>
         </article>

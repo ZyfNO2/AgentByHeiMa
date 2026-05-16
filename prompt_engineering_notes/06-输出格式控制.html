@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>第06集 - 金融文本语义匹配与向量检索 | 提示词工程学习笔记</title>
+    <title>第06集 - 金融文本语义匹配 | 提示词工程学习笔记 · FINALE</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -212,7 +212,6 @@
         }
 
         .meta-tag-icon { width: 16px; height: 16px; opacity: 0.7; }
-        .meta-tag.finale { background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,107,107,0.10)); border-color: #FFD700; color: #B8860B; font-weight: 600; }
 
         .content-section { padding-bottom: 4rem; }
 
@@ -244,6 +243,7 @@
         .section-card.accent-bar-info { border-left-color: var(--info); }
         .section-card.accent-bar-teal { border-left-color: var(--teal); }
         .section-card.accent-bar-danger { border-left-color: var(--danger); }
+        .section-card.accent-bar-gold { border-left-color: #d4a017; }
 
         .section-header {
             display: flex;
@@ -266,10 +266,6 @@
             font-weight: 700;
             font-size: 0.875rem;
             flex-shrink: 0;
-        }
-
-        .section-number.finale {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
         }
 
         .section-title {
@@ -323,14 +319,9 @@
             border-left-color: var(--teal);
         }
 
-        .highlight-box.celebration {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 165, 0, 0.05), rgba(255, 107, 107, 0.05));
-            border-left-color: #FFD700;
-            border-radius: var(--radius-md);
-            padding: 2rem 2rem;
-            text-align: center;
-            border: 2px solid rgba(255, 215, 0, 0.3);
-            border-left: 5px solid #FFD700;
+        .highlight-box.gold {
+            background: linear-gradient(135deg, rgba(212, 160, 23, 0.08), rgba(235, 190, 80, 0.05));
+            border-left-color: #d4a017;
         }
 
         .highlight-box-title {
@@ -348,18 +339,12 @@
         .highlight-box.warning .highlight-box-title { color: var(--accent); }
         .highlight-box.danger .highlight-box-title { color: var(--danger); }
         .highlight-box.teal .highlight-box-title { color: var(--teal); }
-        .highlight-box.celebration .highlight-box-title { color: #B8860B; font-size: 1.125rem; justify-content: center; }
+        .highlight-box.gold .highlight-box-title { color: #b8860b; }
 
         .highlight-box-content {
             font-size: 0.875rem;
             color: var(--text-secondary);
-            line-height: 1.7;
-        }
-
-        .highlight-box.celebration .highlight-box-content {
-            font-size: 1rem;
-            line-height: 1.8;
-            color: var(--text-primary);
+            line-height: 1.6;
         }
 
         .code-block {
@@ -425,15 +410,6 @@
         }
 
         .code-body code { font-family: inherit; }
-
-        .code-keyword { color: #c678dd; }
-        .code-string { color: #98c379; }
-        .code-comment { color: #5c6370; font-style: italic; }
-        .code-function { color: #61afef; }
-        .code-class { color: #e5c07b; }
-        .code-variable { color: #e06c75; }
-        .code-param { color: #d19a66; }
-        .code-operator { color: #56b6c2; }
 
         .table-wrapper {
             overflow-x: auto;
@@ -560,7 +536,7 @@
             max-width: 100%;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-sm);
         }
 
         .figure-caption {
@@ -568,7 +544,6 @@
             font-size: 0.8125rem;
             color: var(--text-muted);
             font-style: italic;
-            text-align: center;
         }
 
         .footer {
@@ -623,27 +598,6 @@
             transform: translateX(-4px);
         }
 
-        .footer-finale {
-            text-align: center;
-            padding: 2rem 0;
-        }
-
-        .footer-finale-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #FFD700, #FFA500, #FF6B6B);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.75rem;
-        }
-
-        .footer-finale-subtitle {
-            color: var(--text-secondary);
-            font-size: 0.9375rem;
-        }
-
         .footer-reference {
             margin-top: 1.5rem;
             padding-top: 1.5rem;
@@ -659,6 +613,245 @@
         }
 
         .footer-reference a:hover { text-decoration: underline; }
+
+        /* ════════════════════════════════════════ */
+        /*  Finale 庆祝横幅                        */
+        /* ════════════════════════════════════════ */
+        .finale-banner {
+            background: linear-gradient(135deg, #1a1d2e 0%, #2d1b4e 50%, #1a2a3a 100%);
+            border-radius: var(--radius-lg);
+            padding: 3rem 2.5rem;
+            margin: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,215,0,0.2);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .finale-banner.visible {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.8s ease;
+        }
+
+        .finale-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(255,215,0,0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(255,107,107,0.06) 0%, transparent 40%);
+            animation: finaleGlow 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes finaleGlow {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(2%, 1%) rotate(2deg); }
+        }
+
+        .finale-banner-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .finale-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #1a1d2e;
+            padding: 0.4rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 15px rgba(255,215,0,0.3);
+        }
+
+        .finale-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.75rem;
+            line-height: 1.2;
+        }
+
+        .finale-subtitle {
+            font-size: 1.05rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .finale-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .finale-stat {
+            text-align: center;
+        }
+
+        .finale-stat-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .finale-stat-label {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+        }
+
+        /* ════════════════════════════════════════ */
+        /*  全系列回顾表格                         */
+        /* ════════════════════════════════════════ */
+        .series-table-wrapper {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .series-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.85rem;
+        }
+
+        .series-table thead th {
+            background: linear-gradient(135deg, #1a1d2e, #2d3555);
+            color: white;
+            padding: 1rem 0.875rem;
+            font-size: 0.78rem;
+            letter-spacing: 0.04em;
+        }
+
+        .series-table thead th:first-child { border-radius: var(--radius-md) 0 0 0; }
+        .series-table thead th:last-child { border-radius: 0 var(--radius-md) 0 0; }
+
+        .series-table td {
+            padding: 0.875rem 0.875rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .series-table tbody tr { transition: background 0.2s; }
+        .series-table tbody tr:hover { background: rgba(85, 120, 250, 0.04); }
+        .series-table tbody tr:last-child td { border-bottom: none; }
+        .series-table tbody tr:last-child td:first-child { border-radius: 0 0 0 var(--radius-md); }
+        .series-table tbody tr:last-child td:last-child { border-radius: 0 0 var(--radius-md) 0; }
+
+        .series-table .col-ep {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.82rem;
+            width: 70px;
+        }
+
+        .series-table .col-topic {
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 140px;
+        }
+
+        .series-table .col-skill {
+            color: var(--text-secondary);
+            min-width: 160px;
+        }
+
+        .series-table .col-file code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.76rem;
+            background: rgba(85, 120, 250, 0.07);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .series-table .row-current {
+            background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,165,0,0.05)) !important;
+        }
+
+        .series-table .row-current .col-ep {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .series-table .row-homework td {
+            background: rgba(100, 140, 255, 0.03);
+            font-size: 0.82rem;
+        }
+
+        .series-table .row-homework .col-ep {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* ════════════════════════════════════════ */
+        /*  技术栈卡片                            */
+        /* ════════════════════════════════════════ */
+        .tech-stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0;
+        }
+
+        .tech-card {
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.25s ease;
+            text-align: center;
+        }
+
+        .tech-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .tech-icon {
+            font-size: 1.75rem;
+            margin-bottom: 0.625rem;
+        }
+
+        .tech-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .tech-desc {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
 
         .tweaks-panel {
             position: fixed;
@@ -743,11 +936,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes sparkle {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.1); }
-        }
-
         @media (max-width: 768px) {
             .nav-links { display: none; }
             .hero { padding: 5.5rem 0 2.5rem; }
@@ -758,345 +946,9 @@
             .footer-nav { flex-direction: column; }
             .footer-link { width: 100%; justify-content: center; }
             .tweaks-panel { bottom: 1rem; right: 1rem; }
-        }
-
-        /* ════════════════════════════════════════
-           图表 1: 语义匹配 Pipeline 横向流程图
-           ════════════════════════════════════════ */
-        .pipeline-diagram {
-            background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 50%, #f5f0ff 100%);
-            border-radius: var(--radius-lg);
-            padding: 2rem 1.25rem;
-            margin: 1.5rem 0;
-            border: 1px solid rgba(85,120,250,0.15);
-            position: relative;
-            overflow: hidden;
-        }
-        .pipeline-diagram::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--teal), var(--accent));
-        }
-        .pipeline-flow {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0;
-            flex-wrap: nowrap;
-            position: relative;
-        }
-        .pipeline-step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 100px;
-            max-width: 130px;
-            position: relative;
-            z-index: 2;
-        }
-        .pipeline-step-icon {
-            width: 48px; height: 48px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.25rem;
-            color: white;
-            margin-bottom: 0.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: transform 0.3s ease;
-            position: relative;
-        }
-        .pipeline-step:hover .pipeline-step-icon { transform: translateY(-3px) scale(1.08); }
-        .pipeline-step-label {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            text-align: center;
-            line-height: 1.3;
-            white-space: normal;
-        }
-        .pipeline-step-sub {
-            font-size: 0.6rem;
-            color: var(--text-muted);
-            text-align: center;
-            margin-top: 2px;
-        }
-        .pipeline-arrow {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            opacity: 0.6;
-            font-size: 1.1rem;
-            margin: 0 -4px;
-            z-index: 1;
-            flex-shrink: 0;
-        }
-        .pstep-1 .pipeline-step-icon { background: linear-gradient(135deg, #4F6EF7, #5B8DEF); }
-        .pstep-2 .pipeline-step-icon { background: linear-gradient(135deg, #7C5CFC, #9B7EF7); }
-        .pstep-3 .pipeline-step-icon { background: linear-gradient(135deg, #2DB89D, #4ECDC4); }
-        .pstep-4 .pipeline-step-icon { background: linear-gradient(135deg, #F59E0B, #FBBF24); }
-        .pstep-5 .pipeline-step-icon { background: linear-gradient(135deg, #EF4444, #F87171); }
-        .pstep-6 .pipeline-step-icon { background: linear-gradient(135deg, #10B981, #34D399); }
-
-        @media (max-width: 768px) {
-            .pipeline-flow { flex-wrap: wrap; gap: 0.75rem; }
-            .pipeline-arrow { display: none; }
-            .pipeline-step { min-width: 80px; max-width: 90px; }
-            .pipeline-step-icon { width: 38px; height: 38px; font-size: 1rem; }
-            .pipeline-step-label { font-size: 0.62rem; }
-        }
-
-        /* ════════════════════════════════════════
-           图表 2: Embedding 向量空间散点聚类图
-           ════════════════════════════════════════ */
-        .embedding-space {
-            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            border: 1px solid rgba(148,163,184,0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        .embedding-space-grid {
-            position: relative;
-            width: 100%;
-            height: 300px;
-            background-image:
-                linear-gradient(rgba(148,163,184,0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(148,163,184,0.08) 1px, transparent 1px);
-            background-size: 30px 30px;
-            border-radius: 8px;
-            border: 1px solid rgba(148,163,184,0.12);
-        }
-        .emb-dot {
-            position: absolute;
-            border-radius: 50%;
-            opacity: 0.85;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .emb-dot:hover {
-            opacity: 1;
-            transform: scale(1.8);
-            box-shadow: 0 0 20px currentColor;
-            z-index: 10;
-        }
-        .emb-dot::after {
-            content: attr(data-label);
-            position: absolute;
-            bottom: calc(100% + 6px);
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.6rem;
-            color: rgba(255,255,255,0.8);
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.2s;
-            pointer-events: none;
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        .emb-dot:hover::after { opacity: 1; }
-        .emb-cluster-center {
-            position: absolute;
-            width: 56px; height: 56px;
-            border-radius: 50%;
-            border: 2px dashed;
-            opacity: 0.25;
-            animation: pulse-ring 3s ease-in-out infinite;
-        }
-        @keyframes pulse-ring {
-            0%, 100% { transform: scale(1); opacity: 0.25; }
-            50% { transform: scale(1.3); opacity: 0.08; }
-        }
-        .emb-axis-label {
-            position: absolute;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.6rem;
-            color: rgba(148,163,184,0.5);
-            letter-spacing: 0.05em;
-        }
-        .emb-legend {
-            display: flex;
-            justify-content: center;
-            gap: 1.25rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.72rem;
-            color: rgba(255,255,255,0.75);
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        .legend-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        /* ════════════════════════════════════════
-           图表 3: 综合RAG系统架构多行流程图
-           ════════════════════════════════════════ */
-        .rag-architecture {
-            background: linear-gradient(180deg, #fafbff 0%, #f0f4ff 50%, #fff8f0 100%);
-            border-radius: var(--radius-lg);
-            padding: 2rem 1.5rem;
-            margin: 1.5rem 0;
-            border: 1px solid rgba(85,120,250,0.12);
-            position: relative;
-        }
-        .rag-arch-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-            flex-wrap: wrap;
-        }
-        .rag-arch-row:last-child { margin-bottom: 0; }
-        .rag-node {
-            padding: 0.65rem 1.1rem;
-            border-radius: 10px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.72rem;
-            font-weight: 600;
-            text-align: center;
-            color: white;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-            transition: all 0.3s ease;
-            position: relative;
-            min-width: 90px;
-            line-height: 1.35;
-        }
-        .rag-node:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.18);
-        }
-        .rag-node-sub {
-            display: block;
-            font-size: 0.58rem;
-            opacity: 0.8;
-            font-weight: 400;
-            margin-top: 2px;
-        }
-        .rag-arrow-down {
-            display: flex;
-            justify-content: center;
-            color: var(--primary);
-            opacity: 0.45;
-            font-size: 1.2rem;
-            margin: 0.2rem 0;
-            animation: arrow-bounce 1.5s ease-in-out infinite;
-        }
-        @keyframes arrow-bounce {
-            0%, 100% { transform: translateY(0); opacity: 0.45; }
-            50% { transform: translateY(3px); opacity: 0.7; }
-        }
-        .rag-node.query { background: linear-gradient(135deg, #4F6EF7, #6B8CFE); }
-        .rag-node.llm-qu { background: linear-gradient(135deg, #7C5CFC, #9B7EF7); }
-        .rag-node.embed { background: linear-gradient(135deg, #2DB89D, #4ECDC4); }
-        .rag-node.faiss { background: linear-gradient(135deg, #0891B2, #22D3EE); }
-        .rag-node.ctx { background: linear-gradient(135deg, #F59E0B, #FBBF24); color: #78350F !important; }
-        .rag-node.cot { background: linear-gradient(135deg, #7C5CFC, #A78BFA); }
-        .rag-node.output { background: linear-gradient(135deg, #059669, #34D399); }
-
-        @media (max-width: 768px) {
-            .rag-architecture { padding: 1.25rem 0.75rem; }
-            .rag-node { padding: 0.5rem 0.75rem; min-width: 70px; font-size: 0.65rem; }
-            .rag-arch-row { gap: 0.5rem; }
-        }
-
-        /* ════════════════════════════════════════
-           图表 4: 六层技术栈竖向堆叠层次卡片
-           ════════════════════════════════════════ */
-        .tech-stack-layers {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            margin: 1.5rem 0;
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.08);
-            box-shadow: var(--shadow-md);
-        }
-        .tech-layer {
-            display: flex;
-            align-items: center;
-            padding: 0.85rem 1.25rem;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            cursor: default;
-        }
-        .tech-layer:hover {
-            transform: translateX(6px);
-            filter: brightness(1.06);
-        }
-        .tech-layer-num {
-            width: 32px; height: 32px;
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            font-size: 0.8rem;
-            color: white;
-            flex-shrink: 0;
-            margin-right: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-        .tech-layer-body { flex: 1; }
-        .tech-layer-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            font-size: 0.82rem;
-            color: white;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        .tech-layer-desc {
-            font-size: 0.68rem;
-            opacity: 0.85;
-            color: white;
-            margin-top: 2px;
-        }
-        .tech-layer-tag {
-            font-size: 0.58rem;
-            padding: 0.2rem 0.55rem;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.25);
-            color: white;
-            font-weight: 500;
-            font-family: 'Space Grotesk', sans-serif;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .tech-layer-icon {
-            font-size: 1.3rem;
-            margin-right: 0.5rem;
-            flex-shrink: 0;
-        }
-        .layer-L1 { background: linear-gradient(135deg, #1e40af, #3b82f6); }
-        .layer-L2 { background: linear-gradient(135deg, #0369a1, #0ea5e9); }
-        .layer-L3 { background: linear-gradient(135deg, #047857, #10b981); }
-        .layer-L4 { background: linear-gradient(135deg, #a16207, #eab308); }
-        .layer-L5 { background: linear-gradient(135deg, #c2410c, #f97316); }
-        .layer-L6 { background: linear-gradient(135deg, #b8860b, #ffd700, #ffa500); }
-        .layer-L6 .tech-layer-tag { background: rgba(139,69,19,0.35); }
-        .layer-L6 .tech-layer-title { color: #4a2800; text-shadow: 0 1px 2px rgba(255,215,0,0.3); }
-        .layer-L6 .tech-layer-desc { color: #5c3600; }
-
-        @media (max-width: 768px) {
-            .tech-layer { padding: 0.7rem 0.85rem; }
-            .tech-layer-num { width: 26px; height: 26px; font-size: 0.7rem; margin-right: 0.7rem; }
-            .tech-layer-title { font-size: 0.75rem; }
-            .tech-layer-desc { font-size: 0.62rem; }
-            .tech-layer-tag { font-size: 0.52rem; padding: 0.15rem 0.4rem; }
-            .tech-layer-icon { font-size: 1.1rem; }
+            .finale-stats { gap: 1.25rem; }
+            .finale-banner { padding: 2rem 1.5rem; }
+            .tech-stack-grid { grid-template-columns: 1fr 1fr; }
         }
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -1110,16 +962,20 @@
 <header class="header" id="header">
     <div class="nav-container">
         <a href="../index-prompt.html" class="nav-brand">
-            <span class="nav-brand-icon">PE</span>
-            提示词工程 Notes
+            <span class="nav-brand-icon">PE</span>提示词工程 Notes
         </a>
         <nav class="nav-links">
-            <a href="#s1" class="nav-anchor">&sect;1 语义匹配原理</a>
-            <a href="#s2" class="nav-link">P01 基础</a>
-            <a href="#s3" class="nav-link">P02 结构化</a>
-            <a href="#s4" class="nav-link">P03 角色设定</a>
-            <a href="#s5" class="nav-link">P04 JSON</a>
-            <a href="#s6" class="nav-link active">P06 终章</a>
+            <a href="#s1" class="nav-anchor">&sect;1 任务介绍</a>
+            <a href="#s2" class="nav-anchor">&sect;2 提示词设计</a>
+            <a href="#s3" class="nav-anchor">&sect;3 完整代码</a>
+            <a href="#s4" class="nav-anchor">&sect;4 运行结果</a>
+            <a href="#s5" class="nav-anchor">&sect;5 全系列回顾</a>
+            <a href="01-Prompt基础语法.html" class="nav-link">P01 基础</a>
+            <a href="02-角色设定.html" class="nav-link">P02 角色</a>
+            <a href="03-结构化输出.md" class="nav-link">P03 输出</a>
+            <a href="04-Few-Shot少样本学习.html" class="nav-link">P04 Few-Shot</a>
+            <a href="05-Chain-of-Thought思维链.html" class="nav-link">P05 CoT</a>
+            <a href="#" class="nav-link active">P06 匹配</a>
         </nav>
     </div>
 </header>
@@ -1127,1348 +983,530 @@
 <main class="main-container">
 
     <section class="hero">
-        <div class="hero-badge">&#x1F3C6; P16 / Chapter 06 &middot; Semantic Matching &amp; Vector Retrieval [FINALE]</div>
+        <div class="hero-badge">&#127881; P06 / Chapter 06 &middot; FINALE &#9733;</div>
         <h1 class="hero-title">
-            第06集：<span class="hero-title-accent">金融文本语义匹配与向量检索</span>
+            第06集：<span class="hero-title-accent">金融文本语义匹配</span><br>提示词工程完结篇
         </h1>
         <p class="hero-subtitle">
-            从 Embedding 向量表示到 FAISS 向量检索，融会贯通 Prompt 工程、文本分类、信息抽取与语义匹配技术，
-            构建完整的金融智能文本处理系统——提示词工程的终极实战
+            完成 NLP 任务三角的最后一块拼图——文本语义匹配。结合 Few-Shot Prompt Engineering，
+            用大模型判断两段金融文本是否语义相似，为整个提示词工程系列画上完美句号。
         </p>
         <div class="hero-meta">
             <span class="meta-tag">
-                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M10 8l6 4-6 4V8z"/></svg>
-                集 P16(P06)
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                最终集 P06 / FINALE
             </span>
             <span class="meta-tag">
                 <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                时长 ~45min
+                时长 ~30min
             </span>
-            <span class="meta-tag finale">&#x1F3C6; &#x1F451; 最终章 · Finale</span>
+            <span class="meta-tag">
+                <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                Few-Shot 文本匹配 + 全系列回顾
+            </span>
         </div>
     </section>
 
+    <!-- ═════════════════════════════════ -->
+    <!--  Section 1: 任务介绍              -->
+    <!-- ═════════════════════════════════ -->
     <div class="content-section">
-
-        <!-- ═══════════════════════════════════════════ -->
-        <!-- SECTION 1: 语义匹配基本原理 -->
-        <!-- ═══════════════════════════════════════════ -->
-        <article class="section-card" id="s1" data-animate>
+        <article class="section-card" id="s1">
             <div class="section-header">
-                <span class="section-number">01</span>
-                <h2 class="section-title">语义匹配：从关键词到语义理解</h2>
+                <span class="section-number">1</span>
+                <h2 class="section-title">任务介绍：金融文本语义匹配</h2>
             </div>
             <div class="section-content">
-                <p>
-                    在传统的文本搜索中，我们依赖<strong>关键词匹配</strong>（Keyword Matching）——
-                    用户输入「苹果」，系统查找包含「苹果」的文档。但这种方式有致命缺陷：
-                    「苹果公司」和「吃苹果」在关键词层面高度重叠，语义上却天差地别。
-                </p>
-                <p>
-                    <strong>语义匹配（Semantic Matching）</strong>的核心思想是：将文本映射到一个
-                    <strong>高维向量空间（Embedding Space）</strong>中，使得<strong>语义相近的文本在空间中距离更近</strong>。
-                    这不是魔法——它是基于深度学习的分布式表示理论（Distributed Representation），
-                    由 Hinton 等人在 1986 年提出、Word2Vec（2013）首次大规模验证、Transformer（2017）
-                    将其推向新高度的技术范式转移。
-                </p>
+                <p><strong>文本匹配任务</strong>是自然语言处理（NLP）中的核心任务之一：给定一段<strong>查询文本</strong>和一段<strong>候选文本</strong>，判断两者在语义上是否相似或匹配。</p>
 
-                <h3 class="section-subtitle">语义匹配的核心 Pipeline</h3>
-                <ul class="content-list">
-                    <li><strong>文本编码（Text → Embedding）</strong>：通过 Embedding 模型将变长文本转换为固定维度的稠密向量（通常 384/768/1024/1536 维）</li>
-                    <li><strong>相似度计算（Vector Similarity）</strong>：使用余弦相似度（Cosine Similarity）、欧氏距离或点积度量两个向量的接近程度</li>
-                    <li><strong>排序与检索（Ranking &amp; Retrieval）</strong>：按相似度降序排列候选集，返回 Top-K 最相关结果</li>
-                    <li><strong>后处理过滤（Post-filtering）</strong>：结合业务规则对结果进行二次筛选和重排</li>
-                </ul>
-
-                <div class="figure-container">
-                    <div class="pipeline-diagram">
-                        <div class="pipeline-flow">
-                            <div class="pipeline-step pstep-1">
-                                <div class="pipeline-step-icon">&#x1F4DD;</div>
-                                <div class="pipeline-step-label">输入文本</div>
-                                <div class="pipeline-step-sub">User Query</div>
-                            </div>
-                            <div class="pipeline-arrow">&#x279C;</div>
-                            <div class="pipeline-step pstep-2">
-                                <div class="pipeline-step-icon">&#x1F9E0;</div>
-                                <div class="pipeline-step-label">Encoder 模型</div>
-                                <div class="pipeline-step-sub">BGE / OpenAI</div>
-                            </div>
-                            <div class="pipeline-arrow">&#x279C;</div>
-                            <div class="pipeline-step pstep-3">
-                                <div class="pipeline-step-icon">&#x1F3AF;</div>
-                                <div class="pipeline-step-label">Embedding 向量</div>
-                                <div class="pipeline-step-sub">1024-dim Dense</div>
-                            </div>
-                            <div class="pipeline-arrow">&#x279C;</div>
-                            <div class="pipeline-step pstep-4">
-                                <div class="pipeline-step-icon">&#x1F50D;</div>
-                                <div class="pipeline-step-label">余弦相似度</div>
-                                <div class="pipeline-step-sub">Cosine Sim</div>
-                            </div>
-                            <div class="pipeline-arrow">&#x279C;</div>
-                            <div class="pipeline-step pstep-5">
-                                <div class="pipeline-step-icon">&#x1F4CA;</div>
-                                <div class="pipeline-step-label">排序</div>
-                                <div class="pipeline-step-sub">Ranking</div>
-                            </div>
-                            <div class="pipeline-arrow">&#x279C;</div>
-                            <div class="pipeline-step pstep-6">
-                                <div class="pipeline-step-icon">&#x1F3C6;</div>
-                                <div class="pipeline-step-label">输出 Top-K</div>
-                                <div class="pipeline-step-sub">Best Matches</div>
-                            </div>
-                        </div>
+                <div class="highlight-box teal">
+                    <div class="highlight-box-title">&#128161; 为什么文本匹配很重要？</div>
+                    <div class="highlight-box-content">
+                        文本匹配是<strong>搜索引擎、推荐系统、智能客服、去重系统</strong>等应用的核心技术。
+                        它不依赖关键词的字面匹配，而是理解两段文本的<strong>深层语义含义</strong>，
+                        判断它们表达的是否是同一件事。这是大模型在 NLP 领域展现"理解能力"的关键场景。
                     </div>
-                    <div class="figure-caption">图 1-1：语义匹配核心 Pipeline —— 文本经 Encoder 编码为向量，再通过相似度计算完成匹配排序</div>
                 </div>
 
-                <h3 class="section-subtitle">为什么余弦相似度？</h3>
-                <p>
-                    在 Embedding 空间中衡量两个向量的相似性，<strong>余弦相似度（Cosine Similarity）</strong>
-                    是最广泛采用的度量方式。其数学定义为两个向量夹角的余弦值：
-                </p>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Math / 余弦相似度定义</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-comment">/* 余弦相似度公式 */</span>
-              A · B          Σ(Aᵢ × Bᵢ)
-cos(A, B) = ────── = ─────────────────
-           ‖A‖ × ‖B‖   √ΣAᵢ² × √ΣBᵢ²
+                <p class="section-subtitle">NLP 任务三角</p>
+                <p>在本系列课程中，我们用三大实战场景覆盖了 NLP 的核心任务类型：</p>
 
-<span class="code-comment">/* 取值范围: [-1, 1] */</span>
-<span class="code-comment">/*  1  = 完全同向 (语义相同)</span>
-<span class="code-comment"> *  0  = 正交无关 (语义无关)</span>
-<span class="code-comment"> * -1  = 完全反向 (语义相反) */</span></code></pre>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">&#128202; 文本分类</div>
+                        <div class="info-item-value">将文本归入预定义类别<br><code>P13 / 05_*.py</code></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#128203; 信息抽取</div>
+                        <div class="info-item-value">从文本提取结构化字段<br><code>P15 / 07_*.py</code></div>
+                    </div>
+                    <div class="info-item" style="border-color: var(--primary); background: rgba(85,120,250,0.04);">
+                        <div class="info-item-label" style="color: var(--primary);">&#128260; 文本匹配 &#9733;</div>
+                        <div class="info-item-value"><strong>判断语义相似性</strong><br><code>P16 / 09_*.py</code></div>
+                    </div>
                 </div>
 
                 <div class="highlight-box warning">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        为什么不用欧氏距离？
-                    </div>
+                    <div class="highlight-box-title">&#128161; 本集目标</div>
                     <div class="highlight-box-content">
-                        欧氏距离衡量的是向量的<strong>绝对位置差异</strong>，而余弦相似度关注的是<strong>方向一致性</strong>。
-                        在 NLP 场景中，两段文本的 Embedding 向量长度可能因文本长度不同而差异很大，
-                        但它们描述同一件事时方向应当一致。<strong>余弦相似度天然归一化了向量长度的影响</strong>，
-                        因此更适合语义匹配场景。当然，如果 Embedding 模型已经做了 L2 归一化，
-                        余弦相似度就等价于点积（Dot Product），计算效率更高。
+                        使用 <strong>Few-Shot Prompt Engineering</strong> 方法，让 qwen3-max 模型判断给定的两个金融文本句子是否语义相似，
+                        输出"<strong>是</strong>"或"<strong>不是</strong>"，并给出匹配理由。这是提示词工程系列的<strong>最后一个实战案例</strong>。
                     </div>
-                </div>
-
-                <h3 class="section-subtitle">Python 实现：从零手写余弦相似度</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / 余弦相似度三种实现方式对比</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
-<span class="code-keyword">from</span> sklearn.metrics.pairwise <span class="code-keyword">import</span> cosine_similarity
-<span class="code-keyword">import</span> torch
-<span class="code-keyword">import</span> torch.nn.functional <span class="code-keyword">as</span> F
-
-<span class="code-comment"># ═══ 方式一：纯 NumPy 手写实现 ═══</span>
-<span class="code-keyword">def</span> <span class="code-function">cosine_sim_numpy</span>(vec_a: np.ndarray, vec_b: np.ndarray) -> <span class="code-variable">float</span>:
-    <span class="code-string">"""手动计算余弦相似度，适合理解原理"""</span>
-    dot_product = np.<span class="code-function">dot</span>(vec_a, vec_b)
-    norm_a = np.<span class="code-function">linalg</span>.<span class="code-function">norm</span>(vec_a)
-    norm_b = np.<span class="code-function">linalg</span>.<span class="code-function">norm</span>(vec_b)
-    <span class="code-keyword">return</span> dot_product / (norm_a * norm_b)
-
-<span class="code-comment"># ═══ 方式二：scikit-learn（推荐用于小规模数据）═══</span>
-<span class="code-keyword">def</span> <span class="code-function">cosine_sim_sklearn</span>(matrix_a: np.ndarray, matrix_b: np.ndarray) -> np.ndarray:
-    <span class="code-string">"""批量计算两矩阵间所有向量对的余弦相似度"""</span>
-    <span class="code-keyword">return</span> <span class="code-function">cosine_similarity</span>(matrix_a, matrix_b)
-
-<span class="code-comment"># ═══ 方式三：PyTorch（推荐用于 GPU 加速的大规模场景）═══</span>
-<span class="code-keyword">def</span> <span class="code-function">cosine_sim_pytorch</span>(vec_a: torch.Tensor, vec_b: torch.Tensor) -> torch.Tensor:
-    <span class="code-string">"""GPU 加速的余弦相似度，支持 batch 运算"""</span>
-    <span class="code-keyword">return</span> F.<span class="code-function">cosine_similarity</span>(vec_a.<span class="code-function">unsqueeze</span>(<span class="code-param">0</span>), vec_b.<span class="code-function">unsqueeze</span>(<span class="code-param">0</span>))
-
-<span class="code-comment"># ─── 使用示例 ───</span>
-vec1 = np.array([<span class="code-param">0.3</span>, <span class="code-param">0.5</span>, <span class="code-param">0.2</span>, <span class="code-param">0.8</span>, <span class="code-param">0.1</span>])
-vec2 = np.array([<span class="code-param">0.28</span>, <span class="code-param">0.52</span>, <span class="code-param">0.22</span>, <span class="code-param">0.78</span>, <span class="code-param">0.12</span>])
-
-<span class="code-function">print</span>(<span class="code-string">f"余弦相似度: {cosine_sim_numpy(vec1, vec2):.4f}"</span>)
-<span class="code-comment"># 输出: 余弦相似度: 0.9987 （非常接近，说明语义高度一致）</span></code></pre>
                 </div>
             </div>
         </article>
 
-        <!-- ═══════════════════════════════════════════ -->
-        <!-- SECTION 2: Embedding模型深度解析 -->
-        <!-- ═══════════════════════════════════════════ -->
-        <article class="section-card accent-bar-info" id="s2" data-animate>
+        <!-- ═════════════════════════════════ -->
+        <!--  Section 2: 提示词设计             -->
+        <!-- ═════════════════════════════════ -->
+        <article class="section-card accent-bar-info" id="s2">
             <div class="section-header">
-                <span class="section-number">02</span>
-                <h2 class="section-title">Embedding 模型全景：从 OpenAI 到中文开源</h2>
+                <span class="section-number">2</span>
+                <h2 class="section-title">提示词设计：Few-Shot 文本匹配</h2>
             </div>
             <div class="section-content">
-                <p>
-                    Embedding 模型是整个语义匹配系统的<strong>心脏</strong>。它的质量直接决定了
-                    「苹果公司」和「iPhone制造商」能否被映射到相邻的向量位置。
-                    当前业界主流的 Embedding 技术路线可以分为三大阵营：
-                    <strong>闭源 API 服务</strong>（OpenAI）、<strong>中文开源社区</strong>（BGE/M3E）、
-                    以及<strong>多语言通用模型</strong>（E5/Sentence-BERT）。
-                </p>
+                <p>文本匹配的 Prompt 设计遵循与前面几集一致的 <strong>Few-Shot 模式</strong>，但任务形式有所不同：</p>
 
-                <h3 class="section-subtitle">主流 Embedding 模型对比</h3>
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">&#128161; 核心设计思路</div>
+                    <div class="highlight-box-content">
+                        与分类/抽取不同，文本匹配需要模型同时<strong>理解两段文本</strong>并做出二元判断。
+                        我们通过 Few-Shot 示例展示"句子对 → 相似性判断"的模式，让模型学会这种推理方式。
+                    </div>
+                </div>
+
+                <p class="section-subtitle">Prompt 结构拆解</p>
+
+                <ul class="content-list">
+                    <li><strong>System Prompt</strong>：定义模型为"文本匹配专家"，明确任务是判断两个句子的语义相似性</li>
+                    <li><strong>Few-Shot 示例</strong>：提供若干组"句子一 + 句子二 → 是/不是"的示例对</li>
+                    <li><strong>输入格式</strong>：每次传入一个待判断的文本对（sentence1, sentence2）</li>
+                    <li><strong>输出格式</strong>：输出"是"或"不是"，并附带简短的匹配理由</li>
+                </ul>
+
+                <p class="section-subtitle">System Prompt 设计要点</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Prompt 设计</span>
+                    </div>
+                    <div class="code-body"><pre><code>你是一个文本匹配专家。请判断给出的两个句子是否语义相似。
+如果相似回复"是"，如果不相似回复"不是"。参考下面的示例。</code></pre></div>
+                </div>
+
+                <p class="section-subtitle">Few-Shot 示例设计</p>
+                <p>示例覆盖两种情况——<strong>语义相似</strong> 和 <strong>语义不相似</strong> 的金融文本对：</p>
+
                 <div class="table-wrapper">
                     <table>
                         <thead>
-                            <tr>
-                                <th>模型名称</th>
-                                <th>来源</th>
-                                <th>维度</th>
-                                <th>特点</th>
-                                <th>C-MTEB 排名</th>
-                            </tr>
+                            <tr><th>类型</th><th>句子一</th><th>句子二</th><th>期望输出</th></tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>text-embedding-3-large</strong></td>
-                                <td>OpenAI</td>
-                                <td>3072 (可缩放)</td>
-                                <td>多语言通用，支持 shortening，API 即用</td>
-                                <td>— (闭源)</td>
+                                <td><code style="background:rgba(85,180,130,0.1);color:var(--success)">相似</code></td>
+                                <td>公司ABC发布了季度财报，显示盈利增长。</td>
+                                <td>财报披露，公司ABC利润上升。</td>
+                                <td><strong>是</strong></td>
                             </tr>
                             <tr>
-                                <td><strong>text-embedding-3-small</strong></td>
-                                <td>OpenAI</td>
-                                <td>1536 (可缩放)</td>
-                                <td>性价比高，适合大规模生产</td>
-                                <td>— (闭源)</td>
-                            </tr>
-                            <tr style="background: rgba(85,120,250,0.05);">
-                                <td><strong>BGE-Large-Zh-v1.5</strong></td>
-                                <td>智源 BAAI</td>
-                                <td>1024</td>
-                                <td>中文 SOTA，支持 Instructions，开源免费</td>
-                                <td>#1 中文榜单</td>
-                            </tr>
-                            <tr>
-                                <td><strong>M3E-base</strong></td>
-                                <td>m3e (中文社区)</td>
-                                <td>768</td>
-                                <td>轻量级中文模型，推理速度快</td>
-                                <td>Top 5</td>
-                            </tr>
-                            <tr>
-                                <td><strong>E5-mistral-7b-instruct</strong></td>
-                                <td>Microsoft/intel</td>
-                                <td>4096</td>
-                                <td>指令感知的多语言大模型</td>
-                                <td>Top 3 多语言</td>
-                            </tr>
-                            <tr>
-                                <td><strong>bge-m3</strong></td>
-                                <td>智源 BAAI</td>
-                                <td>1024</td>
-                                <td>多语言+多粒度（支持长文档）</td>
-                                <td>#1 多语言</td>
+                                <td><code style="background:rgba(220,90,80,0.1);color:var(--danger)">不相似</code></td>
+                                <td>央行宣布降息以刺激经济。</td>
+                                <td>某科技公司推出新款智能手机。</td>
+                                <td><strong>不是</strong></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div class="figure-container">
-                    <div class="embedding-space">
-                        <div class="embedding-space-grid">
-                            <span class="emb-axis-label" style="bottom:4px;right:8px;">dim 1 &#8594;</span>
-                            <span class="emb-axis-label" style="top:4px;left:8px;">dim 2 &#8593;</span>
-                            <div class="emb-cluster-center" style="left:18%;top:28%;border-color:#60A5FA;"></div>
-                            <div class="emb-cluster-center" style="left:68%;top:22%;border-color:#34D399;"></div>
-                            <div class="emb-cluster-center" style="left:35%;top:65%;border-color:#FB923C;"></div>
-                            <div class="emb-cluster-center" style="left:78%;top:62%;border-color:#C084FC;"></div>
-                            <div class="emb-dot" style="left:14%;top:24%;width:10px;height:10px;background:#3B82F6;box-shadow:0 0 6px #3B82F6;color:#3B82F6;" data-label="沪指跌破3000"></div>
-                            <div class="emb-dot" style="left:20%;top:31%;width:8px;height:8px;background:#60A5FA;box-shadow:0 0 5px #60A5FA;color:#60A5FA;" data-label="创业板指"></div>
-                            <div class="emb-dot" style="left:17%;top:20%;width:9px;height:9px;background:#93C5FD;box-shadow:0 0 5px #93C5FD;color:#93C5FD;" data-label="北向资金净流入"></div>
-                            <div class="emb-dot" style="left:22%;top:26%;width:7px;height:7px;background:#2563EB;box-shadow:0 0 4px #2563EB;color:#2563EB;" data-label="两市成交额"></div>
-                            <div class="emb-dot" style="left:15%;top:34%;width:8px;height:8px;background:#60A5FA;box-shadow:0 0 5px #60A5FA;color:#60A5FA;" data-label="涨停板数量"></div>
-                            <div class="emb-dot" style="left:64%;top:16%;width:9px;height:9px;background:#10B981;box-shadow:0 0 6px #10B981;color:#10B981;" data-label="LPR利率下调"></div>
-                            <div class="emb-dot" style="left:71%;top:25%;width:8px;height:8px;background:#34D399;box-shadow:0 0 5px #34D399;color:#34D399;" data-label="存款准备金率"></div>
-                            <div class="emb-dot" style="left:67%;top:19%;width:10px;height:10px;background:#059669;box-shadow:0 0 6px #059669;color:#059669;" data-label="MLF操作"></div>
-                            <div class="emb-dot" style="left:73%;top:14%;width:7px;height:7px;background:#6EE7B7;box-shadow:0 0 4px #6EE7B7;color:#6EE7B7;" data-label="信贷投放增速"></div>
-                            <div class="emb-dot" style="left:69%;top:28%;width:8px;height:8px;background:#34D399;box-shadow:0 0 5px #34D399;color:#34D399;" data-label="银行理财规模"></div>
-                            <div class="emb-dot" style="left:31%;top:61%;width:9px;height:9px;background:#F97316;box-shadow:0 0 6px #F97316;color:#F97316;" data-label="车险综合改革"></div>
-                            <div class="emb-dot" style="left:38%;top:69%;width:8px;height:8px;background:#FB923C;box-shadow:0 0 5px #FB923C;color:#FB923C;" data-label="重疾险新规"></div>
-                            <div class="emb-dot" style="left:33%;top:72%;width:10px;height:10px;background:#EA580C;box-shadow:0 0 6px #EA580C;color:#EA580C;" data-label="偿付能力监管"></div>
-                            <div class="emb-dot" style="left:40%;top:63%;width:7px;height:7px;background:#FDBA74;box-shadow:0 0 4px #FDBA74;color:#FDBA74;" data-label="养老保险试点"></div>
-                            <div class="emb-dot" style="left:36%;top:58%;width:8px;height:8px;background:#FB923C;box-shadow:0 0 5px #FB923C;color:#FB923C;" data-label="保费收入增长"></div>
-                            <div class="emb-dot" style="left:75%;top:56%;width:9px;height:9px;background:#A855F7;box-shadow:0 0 6px #A855F7;color:#A855F7;" data-label="数字人民币试点"></div>
-                            <div class="emb-dot" style="left:81%;top:66%;width:8px;height:8px;background:#C084FC;box-shadow:0 0 5px #C084FC;color:#C084FC;" data-label="区块链跨境支付"></div>
-                            <div class="emb-dot" style="left:77%;top:59%;width:10px;height:10px;background:#9333EA;box-shadow:0 0 6px #9333EA;color:#9333EA;" data-label="智能投顾上线"></div>
-                            <div class="emb-dot" style="left:83%;top:58%;width:7px;height:7px;background:#E9D5FF;box-shadow:0 0 4px #E9D5FF;color:#E9D5FF;" data-label="开放银行API"></div>
-                            <div class="emb-dot" style="left:79%;top:70%;width:8px;height:8px;background:#C084FC;box-shadow:0 0 5px #C084FC;color:#C084FC;" data-label="监管沙盒机制"></div>
-                        </div>
-                        <div class="emb-legend">
-                            <div class="legend-item"><span class="legend-dot" style="background:#3B82F6;"></span>股市新闻 (Stock)</div>
-                            <div class="legend-item"><span class="legend-dot" style="background:#10B981;"></span>银行 (Banking)</div>
-                            <div class="legend-item"><span class="legend-dot" style="background:#F97316;"></span>保险 (Insurance)</div>
-                            <div class="legend-item"><span class="legend-dot" style="background:#A855F7;"></span>Fintech</div>
-                        </div>
-                    </div>
-                    <div class="figure-caption">图 2-1：Embedding 向量空间可视化 —— 语义相近的文本自动聚集成簇，不同主题之间有明显间隔</div>
-                </div>
-
-                <h3 class="section-subtitle">BGE-Large-Zh：中文 Embedding 的王者</h3>
-                <p>
-                    <strong>BGE（Beijing Academy of Artificial Intelligence General Embedding）</strong>
-                    是由北京智源人工智能研究院（BAAI）开发的系列 Embedding 模型，
-                    其中 <code>BGE-Large-Zh-v1.5</code> 在 C-MTEB（Chinese Massive Text Embedding Benchmark）
-                    中文榜单上长期霸榜第一。它有几个关键特性使其成为中文场景的首选：
-                </p>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F3AF; Instruction-Aware</div>
-                        <div class="info-item-value">支持指令前缀，可为不同任务定制编码行为</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x26A1; Matryoshka Representation</div>
-                        <div class="info-item-value">支持动态截断维度，灵活平衡精度与存储成本</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F4E5; 完全开源</div>
-                        <div class="info-item-value">Apache 2.0 协议，可本地部署无 API 费用</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F4C8; 1024 维输出</div>
-                        <div class="info-item-value">在精度和效率之间取得良好平衡</div>
-                    </div>
-                </div>
-
-                <h3 class="section-subtitle">代码实战：三种模型的调用对比</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / 三种 Embedding 模型的调用方式</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-comment"># ══════════════════════════════════════════════</span>
-<span class="code-comment"># 方式一：OpenAI text-embedding-3-large (API)</span>
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-<span class="code-keyword">from</span> openai <span class="code-keyword">import</span> OpenAI
-
-client = OpenAI()
-
-<span class="code-keyword">def</span> <span class="code-function">embed_openai</span>(text: <span class="code-variable">str</span>) -> <span class="code-variable">list</span>[<span class="code-variable">float</span>]:
-    <span class="code-string">"""调用 OpenAI Embedding API，返回 3072 维向量"""</span>
-    response = client.embeddings.<span class="code-function">create</span>(
-        model=<span class="code-string">"text-embedding-3-large"</span>,
-        input=text,
-        dimensions=<span class="code-param">1024</span>  <span class="code-comment"># 可选：缩短维度以节省存储</span>
-    )
-    <span class="code-keyword">return</span> response.data[<span class="code-param">0</span>].embedding
-
-
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-<span class="code-comment"># 方式二：BGE-Large-Zh-v1.5 (本地部署，推荐！)</span>
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-<span class="code-keyword">from</span> sentence_transformers <span class="code-keyword">import</span> SentenceTransformer
-
-<span class="code-comment"># 首次运行会自动下载模型 (~1.2GB)</span>
-bge_model = SentenceTransformer(<span class="code-string">"BAAI/bge-large-zh-v1.5"</span>)
-
-<span class="code-keyword">def</span> <span class="code-function">embed_bge</span>(texts: <span class="code-variable">list</span>[<span class="code-variable">str</span>]) -> np.ndarray:
-    <span class="code-string">"""
-    BGE 编码函数，支持批量输入
-    关键特性：Instruction-aware 前缀
-    """</span>
-    instruction = <span class="code-string">"为这个句子生成表示以用于检索相关文章："</span>
-    texts_with_instruction = [instruction + text <span class="code-keyword">for</span> text <span class="code-keyword">in</span> texts]
-    embeddings = bge_model.<span class="code-function">encode</span>(
-        texts_with_instruction,
-        normalize_embeddings=<span class="code-keyword">True</span>  <span class="code-comment"># L2归一化，后续可用点积代替余弦</span>
-    )
-    <span class="code-keyword">return</span> embeddings
-
-
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-<span class="code-comment"># 方式三：LangChain 统一接口 (推荐用于 RAG 项目)</span>
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-<span class="code-keyword">from</span> langchain_openai <span class="code-keyword">import</span> OpenAIEmbeddings
-<span class="code-keyword">from</span> langchain_community.embeddings <span class="code-keyword">import</span> HuggingFaceEmbeddings
-
-<span class="code-comment"># LangChain 封装了多种 Embedding 后端，统一接口</span>
-<span class="code-comment"># 切换底层模型只需改一行代码：</span>
-
-<span class="code-comment"># 使用 OpenAI</span>
-# embeddings = OpenAIEmbeddings(model=<span class="code-string">"text-embedding-3-small"</span>)
-
-<span class="code-comment"># 使用 BGE (本地)</span>
-embeddings = HuggingFaceEmbeddings(
-    model_name=<span class="code-string">"BAAI/bge-large-zh-v1.5"</span>,
-    model_kwargs={<span class="code-string">'device'</span>: <span class="code-string">'cuda'</span>},      <span class="code-comment"># GPU 加速</span>
-    encode_kwargs={<span class="code-string">'normalize_embeddings'</span>: <span class="code-keyword">True</span>}  <span class="code-comment"># L2 归一化</span>
-)
-
-<span class="code-comment"># 统一调用接口</span>
-query_vec = embeddings.<span class="code-function">embed_query</span>(<span class="code-string">"茅台2024年业绩如何？"</span>)
-doc_vecs = embeddings.<span class="code-function">embed_documents</span>([<span class="code-string">"贵州茅台一季度营收创新高"</span>, ...])
-
-<span class="code-function">print</span>(<span class="code-string">f"查询向量维度: {len(query_vec)}"</span>)  <span class="code-comment"># 输出: 1024</span></code></pre>
-                </div>
-
-                <div class="highlight-box teal">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        模型选择建议
-                    </div>
+                <div class="highlight-box">
+                    <div class="highlight-box-title">&#128161; 关键技巧总结</div>
                     <div class="highlight-box-content">
-                        <strong>中文金融场景首选 BGE-Large-Zh-v1.5。</strong><br><br>
-                        &#x25B6; 如果你的项目<strong>预算充足且追求极致效果</strong> → OpenAI text-embedding-3-large<br>
-                        &#x25B6; 如果是<strong>中文为主的生产环境</strong> → BGE-Large-Zh（免费 + 本地部署 + 效果 SOTA）<br>
-                        &#x25B6; 如果需要<strong>多语言混合</strong>（中英日韩等）→ bge-m3 或 E5-mistral<br>
-                        &#x25B6; 如果<strong>资源受限/边缘设备</strong> → M3E-base（仅 768 维，体积小速度快）
+                        <ul class="content-list">
+                            <li>示例要<strong>覆盖所有输出类别</strong>（是 / 不是），避免模型偏向某一种回答</li>
+                            <li>示例中的文本应来自<strong>同一领域</strong>（金融），保持上下文一致性</li>
+                            <li>每对示例的<strong>相似度梯度</strong>要合理，便于模型学习判别边界</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </article>
 
-        <!-- ═══════════════════════════════════════════ -->
-        <!-- SECTION 3: 金融文本语义匹配实战场景 -->
-        <!-- ═══════════════════════════════════════════ -->
-        <article class="section-card accent-bar-success" id="s3" data-animate>
+        <!-- ═════════════════════════════════ -->
+        <!--  Section 3: 完整代码               -->
+        <!-- ═════════════════════════════════ -->
+        <article class="section-card accent-bar-teal" id="s3">
             <div class="section-header">
-                <span class="section-number">03</span>
-                <h2 class="section-title">金融场景实战：智能研报/新闻匹配系统</h2>
+                <span class="section-number">3</span>
+                <h2 class="section-title">完整代码：09_Text_Matching_FewShot.py</h2>
             </div>
             <div class="section-content">
-                <p>
-                    让我们把前面的理论知识落地到一个真实的金融场景：<strong>用户输入自然语言查询，
-                    系统从海量财经新闻和研报库中找到最相关的 K 条内容</strong>。
-                    这是金融机构日常工作中高频使用的功能——研究员找资料、合规人员交叉验证、
-                    投资经理追踪舆情，都离不开它。
-                </p>
+                <p>以下是视频课程中展示的完整代码，实现基于 Few-Shot 的金融文本语义匹配任务：</p>
 
-                <h3 class="section-subtitle">典型应用场景</h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F50D; 智能研报检索</div>
-                        <div class="info-item-value">分析师输入「新能源车销量趋势」，系统返回最相关的券商研报</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F4CA; 新闻去重聚合</div>
-                        <div class="info-item-value">识别多家媒体对同一事件的重复报道，合并为一条热点</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x2696;&#xFE0F; 合规交叉引用</div>
-                        <div class="info-item-value">检查公告披露内容是否与外部报道存在矛盾或遗漏</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F4C8; 事件脉络追踪</div>
-                        <div class="info-item-value">按时间线串联同一事件的前后演变，构建完整叙事链</div>
-                    </div>
-                </div>
-
-                <h3 class="section-subtitle">端到端实现：从查询到结果</h3>
                 <div class="code-block">
                     <div class="code-header">
-                        <span class="code-lang">Python / 金融文本语义匹配完整实现</span>
+                        <span class="code-lang">Python</span>
                         <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
-<span class="code-keyword">from</span> typing <span class="code-keyword">import</span> <span class="code-class">list</span>, TypedDict
-<span class="code-keyword">from</span> dataclasses <span class="code-keyword">import</span> dataclass
-<span class="code-keyword">from</span> sentence_transformers <span class="code-keyword">import</span> SentenceTransformer
-
-<span class="code-comment"># ════════════════════════════════════════</span>
-<span class="code-comment"># Step 1: 加载 Embedding 模型</span>
-<span class="code-comment"># ════════════════════════════════════════</span>
-model = SentenceTransformer(<span class="code-string">"BAAI/bge-large-zh-v1.5"</span>)
+                    <div class="code-body"><pre><code>import os
+from dotenv import load_dotenv
+from openai import OpenAI
 
 
-<span class="code-keyword">@dataclass</span>
-<span class="code-keyword">class</span> <span class="code-class">MatchResult</span>:
-    <span class="code-string">"""匹配结果的数据结构"""</span>
-    doc_id: <span class="code-variable">str</span>
-    title: <span class="code-variable">str</span>
-    score: <span class="code-variable">float</span>       <span class="code-comment"># 相似度分数 [0, 1]</span>
-    content_preview: <span class="code-variable">str</span>
+def main():
+    """
+    文本匹配任务 - Few-Shot 学习示例：
+    1. 使用 Few-Shot 方式让模型理解文本匹配任务
+    2. 判断两个金融文本句子是否语义相似
+    3. 输出 "是" 或 "不是"
+    """
+    load_dotenv()
 
+    client = OpenAI(
+        api_key=os.getenv("API_KEY"),
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    )
 
-<span class="code-keyword">class</span> <span class="code-class">FinancialSemanticMatcher</span>:
-    <span class="code-string">"""
-    金融文本语义匹配引擎
-    
-    核心能力:
-    - 文本向量化 (BGE Embedding)
-    - 余弦相似度批量计算
-    - Top-K 检索与排序
-    - 结果后处理与格式化
-    """</span>
-    
-    <span class="code-keyword">def</span> __init__(self, model_name: <span class="code-variable">str</span> = <span class="code-string">"BAAI/bge-large-zh-v1.5"</span>):
-        self.model = SentenceTransformer(model_name)
-        self.doc_embeddings = None   <span class="code-comment"># 文档向量矩阵</span>
-        self.doc_metadata = []      <span class="code-comment"># 文档元数据</span>
-    
-    <span class="code-keyword">def</span> <span class="code-function">build_index</span>(self, documents: <span class="code-variable">list</span>[dict]):
-        <span class="code-string">"""
-        构建文档索引（离线阶段）
-        
-        Args:
-            documents: [{"id": str, "title": str, "content": str}, ...]
-        """</span>
-        texts = [doc[<span class="code-string">"content"</span>] <span class="code-keyword">for</span> doc <span class="code-keyword">in</span> documents]
-        self.doc_metadata = documents
-        
-        <span class="code-comment"># 批量编码所有文档</span>
-        self.doc_embeddings = self.model.<span class="code-function">encode</span>(
-            texts,
-            normalize_embeddings=<span class="code-keyword">True</span>,
-            show_progress_bar=<span class="code-keyword">True</span>,
-            batch_size=<span class="code-param">32</span>
+    examples_data = [
+        {
+            "sentence1": "公司ABC发布了季度财报，显示盈利增长。",
+            "sentence2": "财报披露，公司ABC利润上升。",
+            "answer": "是"
+        },
+        {
+            "sentence1": "央行宣布降息以刺激经济。",
+            "sentence2": "某科技公司推出新款智能手机。",
+            "answer": "不是"
+        },
+        {
+            "sentence1": "股市今日大幅震荡，投资者情绪谨慎。",
+            "sentence2": "今天股票市场波动剧烈，投资人态度趋于保守。",
+            "answer": "是"
+        }
+    ]
+
+    questions = [
+        {
+            "sentence1": "传智教育A股今日收盘价68元人民币。",
+            "sentence2": "传智教育股票今天以68块钱收市。"
+        },
+        {
+            "sentence1": "美联储维持基准利率不变。",
+            "sentence2": "北京今天天气晴朗，气温适宜。"
+        }
+    ]
+
+    messages = []
+
+    messages.append({
+        "role": "system",
+        "content": "你是一个文本匹配专家。请判断给出的两个句子是否语义相似。"
+                   "如果相似回复'是'，如果不相似回复'不是'。参考下面的示例。"
+    })
+
+    for example in examples_data:
+        messages.append({
+            "role": "user",
+            "content": f"句子一:{example['sentence1']}\n句子二:{example['sentence2']}"
+        })
+        messages.append({
+            "role": "assistant",
+            "content": example["answer"]
+        })
+
+    print("=" * 80)
+    print("文本匹配任务 - Few-Shot 学习示例")
+    print("=" * 80)
+    print(f"\nFew-Shot 示例数量: {len(examples_data)}")
+    print(f"待匹配的问题数量: {len(questions)}")
+    print("\n" + "-" * 80)
+
+    for i, q in enumerate(questions, 1):
+        print(f"\n【问题 {i}】")
+        print(f"句子一: {q['sentence1']}")
+        print(f"句子二: {q['sentence2']}")
+        print("\n匹配结果:")
+
+        current_messages = messages + [{
+            "role": "user",
+            "content": f"句子一:{q['sentence1']}\n句子二:{q['sentence2']}"
+        }]
+
+        response = client.chat.completions.create(
+            model="qwen3-max",
+            messages=current_messages
         )
-        <span class="code-function">print</span>(<span class="code-string">f"[索引构建完成] 共 {len(documents)} 篇文档，"</span>
-              <span class="code-string">f"向量维度: {self.doc_embeddings.shape[1]}"</span>)
-    
-    <span class="code-keyword">def</span> <span class="code-function">search</span>(self, query: <span class="code-variable">str</span>, top_k: <span class="code-variable">int</span> = <span class="code-param">5</span>,
-               threshold: <span class="code-variable">float</span> = <span class="code-param">0.5</span>) -> <span class="code-variable">list</span>[MatchResult]:
-        <span class="code-string">"""
-        语义搜索主方法
-        
-        Args:
-            query: 用户查询文本
-            top_k: 返回前 K 条结果
-            threshold: 最低相似度阈值（低于此值的结果被过滤）
-        
-        Returns:
-            按相似度降序排列的 MatchResult 列表
-        """</span>
-        <span class="code-comment"># 1. 编码查询</span>
-        query_embedding = self.model.<span class="code-function">encode</span>(
-            [<span class="code-string">"为这个句子生成表示以用于检索相关文章："</span> + query],
-            normalize_embeddings=<span class="code-keyword">True</span>
-        )[<span class="code-param">0</span>]
-        
-        <span class="code-comment"># 2. 计算与所有文档的相似度（矩阵运算，极快）</span>
-        scores = np.<span class="code-function">dot</span>(self.doc_embeddings, query_embedding)
-        
-        <span class="code-comment"># 3. Top-K 排序</span>
-        top_indices = np.<span class="code-function">argsort</span>(scores)[::<span class="code-param">-1</span>][:top_k]
-        
-        <span class="code-comment">// 4. 组装结果</span>
-        results = []
-        <span class="code-keyword">for</span> idx <span class="code-keyword">in</span> top_indices:
-            <span class="code-keyword">if</span> scores[idx] >= threshold:
-                doc = self.doc_metadata[idx]
-                results.<span class="code-function">append</span>(MatchResult(
-                    doc_id=doc[<span class="code-string">"id"</span>],
-                    title=doc[<span class="code-string">"title"</span>],
-                    score=<span class="code-keyword">float</span>(scores[idx]),
-                    content_preview=doc[<span class="code-string">"content"</span>][:<span class="code-param">100</span>] + <span class="code-string">"..."</span>
-                ))
-        
-        <span class="code-keyword">return</span> results
+
+        result = response.choices[0].message.content
+        print(result)
+        print("-" * 80)
+
+    print("\n" + "=" * 80)
+    print("任务完成！提示词工程系列全部结束！")
+    print("=" * 80)
 
 
-<span class="code-comment"># ════════════════════════════════════════</span>
-<span class="code-comment"># 实际使用示例</span>
-<span class="code-comment"># ════════════════════════════════════════</span>
-matcher = FinancialSemanticMatcher()
+if __name__ == "__main__":
+    main()</code></pre></div>
+                </div>
 
-<span class="code-comment"># 模拟金融文档库</span>
-fin_docs = [
-    {<span class="code-string">"id"</span>: <span class="code-string">"doc_001"</span>, <span class="code-string">"title"</span>: <span class="code-string">"贵州茅台2024Q1营收387.56亿，同比增长18%"</span>,
-     <span class="code-string">"content"</span>: <span class="code-string">"贵州茅台发布2024年一季报，实现营业收入387.56亿元..."</span>},
-    {<span class="code-string">"id"</span>: <span class="code-string">"doc_002"</span>, <span class="code-string">"title"</span>: <span class="code-string">"央行宣布下调存款准备金率0.5个百分点"</span>,
-     <span class="code-string">"content"</span>: <span class="code-string">"中国人民银行决定于2024年X月X日下调金融机构..."</span>},
-    {<span class="code-string">"id"</span>: <span class="code-string">"doc_003"</span>, <span class="code-string">"title"</span>: <span class="code-string">"宁德时代发布神行超充电池，充电10分钟续航400公里"</span>,
-     <span class="code-string">"content"</span>: <span class="code-string">"宁德时代正式发布全新一代磷酸铁锂电池产品..."</span>},
-    {<span class="code-string">"id"</span>: <span class="code-string">"doc_004"</span>, <span class="code-string">"title"</span>: <span class="code-string">"茅台一季度收入创历史新高，直销渠道占比近46%"</span>,
-     <span class="code-string">"content"</span>: <span class="code-string">"贵州茅台2024年第一季度财报显示，直销渠道销售收入..."</span>},
-]
+                <div class="highlight-box teal">
+                    <div class="highlight-box-title">&#128161; 代码结构解析</div>
+                    <div class="highlight-box-content">
+                        <ul class="content-list">
+                            <li><strong>examples_data</strong>：定义 3 组 Few-Shot 示例（2 组相似 + 1 组不相似），每组包含 sentence1、sentence2、answer</li>
+                            <li><strong>questions</strong>：定义 2 组待测试的文本对</li>
+                            <li><strong>messages 构建</strong>：system prompt → 3 组 few-shot 示例（交替 user/assistant）→ 实际问题</li>
+                            <li><strong>调用 qwen3-max</strong>：通过阿里云 DashScope 兼容 OpenAI 接口调用</li>
+                            <li><strong>输出</strong>：直接打印模型的匹配判断结果</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
 
-<span class="code-comment"># 构建索引</span>
-matcher.<span class="code-function">build_index</span>(fin_docs)
+        <!-- ═════════════════════════════════ -->
+        <!--  Section 4: 运行结果               -->
+        <!-- ═════════════════════════════════ -->
+        <article class="section-card accent-bar-success" id="s4">
+            <div class="section-header">
+                <span class="section-number">4</span>
+                <h2 class="section-title">运行结果</h2>
+            </div>
+            <div class="section-content">
+                <p>执行 <code>python3 09_Text_Matching_FewShot.py</code> 后的输出结果：</p>
 
-<span class="code-comment"># 执行搜索</span>
-results = matcher.<span class="code-function">search</span>(
-    query=<span class="code-string">"茅台今年第一季度的业绩怎么样？"</span>,
-    top_k=<span class="code-param">3</span>
-)
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Terminal 输出</span>
+                    </div>
+                    <div class="code-body"><pre><code>================================================================================
+文本匹配任务 - Few-Shot 学习示例
+================================================================================
 
-<span class="code-comment"># 输出结果</span>
-<span class="code-keyword">for</span> r <span class="code-keyword">in</span> results:
-    <span class="code-function">print</span>(<span class="code-string">f"[{r.score:.3f}] {r.title}"</span>)
-<span class="code-comment"># 输出示例:</span>
-<span class="code-comment"># [0.892] 贵州茅台2024Q1营收387.56亿，同比增长18%</span>
-<span class="code-comment"># [0.876] 茅台一季度收入创历史新高，直销渠道占比近46%</span></code></pre>
+Few-Shot 示例数量: 3
+待匹配的问题数量: 2
+
+--------------------------------------------------------------------------------
+
+【问题 1】
+句子一: 传智教育A股今日收盘价68元人民币。
+句子二: 传智教育股票今天以68块钱收市。
+
+匹配结果:
+是
+--------------------------------------------------------------------------------
+
+【问题 2】
+句子一: 美联储维持基准利率不变。
+句子二: 北京今天天气晴朗，气温适宜。
+
+匹配结果:
+不是
+--------------------------------------------------------------------------------
+
+================================================================================
+任务完成！提示词工程系列全部结束！
+================================================================================</code></pre></div>
                 </div>
 
                 <div class="highlight-box success">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
-                        关键洞察
-                    </div>
+                    <div class="highlight-box-title">&#128161; 结果分析</div>
                     <div class="highlight-box-content">
-                        注意上面搜索结果中的<strong>神奇之处</strong>：用户的查询是「<strong>茅台今年第一季度</strong>的业绩怎么样？」，
-                        但命中的文档标题包含的是「<strong>2024Q1</strong>」和「<strong>一季度</strong>」——
-                        这些词汇在字面上并不完全相同，但 Embedding 模型理解了它们的<strong>语义等价关系</strong>。
-                        这就是语义匹配相比关键词搜索的<strong>本质飞跃</strong>。
+                        <ul class="content-list">
+                            <li><strong>问题 1</strong>（相似）：两句都描述了"传智教育股票收盘价68元"这一事实，只是表述方式不同（正式 vs 口语化），模型正确识别为<strong>语义相似</strong></li>
+                            <li><strong>问题 2</strong>（不相似）：一句关于"美联储利率决策"，另一句关于"北京天气"，主题完全不同，模型正确识别为<strong>语义不相似</strong></li>
+                            <li>这证明了 Few-Shot 方法在<strong>零训练成本</strong>的前提下，可以让大模型有效完成细粒度的语义理解任务</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </article>
 
-        <!-- ═══════════════════════════════════════════ -->
-        <!-- SECTION 4: FAISS 向量数据库 -->
-        <!-- ═══════════════════════════════════════════ -->
-        <article class="section-card accent-bar-accent" id="s4" data-animate>
+        <!-- ═════════════════════════════════ -->
+        <!--  Section 5: 全系列回顾 (FINALE)   -->
+        <!-- ═════════════════════════════════ -->
+        <article class="section-card accent-bar-gold" id="s5">
             <div class="section-header">
-                <span class="section-number">04</span>
-                <h2 class="section-title">FAISS：Facebook 的高性能向量检索引擎</h2>
+                <span class="section-number" style="background:linear-gradient(135deg,#FFD700,#FFA500)">&#9733;</span>
+                <h2 class="section-title">全系列回顾：提示词工程 6 集完整图谱</h2>
             </div>
             <div class="section-content">
-                <p>
-                    当文档数量从几十篇增长到<strong>十万、百万甚至亿级</strong>时，
-                    前面的「暴力穷举法」（计算查询向量与每个文档向量的相似度）将变得不可接受——
-                    O(N) 的线性扫描时间复杂度意味着 100 万篇文档需要进行 100 万次点积运算。
-                </p>
-                <p>
-                    <strong>FAISS（Facebook AI Similarity Search）</strong> 是 Meta（原 Facebook）
-                    开源的向量相似度搜索库，它通过<strong>近似最近邻（ANN, Approximate Nearest Neighbor）</strong>
-                    算法将检索复杂度从 O(N) 降低到 O(log N)，同时保持极高的召回率（通常 > 95%）。
-                    它是目前工业界使用最广泛的向量检索引擎之一，也是 LangChain 的默认向量存储后端之一。
-                </p>
+                <p>恭喜你完成了<strong>提示词工程系列的全部 6 集内容</strong>！下面是对整个系列的系统性回顾：</p>
 
-                <h3 class="section-subtitle">FAISS 核心概念速览</h3>
-                <div class="table-wrapper">
-                    <table>
+                <div class="series-table-wrapper">
+                    <table class="series-table">
                         <thead>
                             <tr>
-                                <th>概念</th>
-                                <th>说明</th>
-                                <th>类比</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Index（索引）</strong></td>
-                                <td>组织向量数据的结构，决定了检索算法</td>
-                                <td>数据库中的 B-tree 索引</td>
-                            </tr>
-                            <tr>
-                                <td><strong>IndexFlatL2</strong></td>
-                                <td>暴力搜索（精确），基准测试用</td>
-                                <td>没有索引的全表扫描</td>
-                            </tr>
-                            <tr>
-                                <td><strong>IndexIVFFlat</strong></td>
-                                <td>基于聚类的倒排索引，速度/精度平衡的首选</td>
-                                <td>先按区域缩小范围再精确搜索</td>
-                            </tr>
-                            <tr>
-                                <td><strong>nprobe</strong></td>
-                                <td>IVF 索引的探测聚类数，越大越准但越慢</td>
-                                <td>搜索时检查多少个「候选桶」</td>
-                            </tr>
-                            <tr>
-                                <td><strong>nlist</strong></td>
-                                <td>IVF 索引的聚类数量，影响索引构建质量</td>
-                                <td>把数据分成多少个「桶」</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3 class="section-subtitle">FAISS 实战：从零搭建向量数据库</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / FAISS 向量检索完整流程</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">import</span> faiss
-<span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
-<span class="code-keyword">import</span> pickle
-<span class="code-keyword">from</span> sentence_transformers <span class="code-keyword">import</span> SentenceTransformer
-
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-<span class="code-comment"># Phase 1: 准备数据 & 编码</span>
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-model = SentenceTransformer(<span class="code-string">"BAAI/bge-large-zh-v1.5"</span>)
-
-documents = [
-    {<span class="code-string">"id"</span>: <span class="code-string">1</span>, <span class="code-string">"text"</span>: <span class="code-string">"贵州茅台2024年一季度营收387.56亿元"</span>},
-    {<span class="code-string">"id"</span>: <span class="code-string">2</span>, <span class="code-string">"text"</span>: <span class="code-string">"央行下调存款准备金率释放长期资金约1万亿元"</span>},
-    {<span class="code-string">"id"</span>: <span class="code-string">3</span>, <span class="code-string">"text"</span>: <span class="code-string">"比亚迪海豹车型月销量突破3万辆"</span>},
-    <span class="code-comment"># ... 更多文档</span>
-]
-
-<span class="code-comment"># 批量编码为向量矩阵 shape=(N, 1024)</span>
-texts = [d[<span class="code-string">"text"</span>] <span class="code-keyword">for</span> d <span class="code-keyword">in</span> documents]
-embeddings = model.<span class="code-function">encode</span>(texts, normalize_embeddings=<span class="code-keyword">True</span>)
-embeddings = embeddings.<span class="code-function">astype</span>(np.float32)
-
-
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-<span class="code-comment"># Phase 2: 构建 FAISS 索引</span>
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-dimension = embeddings.shape[<span class="code-param">1</span>]  <span class="code-comment"># 1024 for BGE-Large-Zh</span>
-n_total = embeddings.shape[<span class="code-param">0</span>]     <span class="code-comment"># 文档总数</span>
-
-<span class="code-comment"># === 选择合适的索引类型 ===</span>
-
-<span class="code-comment"># 方案A: IndexFlatL2 (暴力搜索，< 1万条文档时够用)</span>
-<span class="code-comment"># index = faiss.IndexFlatL2(dimension)</span>
-
-<span class="code-comment"># 方案B: IndexIVFFlat (推荐！适合 1万~1000万条文档)</span>
-nlist = <span class="code-param">int</span>(np.<span class="code-function">sqrt</span>(n_total))  <span class="code-comment"># 聚类数 ≈ √N</span>
-quantizer = faiss.IndexFlatIP(dimension)  <span class="code-comment"># 内积量化器（因为已做L2归一化）</span>
-index = faiss.IndexIVFFlat(quantizer, dimension, nlist, faiss.METRIC_INNER_PRODUCT)
-
-<span class="code-comment"># 训练索引（必须先训练再添加！）</span>
-<span class="code-keyword">if</span> not index.is_trained:
-    index.<span class="code-function">train</span>(embeddings)
-
-<span class="code-comment"># 添加向量到索引</span>
-index.<span class="code-function">add</span>(embeddings)
-<span class="code-function">print</span>(<span class="code-string">f"FAISS 索引构建完成: {index.ntotal} 个向量"</span>)
-
-
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-<span class="code-comment"># Phase 3: 执行向量检索</span>
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-query_text = <span class="code-string">"茅台今年赚了多少钱？"</span>
-query_vec = model.<span class="code-function">encode</span>(
-    [<span class="code-string">"为这个句子生成表示以用于检索相关文章："</span> + query_text],
-    normalize_embeddings=<span class="code-keyword">True</span>
-).<span class="code-function">astype</span>(np.float32)
-
-<span class="code-comment"># 设置探测数（nprobe 越大越准确但越慢）</span>
-index.nprobe = <span class="code-param">min</span>(nlist, <span class="code-param">10</span>)
-
-<span class="code-comment"># 搜索 Top-3</span>
-k = <span class="code-param">3</span>
-scores, indices = index.<span class="code-function">search</span>(query_vec, k)
-
-<span class="code-comment"># 解析结果</span>
-<span class="code-function">print</span>(<span class="code-string">f"\n查询: {query_text}"</span>)
-<span class="code-function">print</span>(<span class="code-string">"─" * 50)</span>
-<span class="code-keyword">for</span> rank, (idx, score) <span class="code-keyword">in</span> <span class="code-function">enumerate</span>(<span class="code-function">zip</span>(indices[<span class="code-param">0</span>], scores[<span class="code-param">0</span>]), <span class="code-param">1</span>):
-    doc = documents[idx]
-    <span class="code-function">print</span>(<span class="code-string">f"#{rank} [{score:.4f}] {doc['text']}"</span>)
-
-
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-<span class="code-comment"># Phase 4: 持久化保存 & 加载</span>
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-faiss.<span class="code-function">write_index</span>(index, <span class="code-string">"financial_docs.index"</span>)
-<span class="code-function">print</span>(<span class="code-string">"\n索引已保存到 financial_docs.index"</span>)
-
-<span class="code-comment"># 下次使用时直接加载，无需重新构建</span>
-loaded_index = faiss.<span class="code-function">read_index</span>(<span class="code-string">"financial_docs.index"</span>)
-<span class="code-function">print</span>(<span class="code-string">f"加载成功: {loaded_index.ntotal} 个向量"</span>)</code></pre>
-                </div>
-
-                <div class="highlight-box danger">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        FAISS 常见坑点
-                    </div>
-                    <div class="highlight-box-content">
-                        <strong>&#x26A0; IVF 索引必须先 train 再 add！</strong>未训练直接 add 会抛异常或产生错误结果。<br><br>
-                        <strong>&#x26A0; nprobe 的选择是精度 vs 速度的核心权衡参数。</strong>一般设为 nlist 的 5%~20%，
-                        生产环境中建议通过 A/B 测试确定最优值。<br><br>
-                        <strong>&#x26A0; 数据类型必须是 float32。</strong>FAISS 不支持 float64，numpy 数组必须显式转换。<br><br>
-                        <strong>&#x26A0; 已 L2 归一化的向量应使用 Inner Product 而非 L2 距离。</strong>
-                        此时内积等价于余弦相似度，且 FAISS 对 IP 有更多优化。
-                    </div>
-                </div>
-            </div>
-        </article>
-
-        <!-- ═══════════════════════════════════════════ -->
-        <!-- SECTION 5: 综合实战项目 - RAG-like 系统 -->
-        <!-- ═══════════════════════════════════════════ -->
-        <article class="section-card accent-bar-teal" id="s5" data-animate>
-            <div class="section-header">
-                <span class="section-number finale">&#x2728;</span>
-                <h2 class="section-title">终极实战：融合全部技术的金融 RAG 系统</h2>
-            </div>
-            <div class="section-content">
-                <p>
-                    到了这里，我们要把前面 5 集学到的<strong>全部技术</strong>融为一炉，
-                    构建一个完整的类 RAG（Retrieval-Augmented Generation）系统。
-                    这个系统不是简单的向量检索——它在检索之后还加入了
-                    <strong>Prompt 工程 + CoT 推理 + 结构化输出</strong>，
-                    让 AI 不仅「找到」相关文档，还能「理解」、「分析」并给出专业的金融解读。
-                </p>
-
-                <div class="figure-container">
-                    <div class="rag-architecture">
-                        <div class="rag-arch-row">
-                            <div class="rag-node query">&#x1F4DD; User Query<span class="rag-node-sub">用户自然语言查询</span></div>
-                        </div>
-                        <div class="rag-arrow-down">&#x2B07;</div>
-                        <div class="rag-arch-row">
-                            <div class="rag-node llm-qu">&#x1F9E0; Query Understanding<span class="rag-node-sub">LLM 意图解析 (P03)</span></div>
-                        </div>
-                        <div class="rag-arrow-down">&#x2B07;</div>
-                        <div class="rag-arch-row">
-                            <div class="rag-node embed">&#x1F3AF; Embedding (BGE)<span class="rag-node-sub">文本向量化 1024-dim (P06)</span></div>
-                            <div class="rag-node faiss">&#x1F50D; Vector Search (FAISS)<span class="rag-node-sub">ANN 近似最近邻检索 (P06)</span></div>
-                        </div>
-                        <div class="rag-arrow-down">&#x2B07;</div>
-                        <div class="rag-arch-row">
-                            <div class="rag-node ctx">&#x1F4CB; Context Assembly<span class="rag-node-sub">上下文组装与排序</span></div>
-                        </div>
-                        <div class="rag-arrow-down">&#x2B07;</div>
-                        <div class="rag-arch-row">
-                            <div class="rag-node cot">&#x1F9E0; CoT Reasoning (LLM)<span class="rag-node-sub">思维链逐步推理 (P05)</span></div>
-                        </div>
-                        <div class="rag-arrow-down">&#x2B07;</div>
-                        <div class="rag-arch-row">
-                            <div class="rag-node output">&#x1F3C6; Structured Output (JSON)<span class="rag-node-sub">Pydantic 强类型输出 (P04)</span></div>
-                        </div>
-                    </div>
-                    <div class="figure-caption">图 5-1：金融 RAG 综合系统架构 —— 融合 Embedding 检索、CoT 推理与结构化输出的完整 Pipeline</div>
-                </div>
-
-                <h3 class="section-subtitle">六大技术在系统中的角色</h3>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>技术来源</th>
-                                <th>核心技术</th>
-                                <th>在本系统中的具体作用</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>P01 基础</strong></td>
-                                <td>任务定义 + 设计原则</td>
-                                <td>清晰定义每一步的处理目标和约束条件</td>
-                            </tr>
-                            <tr>
-                                <td><strong>P02 结构化</strong></td>
-                                <td>Zero-Shot + 迭代优化</td>
-                                <td>快速原型验证 → 基于失败案例持续优化 Prompt</td>
-                            </tr>
-                            <tr>
-                                <td><strong>P03 角色设定</strong></td>
-                                <td>专家人格激活</td>
-                                <td>激活「资深金融分析师」身份，提升专业判断力</td>
-                            </tr>
-                            <tr>
-                                <td><strong>P04 JSON</strong></td>
-                                <td>Pydantic Schema</td>
-                                <td>SemanticMatchResult 强类型输出，下游可直接消费</td>
-                            </tr>
-                            <tr>
-                                <td><strong>P05 CoT</strong></td>
-                                <td>思维链推理框架</td>
-                                <td>引导 LLM 逐步分析检索到的文档而非跳跃结论</td>
-                            </tr>
-                            <tr style="background: rgba(255,215,0,0.08);">
-                                <td><strong>P06 本集</strong></td>
-                                <td><strong>Embedding + FAISS + 语义匹配</strong></td>
-                                <td><strong>提供高质量的相关文档作为 LLM 推理的基础素材</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3 class="section-subtitle">完整 System Prompt：金融分析师 RAG 版</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / 终极 System Prompt — 金融RAG分析师</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code>FINANCIAL_RAG_SYSTEM_PROMPT = <span class="code-string">"""你是一位拥有 20 年经验的资深金融分析师，专精于
-中国A股市场研究。你擅长从碎片化的财经信息中提炼投资洞见。
-
-## 你的工作模式
-你将收到一个**用户查询**和一组**由语义检索系统找到的相关文档**。
-你需要基于这些文档（仅基于这些文档），运用专业分析能力回答用户问题。
-
-## 分析框架（Chain-of-Thought）
-
-### Step 1: 信息提取
-从每篇参考文档中提取：
-- 核心事实（数字、日期、主体）
-- 关键观点/结论
-- 信息来源的可信度评估
-
-### Step 2: 交叉验证
-- 不同文档之间的信息是否一致？
-- 是否存在矛盾或互补？
-- 哪些信息是最新的/权威的？
-
-### Step 3: 综合推理
-- 将分散的信息整合成连贯的分析
-- 给出明确的结论（避免模棱两可）
-- 标注置信度和风险提示
-
-### Step 4: 结构化输出
-按指定 JSON 格式输出最终答案。
-
-## 重要约束
-- **只使用提供的参考文档**，不得编造信息
-- 如果参考文档不足以回答问题，明确说明
-- 所有数字引用必须注明出处（文档编号）
-- 保持客观中立的投资分析立场
-
-{format_instructions}
-"""</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">完整 Pipeline 代码</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / 金融 RAG 系统完整 Pipeline</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">import</span> faiss
-<span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
-<span class="code-keyword">from</span> pydantic <span class="code-keyword">import</span> BaseModel, Field
-<span class="code-keyword">from</span> typing <span class="code-keyword">import</span> Optional, <span class="code-class">list</span>, Literal
-<span class="code-keyword">from</span> sentence_transformers <span class="code-keyword">import</span> SentenceTransformer
-<span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
-<span class="code-keyword">from</span> langchain_core.output_parsers <span class="code-keyword">import</span> PydanticOutputParser
-<span class="code-keyword">from</span> langchain_openai <span class="code-keyword">import</span> ChatOpenAI
-
-
-<span class="code-comment"># ════════════════════════════════════════</span>
-<span class="code-comment"># Pydantic Schema: RAG 分析结果</span>
-<span class="code-comment"># ════════════════════════════════════════</span>
-<span class="code-keyword">class</span> <span class="code-class">SourceReference</span>(BaseModel):
-    <span class="code-string">"""单条参考来源"""</span>
-    doc_id: <span class="code-variable">str</span>
-    title: <span class="code-variable">str</span>
-    relevance_score: <span class="code-variable">float</span> = Field(description=<span class="code-string">"语义相关性评分"</span>)
-    key_facts: <span class="code-variable">list</span>[<span class="code-variable">str</span>] = Field(description=<span class="code-string">"从中提取的关键事实"</span>)
-
-<span class="code-keyword">class</span> <span class="code-class">FinancialAnalysisResult</span>(BaseModel):
-    <span class="code-string">"""
-    金融 RAG 分析的最终输出
-    融合了 P01-P06 全部技术的结晶！
-    """</span>
-    answer: <span class="code-variable">str</span> = Field(description=<span class="code-string">"对用户问题的专业分析回答"</span>)
-    confidence: <span class="code-variable">float</span> = Field(ge=<span class="code-variable">0.0</span>, le=<span class="code-variable">1.0</span>, description=<span class="code-string">"回答置信度"</span>)
-    sources: <span class="code-variable">list</span>[SourceReference] = Field(description=<span class="code-string">"参考来源列表"</span>)
-    risk_warning: Optional[<span class="code-variable">str</span>] = Field(<span class="code-keyword">None</span>, description=<span class="code-string">"必要的风险提示"</span>)
-    suggested_follow_up: <span class="code-variable">list</span>[<span class="code-variable">str</span>] = Field(description=<span class="code-string">"建议的后续追问"</span>)
-
-
-<span class="code-comment"># ════════════════════════════════════════</span>
-<span class="code-comment"># FinancialRAGSystem: 终极系统</span>
-<span class="code-comment"># ════════════════════════════════════════</span>
-<span class="code-keyword">class</span> <span class="code-class">FinancialRAGSystem</span>:
-    <span class="code-string">"""
-    金融领域 RAG 系统 —— 融合全部 6 集技术
-    
-    Architecture:
-    User Query → Embedding → FAISS Retrieval → Context Assembly
-              → CoT Reasoning (LLM) → Pydantic Output
-    """</span>
-    
-    <span class="code-keyword">def</span> __init__(self):
-        <span class="code-comment"># --- P06: Embedding 模型 ---</span>
-        self.encoder = SentenceTransformer(<span class="code-string">"BAAI/bge-large-zh-v1.5"</span>)
-        
-        <span class="code-comment"># --- P06: FAISS 向量索引 ---</span>
-        self.faiss_index = None
-        self.documents = []
-        
-        <span class="code-comment"># --- P04/P05: LLM + Parser ---</span>
-        self.llm = ChatOpenAI(model=<span class="code-string">"gpt-4o"</span>, temperature=<span class="code-variable">0</span>)
-        self.parser = PydanticOutputParser(pydantic_object=FinancialAnalysisResult)
-        
-        <span class="code-comment"># --- P01/P03: Prompt Template ---</span>
-        self.prompt = ChatPromptTemplate.<span class="code-function">from_messages</span>([
-            (<span class="code-string">"system"</span>, FINANCIAL_RAG_SYSTEM_PROMPT.<span class="code-function">format</span>(
-                format_instructions=self.parser.<span class="code-function">get_format_instructions</span>()
-            )),
-            (<span class="code-string">"human"</span>, <span class="code-string">"""## 用户查询
-{query}
-
-## 参考文档（由语义检索系统提供）
-{retrieved_context}
-"""</span>)
-        ])
-        
-        <span class="code-comment"># 组装 Chain</span>
-        self.chain = self.prompt | self.llm | self.parser
-    
-    <span class="code-keyword">def</span> <span class="code-function">add_documents</span>(self, docs: <span class="code-variable">list</span>[dict]):
-        <span class="code-string">"""添加文档并构建 FAISS 索引"""</span>
-        self.documents = docs
-        texts = [d[<span class="code-string">"content"</span>] <span class="code-keyword">for</span> d <span class="code-keyword">in</span> docs]
-        
-        <span class="code-comment"># Embedding 编码</span>
-        embeddings = self.encoder.<span class="code-function">encode</span>(
-            texts, normalize_embeddings=<span class="code-keyword">True</span>
-        ).<span class="code-function">astype</span>(np.float32)
-        
-        <span class="code-comment"># 构建 FAISS IVF 索引</span>
-        dim = embeddings.shape[<span class="code-param">1</span>]
-        nlist = <span class="code-param">max</span>(<span class="code-param">int</span>(np.<span class="code-function">sqrt</span>(len(docs))), <span class="code-param">4</span>)
-        quantizer = faiss.IndexFlatIP(dim)
-        self.faiss_index = faiss.IndexIVFFlat(quantizer, dim, nlist, 
-                                               faiss.METRIC_INNER_PRODUCT)
-        self.faiss_index.<span class="code-function">train</span>(embeddings)
-        self.faiss_index.<span class="code-function">add</span>(embeddings)
-        self.faiss_index.nprobe = <span class="code-parameter">min</span>(nlist, <span class="code-parameter">10</span>)
-    
-    <span class="code-keyword">def</span> <span class="code-function">query</span>(self, user_query: <span class="code-variable">str</span>, top_k: <span class="code-variable">int</span> = <span class="code-param">3</span>) -> FinancialAnalysisResult:
-        <span class="code-string">"""
-        完整的 RAG 查询流程
-        
-        这是全部 6 集技术的集大成调用！
-        """</span>
-        <span class="comment"># ===== Phase 1: 语义检索 (P06) =====</span>
-        q_vec = self.encoder.<span class="code-function">encode</span>(
-            [<span class="code-string">"为这个句子生成表示以用于检索相关文章："</span> + user_query],
-            normalize_embeddings=<span class="code-keyword">True</span>
-        ).<span class="code-function">astype</span>(np.float32)
-        
-        scores, indices = self.faiss_index.<span class="code-function">search</span>(q_vec, top_k)
-        
-        <span class="comment"># ===== Phase 2: 上下文组装 =====</span>
-        context_parts = []
-        <span class="code-keyword">for</span> rank, idx <span class="code-keyword">in</span> <span class="code-function">enumerate</span>(indices[<span class="code-param">0</span>]):
-            doc = self.documents[idx]
-            context_parts.<span class="code-function">append</span>(
-                <span class="code-string">f"### 文档 {rank+1} (相关度: {scores[0][rank]:.3f})\n"</span>
-                <span class="code-string">f"**标题**: {doc['title']}\n"</span>
-                <span class="code-string">f"**内容**: {doc['content']}\n"</span>
-            )
-        retrieved_context = <span class="code-string">"\n\n"</span>.<span class="code-function">join</span>(context_parts)
-        
-        <span class="comment"># ===== Phase 3: CoT 推理 + 结构化输出 (P03+P04+P05) =====</span>
-        result: FinancialAnalysisResult = self.chain.<span class="code-function">invoke</span>({
-            <span class="code-string">"query"</span>: user_query,
-            <span class="code-string">"retrieved_context"</span>: retrieved_context
-        })
-        
-        <span class="code-keyword">return</span> result
-
-
-<span class="code-comment"># ════════════════════════════════════════</span>
-<span class="code-comment"># 启动系统 & 执行查询</span>
-<span class="code-comment"># ════════════════════════════════════════</span>
-rag = FinancialRAGSystem()
-
-rag.<span class="code-function">add_documents</span>([
-    {<span class="code-string">"title"</span>: <span class="code-string">"茅台Q1营收387.56亿"</span>,
-     <span class="code-string">"content"</span>: <span class="code-string">"贵州茅台2024年一季报显示，营收387.56亿元..."</span>},
-    {<span class="code-string">"title"</span>: <span class="code-string">"白酒行业整体复苏"</span>,
-     <span class="code-string">"content"</span>: <span class="code-string">"2024年Q1白酒板块整体回暖，高端白酒领涨..."</span>},
-    <<span class="code-comment"># ... 更多文档</span>
-])
-
-answer = rag.<span class="code-function">query</span>(<span class="code-string">"茅台今年表现如何？值得投资吗？"</span>)
-
-<span class="code-function">print</span>(<span class="code-string">f"\n{'='*60}"</span>)
-<span class="code-function">print</span>(<span class="code-string">f"回答: {answer.answer}"</span>)
-<span class="code-function">print</span>(<span class="code-string">f"置信度: {answer.confidence:.0%}"</span>)
-<span class="code-function">print</span>(<span class="code-string">f"参考来源: {len(answer.sources)} 篇"</span>)
-<span class="code-keyword">for</span> src <span class="code-keyword">in</span> answer.sources:
-    <span class="code-function">print</span>(<span class="code-string">f"  - [{src.relevance_score:.2f}] {src.title}"</span>)</code></pre>
-                </div>
-
-                <div class="highlight-box teal">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                        架构洞察
-                    </div>
-                    <div class="highlight-box-content">
-                        <strong>这个系统的精髓在于「分层解耦」的设计哲学。</strong><br><br>
-                        检索层（FAISS+BGE）负责<strong>「找对文档」</strong>——利用向量语义匹配从百万级语料中快速定位相关内容；<br>
-                        推理层（LLM+CoT）负责<strong>「读懂文档」</strong>——按照四步分析框架逐步提取、交叉验证、综合推理；<br>
-                        输出层（Pydantic）负责<strong>「规范交付」</strong>——强类型保证下游系统可以直接消费。<br><br>
-                        每一层都可以独立替换和优化——换一个 Embedding 模型不需要改动推理层的任何代码。
-                        这就是<strong>工程化思维</strong>在 AI 系统设计中的最佳实践。
-                    </div>
-                </div>
-            </div>
-        </article>
-
-        <!-- ═══════════════════════════════════════════ -->
-        <!-- SECTION 6: 全部6集技术整合回顾 -->
-        <!-- ═══════════════════════════════════════════ -->
-        <article class="section-card accent-bar-danger" id="s6" data-animate>
-            <div class="section-header">
-                <span class="section-number finale">&#x1F393;</span>
-                <h2 class="section-title">&#x1F393; 全课程技术栈总览与回顾</h2>
-            </div>
-            <div class="section-content">
-                <p>
-                    让我们站在终点回望来路。这 6 集课程构成了一个<strong>完整的提示词工程技术体系</strong>——
-                    从最基础的任务定义原则，到高级的思维链推理和向量语义匹配，
-                    每一层都建立在前一层的基础上，环环相扣。
-                </p>
-
-                <div class="figure-container">
-                    <div class="tech-stack-layers">
-                        <div class="tech-layer layer-L6">
-                            <span class="tech-layer-icon">&#x1F3C6;</span>
-                            <span class="tech-layer-num">L6</span>
-                            <div class="tech-layer-body">
-                                <div class="tech-layer-title">&#x1F3C6; 语义匹配 &amp; RAG（本集 · 集大成）</div>
-                                <div class="tech-layer-desc">Embedding 向量表示 + FAISS 检索 + 全栈融合，从 Prompt 到完整 AI 系统</div>
-                            </div>
-                            <span class="tech-layer-tag">P06 Finale</span>
-                        </div>
-                        <div class="tech-layer layer-L5">
-                            <span class="tech-layer-icon">&#x1F9E0;</span>
-                            <span class="tech-layer-num">L5</span>
-                            <div class="tech-layer-body">
-                                <div class="tech-layer-title">思维链推理 (Chain-of-Thought)</div>
-                                <div class="tech-layer-desc">CoT 推理框架 + Few-Shot 示例库，让 AI 学会「思考过程」而非跳跃结论</div>
-                            </div>
-                            <span class="tech-layer-tag">P05</span>
-                        </div>
-                        <div class="tech-layer layer-L4">
-                            <span class="tech-layer-icon">&#x1F4BE;</span>
-                            <span class="tech-layer-num">L4</span>
-                            <div class="tech-layer-body">
-                                <div class="tech-layer-title">JSON 格式控制 (Pydantic)</div>
-                                <div class="tech-layer-desc">PydanticOutputParser + Schema 设计，强类型输出连接 AI 与程序世界</div>
-                            </div>
-                            <span class="tech-layer-tag">P04</span>
-                        </div>
-                        <div class="tech-layer layer-L3">
-                            <span class="tech-layer-icon">&#x1F451;</span>
-                            <span class="tech-layer-num">L3</span>
-                            <div class="tech-layer-body">
-                                <div class="tech-layer-title">角色设定 (Persona Activation)</div>
-                                <div class="tech-layer-desc">专家人格激活 + 领域知识注入，解锁专业领域能力</div>
-                            </div>
-                            <span class="tech-layer-tag">P03</span>
-                        </div>
-                        <div class="tech-layer layer-L2">
-                            <span class="tech-layer-icon">&#x1F4CB;</span>
-                            <span class="tech-layer-num">L2</span>
-                            <div class="tech-layer-body">
-                                <div class="tech-layer-title">结构化输出 (Zero-Shot &amp; Iteration)</div>
-                                <div class="tech-layer-desc">Zero-Shot / Few-Shot 策略 + 迭代优化，指导 Prompt 演进路径</div>
-                            </div>
-                            <span class="tech-layer-tag">P02</span>
-                        </div>
-                        <div class="tech-layer layer-L1">
-                            <span class="tech-layer-icon">&#x1F3D7;</span>
-                            <span class="tech-layer-num">L1</span>
-                            <div class="tech-layer-body">
-                                <div class="tech-layer-title">基础：任务定义 &amp; 设计原则</div>
-                                <div class="tech-layer-desc">四要素模型 (CIIO) + 六大设计原则，一切能力的起点</div>
-                            </div>
-                            <span class="tech-layer-tag">P01</span>
-                        </div>
-                    </div>
-                    <div class="figure-caption">图 6-1：提示词工程完整技术栈 —— 六层架构从基础到进阶，层层递进构成完整知识体系</div>
-                </div>
-
-                <h3 class="section-subtitle">六集课程知识图谱</h3>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>层级</th>
                                 <th>集数</th>
-                                <th>核心主题</th>
-                                <th>关键技术</th>
-                                <th>能力价值</th>
+                                <th>主题</th>
+                                <th>核心技能</th>
+                                <th>代码文件</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>L1 地基</strong></td>
-                                <td><strong>P01</strong></td>
-                                <td>提示词基础</td>
-                                <td>四要素模型 + 六大设计原则</td>
-                                <td>一切能力的起点</td>
+                                <td class="col-ep">P11</td>
+                                <td class="col-topic">Prompt 工程指南</td>
+                                <td class="col-skill">6 个核心提示词技巧</td>
+                                <td class="col-file">— （理论篇）</td>
                             </tr>
                             <tr>
-                                <td><strong>L2 方法论</strong></td>
-                                <td><strong>P02</strong></td>
-                                <td>结构化输出</td>
-                                <td>Zero-Shot / Few-Shot + 迭代优化</td>
-                                <td>指导 Prompt 演进路径</td>
+                                <td class="col-ep">P12</td>
+                                <td class="col-topic">Zero-Shot / Few-Shot</td>
+                                <td class="col-skill">概念理解与方法论</td>
+                                <td class="col-file">— （理论篇）</td>
                             </tr>
                             <tr>
-                                <td><strong>L3 能力增强</strong></td>
-                                <td><strong>P03</strong></td>
-                                <td>角色设定</td>
-                                <td>专家人格激活 + 领域知识注入</td>
-                                <td>解锁专业领域能力</td>
+                                <td class="col-ep">P13</td>
+                                <td class="col-topic">金融文本分类</td>
+                                <td class="col-skill">Few-Shot 分类实战</td>
+                                <td class="col-file"><code>05_Financial_Text_Classification.py</code></td>
                             </tr>
                             <tr>
-                                <td><strong>L4 接口规范</strong></td>
-                                <td><strong>P04</strong></td>
-                                <td>JSON 格式控制</td>
-                                <td>PydanticOutputParser + Schema 设计</td>
-                                <td>连接 AI 与程序世界</td>
+                                <td class="col-ep">P14</td>
+                                <td class="col-topic">JSON 数据格式</td>
+                                <td class="col-skill">json.dumps / json.loads</td>
+                                <td class="col-file"><code>06_JSON_Usage_Demo.py</code></td>
                             </tr>
                             <tr>
-                                <td><strong>L5 推理增强</strong></td>
-                                <td><strong>P05</strong></td>
-                                <td>思维链 + 信息抽取</td>
-                                <td>CoT 推理框架 + Few-Shot 示例库</td>
-                                <td>让 AI 学会「思考过程」</td>
+                                <td class="col-ep">P15</td>
+                                <td class="col-topic">金融信息抽取</td>
+                                <td class="col-skill">Few-Shot + JSON 抽取</td>
+                                <td class="col-file"><code>07_Information_Extraction_FewShot.py</code></td>
                             </tr>
-                            <tr style="background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,165,0,0.08));">
-                                <td><strong>L6 集大成</strong></td>
-                                <td><strong>P06</strong></td>
-                                <td><strong>语义匹配 &amp; RAG</strong></td>
-                                <td><strong>Embedding + FAISS + 全栈融合</strong></td>
-                                <td><strong>从 Prompt 到完整 AI 系统</strong></td>
+                            <tr class="row-homework">
+                                <td class="col-ep">&#128221;</td>
+                                <td class="col-topic">课后作业：彩票信息抽取</td>
+                                <td class="col-skill">独立练习</td>
+                                <td class="col-file"><code>08_Lottery_Information_Extraction.py</code></td>
+                            </tr>
+                            <tr class="row-current">
+                                <td class="col-ep">P16 &#9733;</td>
+                                <td class="col-topic"><strong>金融文本匹配</strong></td>
+                                <td class="col-skill"><strong>Few-Shot 语义匹配</strong></td>
+                                <td class="col-file"><code>09_Text_Matching_FewShot.py</code></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <h3 class="section-subtitle">Few-Shot 示例：各相似度档位参考样例</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Few-Shot / 金融文本语义匹配示例库</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                <p class="section-subtitle">技术栈总览</p>
+                <div class="tech-stack-grid">
+                    <div class="tech-card">
+                        <div class="tech-icon">&#129302;</div>
+                        <div class="tech-name">qwen3-max</div>
+                        <div class="tech-desc">阿里云通义千问大模型</div>
                     </div>
-                    <div class="code-body"><pre><code>SEMANTIC_MATCH_EXAMPLES = <span class="code-string">"""
-
-=== 示例 1: same-event (5分) 同一事件的不同表述 ===
-文本A: "宁德时代发布2023年报，全年营收4009亿元，净利润441亿元"
-文本B: "CATL去年业绩亮眼，营收突破四千亿大关"
-→ 评分: 5/5 | 关系: same-event
-→ 推理: 两段文字描述的是同一个事件（宁德时代年报发布），
-   核心实体(CATL/宁德时代)、关键数字(4009亿/四千亿)、时间(2023/去年)完全对应，
-   仅表述角度不同（官方口径 vs 媒体解读）
-
-=== 示例 2: related-strong (4分) 同一事件的延伸报道 ===
-文本A: "比亚迪发布刀片电池二代技术"
-文本B: "新能源汽车电池安全性标准即将升级"
-→ 评分: 4/5 | 关系: related (强关联)
-→ 推理: 虽然讨论的不是完全相同的单一事件，但处于同一产业链上下游，
-   刀片电池的技术进步直接影响安全标准制定，存在直接的因果关联
-
-=== 示例 3: related-weak (3分) 同一领域的独立事件 ===
-文本A: "招商银行推出AI智能投顾服务"
-文本B: "工商银行数字化转型投入超200亿元"
-→ 评分: 3/5 | 关系: related (弱关联)
-→ 推理: 同属银行业数字化转型的宏大话题，但招行的AI投顾和工行的
-   数字化投入是两个独立的战略动作，仅在行业背景层面共享语境
-
-=== 示例 4: unrelated (0分) 完全无关 ===
-文本A: "央行宣布降准0.5个百分点"
-文本B: "茅台生肖酒系列新品上市"
-→ 评分: 0/5 | 关系: unrelated
-→ 推理: 一段关于货币政策（宏观金融），一段关于消费品营销（消费行业），
-   在实体、主题、行业三个维度均无交集
-
-"""</span></code></pre>
+                    <div class="tech-card">
+                        <div class="tech-icon">&#128187;</div>
+                        <div class="tech-name">OpenAI Python SDK</div>
+                        <div class="tech-desc">兼容模式 API 调用</div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">&#128220;</div>
+                        <div class="tech-name">Zero-Shot + Few-Shot</div>
+                        <div class="tech-desc">提示词工程核心方法</div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">&#128200;</div>
+                        <div class="tech-name">金融 NLP 三件套</div>
+                        <div class="tech-desc">分类 / 抽取 / 匹配</div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">&#128230;</div>
+                        <div class="tech-name">JSON 格式化输出</div>
+                        <div class="tech-desc">结构化数据交换</div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">&#9729;</div>
+                        <div class="tech-name">DashScope</div>
+                        <div class="tech-desc">阿里云百炼平台</div>
+                    </div>
                 </div>
             </div>
         </article>
 
-        <!-- ═══════════════════════════════════════════ -->
-        <!-- SECTION 7: 课程总结 & 进阶路线图 -->
-        <!-- ═══════════════════════════════════════════ -->
-        <article class="section-card accent-bar-success" id="s7" data-animate>
+        <!-- ═════════════════════════════════ -->
+        <!--  Finale 庆祝横幅                     -->
+        <!-- ═════════════════════════════════ -->
+        <div class="finale-banner" id="finaleBanner">
+            <div class="finale-banner-inner">
+                <div class="finale-badge">&#127881; Series Complete &#127881;</div>
+                <h2 class="finale-title">恭喜完成提示词工程全部学习！</h2>
+                <p class="finale-subtitle">
+                    从 Prompt 基础语法到 Few-Shot 实战，从金融文本分类到语义匹配 ——<br>
+                    你已经掌握了大模型应用开发的核心技能。<br>
+                    提示词工程是一切 LLM 应用的基石，<strong>后续的 RAG、Agent、LangChain 都建立在此基础之上</strong>。
+                </p>
+                <div class="finale-stats">
+                    <div class="finale-stat">
+                        <div class="finale-stat-num">6</div>
+                        <div class="finale-stat-label">完整剧集</div>
+                    </div>
+                    <div class="finale-stat">
+                        <div class="finale-stat-num">3</div>
+                        <div class="finale-stat-label">实战场景</div>
+                    </div>
+                    <div class="finale-stat">
+                        <div class="finale-stat-num">9</div>
+                        <div class="finale-stat-label">代码文件</div>
+                    </div>
+                    <div class="finale-stat">
+                        <div class="finale-stat-num">&#8734;</div>
+                        <div class="finale-stat-label">可能性</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═════════════════════════════════ -->
+        <!--  Section 6: 课程总结 & 后续方向     -->
+        <!-- ═════════════════════════════════ -->
+        <article class="section-card accent-bar-accent">
             <div class="section-header">
-                <span class="section-number finale">&#x1F3C6;</span>
-                <h2 class="section-title">&#x1F3C6; 课程总结 &amp; 进阶路线图</h2>
+                <span class="section-number">6</span>
+                <h2 class="section-title">课程总结 &amp; 后续学习方向</h2>
             </div>
             <div class="section-content">
 
-                <h3 class="section-subtitle">&#x2705; 学习成果自检清单</h3>
-                <div class="highlight-box teal">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
-                        你已掌握的能力矩阵
-                    </div>
-                    <div class="highlight-box-content" style="line-height:2;">
-                        <div style="margin-bottom:0.5rem;">
-                            <strong style="color:var(--success);">&#x2705; 核心能力（已掌握）：</strong>
-                        </div>
-                        <div style="padding-left:1rem;">
-                            &#x2713; 提示词四要素模型（Context / Instruction / Input / Output）<br>
-                            &#x2713; 六大设计原则（具体性 / 约束性 / 结构化 / 可迭代 / 可解释 / 安全）<br>
-                            &#x2713; Zero-Shot 与 Few-Shot 学习策略及适用场景<br>
-                            &#x2713; 角色设定与专家人格激活技术<br>
-                            &#x2713; Chain-of-Thought 思维链推理框架<br>
-                            &#x2713; JSON 格式控制与 PydanticOutputParser<br>
-                            &#x2713; Embedding 向量表示与余弦相似度计算<br>
-                            &#x2713; FAISS 向量索引构建与 ANN 检索<br>
-                            &#x2713; BGE/OpenAI Embedding 模型的选型与调用<br>
-                            &#x2713; 完整 RAG 系统的架构设计与实现
-                        </div>
-
-                        <div style="margin:1rem 0 0.5rem;">
-                            <strong style="color:var(--accent);">&#x25A1; 进阶方向（建议深入）：</strong>
-                        </div>
-                        <div style="padding-left:1rem;">
-                            &#x25CB; <strong>RAG 进阶</strong>：混合检索（Hybrid Search, BM25+Vector）、重排序（Reranker）、Chunking 策略优化<br>
-                            &#x25CB; <strong>Agent 开发</strong>：Function Calling / Tool Use、ReAct 框架、Multi-Agent 协作<br>
-                            &#x25CB; <strong>评估体系</strong>：RAGAS 框架、LLM-as-Judge 自动评估、人工评测 SOP<br>
-                            &#x25CB; <strong>提示词工程化</strong>：Prompt 版本管理（PromptFlow/LangSmith）、A/B 测试平台、CI/CD 集成
-                        </div>
-
-                        <div style="margin:1rem 0 0.5rem;">
-                            <strong style="color:var(--primary);">&#x25CE; 前沿研究（关注方向）：</strong>
-                        </div>
-                        <div style="padding-left:1rem;">
-                            &#x25CF; <strong>Long Context</strong>：百万级上下文窗口的 Prompt 设计范式变革<br>
-                            &#x25CF; <strong>Constitutional AI</strong>：宪法式 AI 安全对齐与红队测试方法论<br>
-                            &#x25CF; <strong>o1/o3 系列推理模型</strong>：深度思考（Deep Thinking）时代的 Prompt 工程演进<br>
-                            &#x25CF; <strong>Multimodal Prompting</strong>：图像/视频/音频等多模态输入的统一提示词设计
-                        </div>
+                <div class="highlight-box gold">
+                    <div class="highlight-box-title">&#127942; 核心收获</div>
+                    <div class="highlight-box-content">
+                        <ul class="content-list">
+                            <li><strong>提示词工程是所有大模型应用的基础</strong> —— 不管是 RAG 检索增强生成、Agent 智能体还是 LangChain 框架开发，本质上都是在做"如何更好地向模型提问"</li>
+                            <li><strong>Few-Shot 是性价比最高的方法</strong> —— 无需微调模型，仅通过精心设计的示例即可获得出色的效果</li>
+                            <li><strong>结构化输出是生产级应用的关键</strong> —— JSON 格式的稳定输出让 LLM 结果可以被程序可靠地消费和处理</li>
+                            <li><strong>金融 NLP 三件套（分类/抽取/匹配）</strong>覆盖了大部分企业级文本处理需求</li>
+                        </ul>
                     </div>
                 </div>
 
-                <h3 class="section-subtitle">&#x1F4D1; 推荐学习资源</h3>
+                <p class="section-subtitle">后续学习路线</p>
                 <div class="info-grid">
                     <div class="info-item">
-                        <div class="info-item-label">&#x1F4BB; OpenAI Cookbook</div>
-                        <div class="info-item-value"><a href="https://cookbook.openai.com/" target="_blank" style="color:var(--primary);text-decoration:none;">cookbook.openai.com</a><br><small>官方 Prompt 最佳实践</small></div>
+                        <div class="info-item-label">&#128218; RAG 开发</div>
+                        <div class="info-item-value">检索增强生成<br>知识库 + 向量检索 + LLM</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">&#x1F916; Anthropic Prompt Guide</div>
-                        <div class="info-item-value"><a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank" style="color:var(--primary);text-decoration:none;">docs.anthropic.com</a><br><small>Claude 提示词完整指南</small></div>
+                        <div class="info-item-label">&#129302; Agent 智能体</div>
+                        <div class="info-item-value">自主规划与工具调用<br>ReAct / Function Calling</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">&#x1F4E1; Hugging Face MTEB</div>
-                        <div class="info-item-value"><a href="https://huggingface.co/spaces/mteb/leaderboard" target="_blank" style="color:var(--primary);text-decoration:none;">MTEB Leaderboard</a><br><small>Embedding 模型权威排行榜</small></div>
+                        <div class="info-item-label">&#128736; LangChain 框架</div>
+                        <div class="info-item-value">LLM 应用开发框架<br>Chain / Memory / Tool</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">&#x1F4C4; LangChain Docs</div>
-                        <div class="info-item-value"><a href="https://python.langchain.com/docs/" target="_blank" style="color:var(--primary);text-decoration:none;">python.langchain.com</a><br><small>RAG/Agent 开发官方文档</small></div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F52C; FAISS 官方教程</div>
-                        <div class="info-item-value"><a href="https://faiss.ai/" target="_blank" style="color:var(--primary);text-decoration:none;">faiss.ai</a><br><small>Meta 向量检索官方文档</small></div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F41A; BGE GitHub</div>
-                        <div class="info-item-value"><a href="https://github.com/FlagOpen/FlagEmbedding" target="_blank" style="color:var(--primary);text-decoration:none;">FlagEmbedding</a><br><small>智源 BGE 系列模型仓库</small></div>
+                        <div class="info-item-label">&#128640; 模型微调</div>
+                        <div class="info-item-value">SFT / RLHF / LoRA<br>定制专属大模型</div>
                     </div>
                 </div>
 
-                <div class="highlight-box celebration" style="margin-top: 2rem;">
-                    <div class="highlight-box-title">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="2" style="animation:sparkle 2s infinite;"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>&#x1F386;</svg>
-                        &#x1F3C6; 恭喜完成全部课程！&#x1F3C6;
-                    </div>
+                <div class="highlight-box success" style="margin-top: 1.5rem;">
+                    <div class="highlight-box-title">&#127881; 写在最后</div>
                     <div class="highlight-box-content">
-                        <div style="font-size:1.15rem;font-weight:600;margin-bottom:0.75rem;color:#B8860B;">
-                            &#x1F389; 恭喜完成「提示词工程」全部 6 集学习旅程！&#x1F389;
-                        </div>
-                        <div style="margin-bottom:0.75rem;">
-                            从 P01 的基础四要素到 P06 的完整 RAG 系统，<br>
-                            你已经掌握了提示词工程从入门到生产的<strong>全套方法论</strong>。
-                        </div>
-                        <div style="margin-bottom:0.75rem;">
-                            <strong>记住：提示词工程不是「写几句话」的艺术，而是「系统化地引导 AI 行为」的科学。</strong>
-                        </div>
-                        <div style="margin-bottom:0.75rem;">
-                            现在，带着这套完整的技能树，去构建属于你自己的 AI 应用吧~
-                        </div>
-                        <div style="font-size:1.25rem;margin-top:1rem;color:var(--primary);">
-                            Spinning~♪ &#x2728; &#x1F31F; &#x1F389; &#x1F3C6; &#x1F680;
-                        </div>
+                        提示词工程看似简单，实则深不可测。同一个模型，不同的 Prompt 可以产生天差地别的效果。
+                        本系列课程为你打下了坚实的基础，真正的精通需要在<strong>不断的实践、实验和迭代</strong>中达成。
+                        祝你在大模型的应用之路上越走越远，Spinning~♪
                     </div>
                 </div>
             </div>
@@ -2487,13 +1525,24 @@ answer = rag.<span class="code-function">query</span>(<span class="code-string">
                 </div>
             </a>
         </nav>
-        <div class="footer-finale">
-            <div class="footer-finale-title">&#x1F3C6; &#x1F393; 恭喜完成全部课程！</div>
-            <div class="footer-finale-subtitle">从提示词基础到金融 RAG 实战，6 集完整旅程到此画上完美句号</div>
-        </div>
-        <div class="footer-reference">
-            课程来源：<a href="https://www.bilibili.com/video/BV1yjz5BLEoY" target="_blank">B站视频 BV1yjz5BLEoY</a> &middot;
-            P16 对应章节（最终章 · Finale）
+        <div class="footer-reference" style="padding-top: 1.5rem; margin-top: 1.5rem; border-top: 1px solid var(--border-color);">
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1rem;color:var(--text-primary);margin-bottom:0.5rem;">
+                &#127881; 恭喜完成提示词工程全部 6 集学习！&#127881;
+            </div>
+            <div style="margin-bottom: 0.5rem;">
+                视频来源：
+                <a href="https://www.bilibili.com/video/BV1yjz5BLEoY?cid=35522677539&spm_id_from=333.788.player.switch&vd_source=27ec130a458792f1ab1cc12928020a6a&p=16" target="_blank">B站 P16 - 黑马程序员大模型 RAG 与 Agent 实战教程</a>
+            </div>
+            <div>
+                博客参考：
+                <a href="https://dontla.blog.csdn.net/article/details/157872329" target="_blank">dontla's CSDN - 提示词工程 05/06</a> &middot;
+                <a href="https://blog.csdn.net/zql1455890112/article/details/158464453" target="_blank">zql1455890112's CSDN - LLM 金融文本匹配实战</a>
+            </div>
+            <div style="margin-top: 0.75rem; color: var(--text-muted); font-size: 0.75rem;">
+                代码仓库：<a href="https://github.com/shangxiang0907/HeiMa-AI-LLM-RAG-Agent-Dev" target="_blank">HeiMa-AI-LLM-RAG-Agent-Dev</a> &middot;
+                模型：qwen3-max (阿里云通义千问) &middot;
+                SDK：OpenAI Python SDK (兼容模式)
+            </div>
         </div>
     </div>
 </footer>
@@ -2520,59 +1569,33 @@ answer = rag.<span class="code-function">query</span>(<span class="code-string">
         }
     });
 
-    const observerOptions = {
-        root: null,
-        rootMargin: '0px 0px -50px 0px',
-        threshold: 0.1
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, index) => {
-            if (entry.isIntersecting) {
-                setTimeout(() => {
-                    entry.target.classList.add('visible');
-                }, index * 100);
-                observer.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
-
-    document.querySelectorAll('.section-card[data-animate]').forEach(card => {
-        observer.observe(card);
-    });
-
-    function copyCode(btn) {
-        const codeBlock = btn.closest('.code-block');
-        const code = codeBlock.querySelector('code').textContent;
-
-        navigator.clipboard.writeText(code).then(() => {
-            btn.textContent = 'Copied!';
-            btn.style.color = 'var(--success)';
-            setTimeout(() => {
-                btn.textContent = 'Copy';
-                btn.style.color = '';
-            }, 2000);
-        }).catch(err => {
-            console.error('Copy failed:', err);
-        });
-    }
-
-    let tweaksExpanded = true;
-
-    function toggleTweaks() {
-        const panel = document.getElementById('tweaksPanel');
-        tweaksExpanded = !tweaksExpanded;
-        if (tweaksExpanded) {
-            panel.classList.remove('collapsed');
-        } else {
-            panel.classList.add('collapsed');
-        }
-    }
-
     function adjustFontSize(size) {
         document.documentElement.style.setProperty('--font-size-base', size + 'px');
         document.getElementById('fontValue').textContent = size + 'px';
     }
+
+    function toggleTweaks() {
+        document.getElementById('tweaksPanel').classList.toggle('collapsed');
+    }
+
+    function copyCode(btn) {
+        const code = btn.closest('.code-block').querySelector('code').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    }
+
+    const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.section-card, .finale-banner').forEach(el => observer.observe(el));
 </script>
 
 </body>

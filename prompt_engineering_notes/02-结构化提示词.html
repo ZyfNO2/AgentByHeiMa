@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>第02集 - 结构化提示词 | 提示词工程学习笔记</title>
+    <title>第02集 - 提示词优化案例与零样本少样本思想 | 提示词工程学习笔记</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -691,327 +691,113 @@
             .tweaks-panel { bottom: 1rem; right: 1rem; }
         }
 
-        /* ===== CSS Diagrams: Replace broken text_to_image API imgs ===== */
-        .css-diagram {
+        /* ===== Course Screenshot Styles ===== */
+        .course-screenshot {
             width: 100%;
             max-width: 720px;
-            margin: 1.5rem auto;
+            margin: 1.25rem auto;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-md);
-            overflow: hidden;
-            background: var(--bg-surface);
+            display: block;
         }
 
-        /* --- Diagram 1: Zero-Shot vs Few-Shot --- */
-        .diagram-zeroshot {
-            display: flex;
-            align-items: stretch;
-            position: relative;
+        .screenshot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0;
         }
-        .diagram-zeroshot .d-col {
-            flex: 1;
-            padding: 1.5rem 1.25rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .diagram-zeroshot .d-col-left { background: linear-gradient(135deg, rgba(85,120,250,0.07), rgba(79,110,247,0.03)); }
-        .diagram-zeroshot .d-col-right { background: linear-gradient(135deg, rgba(85,180,130,0.07), rgba(80,200,150,0.03)); }
-        .diagram-zeroshot .d-badge {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.8rem;
-            font-weight: 700;
-            padding: 0.3rem 0.85rem;
-            border-radius: 20px;
-            letter-spacing: 0.03em;
-        }
-        .diagram-zeroshot .d-col-left .d-badge { background: var(--primary); color: #fff; }
-        .diagram-zeroshot .d-col-right .d-badge { background: var(--success); color: #fff; }
-        .diagram-zeroshot .d-prompt-box {
+
+        .screenshot-grid img {
             width: 100%;
-            background: var(--bg-subtle);
-            border-radius: var(--radius-sm);
-            padding: 0.75rem 0.85rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.72rem;
-            color: var(--text-primary);
-            border: 1px dashed var(--border-color);
-            text-align: center;
-            line-height: 1.5;
-        }
-        .diagram-zeroshot .d-examples {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-        }
-        .diagram-zeroshot .d-ex-item {
-            background: var(--bg-subtle);
-            border-radius: 6px;
-            padding: 0.4rem 0.65rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.68rem;
-            color: var(--text-secondary);
-            border-left: 3px solid var(--success);
-            line-height: 1.4;
-        }
-        .diagram-zeroshot .d-arrow-down {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            line-height: 1;
-        }
-        .diagram-zeroshot .d-llm-box {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: #fff;
-            background: linear-gradient(135deg, var(--primary), var(--teal));
-        }
-        .diagram-zeroshot .d-vs-divider {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 44px;
-            flex-shrink: 0;
-            background: var(--bg-subtle);
-            border-left: 1px solid var(--border-color);
-            border-right: 1px solid var(--border-color);
-        }
-        .diagram-zeroshot .d-vs-text {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.7rem;
-            font-weight: 800;
-            color: var(--accent);
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            letter-spacing: 0.15em;
-        }
-
-        @media (max-width: 540px) {
-            .diagram-zeroshot { flex-direction: column; }
-            .diagram-zeroshot .d-vs-divider {
-                width: auto; height: 36px;
-                border-left: none; border-right: none;
-                border-top: 1px solid var(--border-color);
-                border-bottom: 1px solid var(--border-color);
-            }
-            .diagram-zeroshot .d-vs-text { writing-mode: horizontal-tb; letter-spacing: 0.08em; }
-        }
-
-        /* --- Diagram 2: Prompt Optimization Before/After --- */
-        .diagram-optimize {
-            display: flex;
-            align-items: stretch;
-            padding: 1.25rem;
-            gap: 0;
-        }
-        .diagram-optimize .d-side {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 1rem;
-            border-radius: var(--radius-sm);
-            gap: 0.6rem;
-        }
-        .diagram-optimize .d-side-bad {
-            background: linear-gradient(135deg, rgba(220,90,80,0.06), rgba(235,105,95,0.03));
-            border: 1px solid rgba(220,90,80,0.18);
-        }
-        .diagram-optimize .d-side-good {
-            background: linear-gradient(135deg, rgba(85,180,130,0.06), rgba(100,200,150,0.03));
-            border: 1px solid rgba(85,180,130,0.18);
-        }
-        .diagram-optimize .d-side-label {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-align: center;
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
-        }
-        .diagram-optimize .d-side-bad .d-side-label { background: var(--danger); color: #fff; }
-        .diagram-optimize .d-side-good .d-side-label { background: var(--success); color: #fff; }
-        .diagram-optimize .d-mock-output {
-            flex: 1;
-            border-radius: 6px;
-            padding: 0.65rem 0.75rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.68rem;
-            line-height: 1.55;
-            overflow: hidden;
-        }
-        .diagram-optimize .d-side-bad .d-mock-output {
-            background: rgba(220,90,80,0.05);
-            color: var(--danger);
-            text-decoration: line-through;
-            opacity: 0.7;
-        }
-        .diagram-optimize .d-side-good .d-mock-output {
-            background: rgba(85,180,130,0.05);
-            color: var(--success);
-            border: 1px solid rgba(85,180,130,0.15);
-        }
-        .diagram-optimize .d-arrow-zone {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 64px;
-            flex-shrink: 0;
-            padding: 0 0.25rem;
-            gap: 0.15rem;
-        }
-        .diagram-optimize .d-big-arrow {
-            font-size: 1.4rem;
-            color: var(--primary);
-            font-weight: 700;
-        }
-        .diagram-optimize .d-step-tags {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .diagram-optimize .d-step-tag {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.55rem;
-            font-weight: 600;
-            color: var(--primary);
-            background: rgba(85,120,250,0.08);
-            padding: 1px 5px;
-            border-radius: 4px;
-            white-space: nowrap;
-            text-align: center;
-        }
-
-        @media (max-width: 600px) {
-            .diagram-optimize { flex-direction: column; }
-            .diagram-optimize .d-arrow-zone {
-                width: auto; flex-direction: row;
-                height: 48px; padding: 0.25rem 0;
-            }
-            .diagram-optimize .d-step-tags { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-        }
-
-        /* --- Diagram 3: LangChain Template Workflow --- */
-        .diagram-workflow {
-            padding: 1.5rem 1.25rem;
-        }
-        .diagram-workflow .d-flow-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0;
-            flex-wrap: wrap;
-        }
-        .diagram-workflow .d-flow-step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.4rem;
-            min-width: 100px;
-            max-width: 160px;
-            flex: 1;
-        }
-        .diagram-workflow .d-step-card {
-            width: 100%;
-            background: var(--bg-surface);
+            border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            padding: 0.75rem 0.6rem;
-            text-align: center;
             box-shadow: var(--shadow-sm);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .diagram-workflow .d-step-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        .diagram-workflow .d-step-num {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.65rem;
-            font-weight: 700;
-            color: #fff;
-            background: linear-gradient(135deg, var(--primary), var(--teal));
-            width: 22px; height: 22px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 0.3rem;
-        }
-        .diagram-workflow .d-step-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-        .diagram-workflow .d-step-desc {
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            line-height: 1.4;
-        }
-        .diagram-workflow .d-step-code {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.6rem;
-            color: var(--primary);
-            background: rgba(85,120,250,0.07);
-            padding: 2px 5px;
-            border-radius: 4px;
-            margin-top: 0.2rem;
-        }
-        .diagram-workflow .d-flow-arrow {
-            font-size: 1.1rem;
-            color: var(--primary);
-            font-weight: 700;
-            padding: 0 0.2rem;
-            flex-shrink: 0;
-        }
-        .diagram-workflow .d-methods-bar {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin: 0.9rem 0 0.5rem;
-            flex-wrap: wrap;
-        }
-        .diagram-workflow .d-method-chip {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.62rem;
-            font-weight: 600;
-            padding: 0.28rem 0.6rem;
-            border-radius: 12px;
-            border: 1px solid;
-            white-space: nowrap;
-        }
-        .diagram-workflow .d-method-chip.m-format { color: var(--info); border-color: var(--info); background: rgba(85,130,230,0.06); }
-        .diagram-workflow .d-method-chip.m-fmsg { color: var(--teal); border-color: var(--teal); background: rgba(80,180,160,0.06); }
-        .diagram-workflow .d-method-chip.m-partial { color: var(--accent); border-color: var(--accent); background: rgba(220,160,60,0.06); }
-        .diagram-workflow .d-llm-final {
-            margin-top: 0.5rem;
-            text-align: center;
-        }
-        .diagram-workflow .d-llm-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: #fff;
-            background: linear-gradient(135deg, var(--primary), var(--teal));
-            padding: 0.5rem 1.5rem;
-            border-radius: 24px;
-            box-shadow: 0 4px 12px rgba(85,120,250,0.25);
+
+        .screenshot-grid img:hover {
+            transform: scale(1.02);
+            box-shadow: var(--shadow-lg);
         }
 
-        @media (max-width: 600px) {
-            .diagram-workflow .d-flow-row { flex-direction: column; align-items: center; }
-            .diagram-workflow .d-flow-step { max-width: 260px; min-width: 200px; }
-            .diagram-workflow .d-flow-arrow { transform: rotate(90deg); padding: 0.3rem 0; }
+        .screenshot-caption {
+            text-align: center;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-top: 0.625rem;
+            font-style: italic;
+        }
+
+        /* ===== Concept Card for Zero/Few Shot ===== */
+        .concept-card {
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem 1.5rem;
+            margin: 1rem 0;
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--primary);
+        }
+
+        .concept-card.training {
+            border-left-color: var(--accent);
+            background: linear-gradient(135deg, rgba(220,160,60,0.04), rgba(235,180,80,0.02));
+        }
+
+        .concept-card.prompting {
+            border-left-color: var(--primary);
+            background: linear-gradient(135deg, rgba(85,120,250,0.04), rgba(79,110,247,0.02));
+        }
+
+        .concept-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+        }
+
+        .concept-card.training .concept-label {
+            background: rgba(220, 160, 60, 0.12);
+            color: var(--accent);
+        }
+
+        .concept-card.prompting .concept-label {
+            background: rgba(85, 120, 250, 0.12);
+            color: var(--primary);
+        }
+
+        .concept-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        .example-flow {
+            background: var(--bg-surface);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1rem 1.25rem;
+            margin: 0.75rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.7;
+            color: var(--text-primary);
+        }
+
+        .example-flow .arrow {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .example-flow .result {
+            color: var(--success);
+            font-weight: 600;
         }
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -1030,8 +816,8 @@
         </a>
         <nav class="nav-links">
             <a href="01-提示词工程基础.html" class="nav-link">P01 基础</a>
-            <a href="#s1" class="nav-anchor">&sect;1 结构化原理</a>
-            <a href="#s2" class="nav-link active">P02 结构化</a>
+            <a href="#s1" class="nav-anchor">&sect;1 案例介绍</a>
+            <a href="#s2" class="nav-link active">P02 零/少样本</a>
             <a href="#s3" class="nav-link">P03 角色设定</a>
             <a href="#s4" class="nav-link">P04 Few-Shot</a>
             <a href="#s5" class="nav-link">P05 思维链</a>
@@ -1042,12 +828,12 @@
 <main class="main-container">
 
     <section class="hero">
-        <div class="hero-badge">P12 / Chapter 02 · Zero-Shot &amp; Optimization</div>
+        <div class="hero-badge">P12 / Chapter 02 &middot; Zero-Shot &amp; Few-Shot</div>
         <h1 class="hero-title">
-            第02集：<span class="hero-title-accent">零样本提示与优化案例</span>
+            第02集：<span class="hero-title-accent">提示词优化案例与零样本少样本思想</span>
         </h1>
         <p class="hero-subtitle">
-            掌握零样本（Zero-Shot）提示技术，通过精心设计的自然语言指令直接引导模型输出，结合实际案例理解提示词优化的完整流程
+            以金融领域三大业务场景为实战背景，深入理解 Zero-Shot（零样本）与 Few-Shot（少样本）两种核心提示词设计思想在模型训练和提示词优化两个层面的含义与应用
         </p>
         <div class="hero-meta">
             <span class="meta-tag">
@@ -1067,986 +853,349 @@
 
     <div class="content-section">
 
-        <!-- ==================== Section 01: Zero-Shot vs Few-Shot 概念区分 ==================== -->
+        <!-- ==================== Section 01: 案例介绍（实战背景） ==================== -->
         <article class="section-card" id="s1" data-animate>
             <div class="section-header">
                 <span class="section-number">01</span>
-                <h2 class="section-title">Zero-Shot vs Few-Shot：概念全景</h2>
+                <h2 class="section-title">案例介绍：金融领域的三大业务场景</h2>
             </div>
             <div class="section-content">
                 <p>
-                    在提示词工程的核心技术谱系中，<strong>Zero-Shot（零样本）</strong>和<strong>Few-Shot（少样本）</strong>是两个最基础也最重要的范式。
-                    它们的区别看似简单——「给不给示例」——但背后涉及的是<strong>模型如何利用预训练知识 vs 如何从示例中归纳模式</strong>这一根本性问题。
-                    理清这个区别，是选择正确提示策略的第一步。
+                    当前处于<strong>金融领域信息化发展时代</strong>，金融数据大量激增。许多投资者和研究者试图通过对这些数据进行深度分析来获得有效的决策辅助，尽可能减少决策失误带来的损失。
+                    因此，针对金融数据的分析方法研究是目前十分有益且热门的话题。
                 </p>
 
-                <h3 class="section-subtitle">核心定义与对比</h3>
+                <h3 class="section-subtitle">三大业务场景</h3>
+                <p>本课程围绕以下三个核心业务场景展开提示词工程实践：</p>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">&#128202; 场景一：金融文本分类</div>
+                        <div class="info-item-value">对金融文本进行类别判定，如区分<code>新闻报道</code>、<code>公司公告</code>、<code>财务公告</code>、<code>分析师报告</code></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#128196; 场景二：金融文本信息抽取</div>
+                        <div class="info-item-value">从非结构化金融文本中提取结构化字段，如日期、股票名称、开盘价、收盘价、成交量等</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#128279; 场景三：金融文本匹配</div>
+                        <div class="info-item-value">判断两段金融文本之间的语义关联度或匹配关系，用于信息检索、去重等任务</div>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">技术选型与方法论</h3>
+                <div class="highlight-box">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        技术方案总览
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul class="content-list" style="margin:0;">
+                            <li><strong>大模型选择</strong>：Qwen 在线大模型（阿里云通义千问 <code>qwen3-max</code>）</li>
+                            <li><strong>核心方法</strong>：基于 <strong>Few-Shot + Zero-Shot</strong> 的思想设计 Prompt（提示词）</li>
+                            <li><strong>实现方式</strong>：通过精心设计的提示词，让大模型直接完成上述三类金融 NLP 任务，无需微调</li>
+                            <li><strong>调用接口</strong>：使用 OpenAI 兼容 SDK 调用阿里云 DashScope API</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <figure style="margin: 1.5rem 0;">
+                    <div class="screenshot-grid">
+                        <div>
+                            <img src="https://aka.doubaocdn.com/s/cEgU1wQgCn" alt="课程截图1：案例介绍页面" loading="lazy">
+                            <p class="screenshot-caption">课程截图：金融业务场景与技术选型概览</p>
+                        </div>
+                        <div>
+                            <img src="https://aka.doubaocdn.com/s/bjBe1wQgCn" alt="课程截图2：三大业务场景详情" loading="lazy">
+                            <p class="screenshot-caption">课程截图：三大业务场景详细说明</p>
+                        </div>
+                    </div>
+                </figure>
+
+                <div class="highlight-box warning">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        核心思路
+                    </div>
+                    <div class="highlight-box-content">
+                        本课程的核心理念是：<strong>一个好的提示词，甚至能让基础模型的输出效果媲美经过简单微调的模型。</strong>
+                        不管是 RAG 还是 Agent 智能体亦或是其它围绕模型的各类复杂的开发工作，本质上都可以简单总结为<strong>在提示词上下功夫</strong>。
+                        提示词优化是所有大模型应用开发的基础必修课。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== Section 02: Zero-Shot 零样本思想 ==================== -->
+        <article class="section-card accent-bar-success" id="s2" data-animate>
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2 class="section-title">Zero-Shot 零样本思想</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    Zero-shot Learning（零样本学习）是指在训练阶段不存在与测试阶段完全相同的类别，
+                    但是模型可以使用训练过的知识来推广到测试集中的新类别上。
+                    这种能力被称为「零样本」学习——因为模型在训练时从未见过测试集中的新类别。
+                    这个概念在<strong>模型训练</strong>和<strong>提示词优化</strong>两个层面均有体现。
+                </p>
+
+                <h3 class="section-subtitle">在模型训练中：属性迁移推理</h3>
+                <div class="concept-card training">
+                    <span class="concept-label">&#128021; 训练层面 · 属性迁移</span>
+                    <div class="concept-desc">
+                        已知<strong>马</strong>（四脚兽）、<strong>虎</strong>（有条纹）、<strong>熊猫</strong>（黑白色）的特征，
+                        但模型<strong>未训练过斑马的数据</strong>（不认识斑马）。此时告知模型：
+                        <strong>「斑马是四脚兽 + 有黑白色的条纹」</strong>，
+                        模型即可利用已知数据中的属性关联进行推理，从而识别出斑马。
+                    </div>
+                </div>
+
+                <div class="example-flow">
+                    <strong>推理链路：</strong><br>
+                    训练数据: 马(四脚兽) / 虎(有条纹) / 熊猫(黑白色)<br>
+                    <span class="arrow">&darr;</span><br>
+                    新输入: 斑马 = 四脚兽 + 黑白色条纹<br>
+                    <span class="arrow">&darr;</span><br>
+                    <span class="result">&rarr; 模型通过属性组合推理识别出「斑马」</span>
+                </div>
+
+                <h3 class="section-subtitle">在提示词优化中：用语言定义任务</h3>
+                <div class="concept-card prompting">
+                    <span class="concept-label">&#128221; 提示词层面 · 语言驱动</span>
+                    <div class="concept-desc">
+                        Zero-shot 思想用于<strong>基于已训练的能力，不提供任何示例</strong>，
+                        仅通过语言去描述任务的要求、目标和约束，让模型直接生成结果。<br><br>
+                        <strong>一言以蔽之：「用语言定义任务，解放（信任）模型的预训练知识」</strong>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">Zero-Shot 实战示例：情感判断</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Zero-Shot Prompt 示例 — 情感倾向判断</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment"># Zero-Shot：不提供示例，仅通过语言描述任务要求</span>
+<span class="code-string">"""请判断以下用户评论的情感倾向，输出 正面 或 负面。
+
+这款代餐鸡胸肉饱腹感很强，吃起来也不柴，很推荐！"""</span>
+
+<span class="code-comment"># 模型直接基于预训练知识进行推理并输出：</span>
+<span class="code-comment"># &rarr; 正面</span></code></pre>
+                </div>
+
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        Zero-Shot 的关键特点
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
+                            <li style="margin-bottom:0.4rem;"><strong>无示例依赖</strong>：不需要提供任何输入-输出示例对，纯靠自然语言指令驱动</li>
+                            <li style="margin-bottom:0.4rem;"><strong>依赖预训练知识</strong>：模型输出的质量取决于其在预训练阶段是否学到了相关任务的隐式模式</li>
+                            <li style="margin-bottom:0.4rem;"><strong>Token 成本低</strong>：Prompt 只包含指令本身，没有额外的示例内容占用 Token</li>
+                            <li><strong>适用范围广</strong>：适合通用任务（翻译、摘要、简单分类等），但对复杂或特定格式任务可能不够稳定</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <figure style="margin: 1.5rem 0; text-align: center;">
+                    <img src="https://aka.doubaocdn.com/s/ZTO71wQgCn" alt="课程截图：Zero-Shot零样本思想讲解" class="course-screenshot" loading="lazy">
+                    <figcaption class="screenshot-caption">课程截图：Zero-Shot 零样本思想的完整讲解 —— 包含训练层面的属性迁移类比与提示词层面的实际应用</figcaption>
+                </figure>
+            </div>
+        </article>
+
+        <!-- ==================== Section 03: Few-Shot 少样本思想 ==================== -->
+        <article class="section-card accent-bar-accent" id="s3" data-animate>
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2 class="section-title">Few-Shot 少样本思想</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    Few-shot Learning（少样本学习）是指当模型在学习了一定类别的大量数据后，
+                    对于新的类别，只需要<strong>少量的样本就能快速学习</strong>。
+                    对应的还有 One-shot Learning（单样本学习），即样本少到只有 1 个的情况，也算 Few-Shot Learning 的一种特例。
+                </p>
+
+                <h3 class="section-subtitle">在模型训练中：相似度判断方法</h3>
+                <div class="concept-card training">
+                    <span class="concept-label">&#128021; 训练层面 · 相似度泛化</span>
+                    <div class="concept-desc">
+                        基于少量<strong>企鹅</strong>样本并结合<strong>相似度判断</strong>方法，
+                        推论未知图片内含「企鹅」。即模型不需要大量企鹅数据，只需几个样本就能学会识别新类别的模式。
+                    </div>
+                </div>
+
+                <div class="example-flow">
+                    <strong>推理链路：</strong><br>
+                    已有知识: 大量动物图像（包含各类特征模式）<br>
+                    <span class="arrow">&darr;</span><br>
+                    提供: 少量企鹅样本图片（如 3~5 张）<br>
+                    <span class="arrow">&darr;</span><br>
+                    <span class="result">&rarr; 通过相似度匹配，推论未知图片 = 企鹅</span>
+                </div>
+
+                <h3 class="section-subtitle">在提示词优化中：用示例定义任务</h3>
+                <div class="concept-card prompting">
+                    <span class="concept-label">&#128221; 提示词层面 · 示例引导</span>
+                    <div class="concept-desc">
+                        Few-shot 主要用于<strong>基于少量示例，让模型参考示例回答</strong>。<br><br>
+                        <strong>一言以蔽之：「用示例定义任务，在模型的预训练知识的基础上，提升模型回答的对齐精度」</strong><br><br>
+                        示例的作用是帮助模型理解期望的<strong>输出格式、风格和深度</strong>，而不仅仅是任务本身。
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">Few-Shot 完整实战示例：产品信息抽取</h3>
+                <p>以下是一个完整的 Few-Shot 信息抽取示例，从产品描述文本中提取「产品名称」和「核心卖点」两个字段，以 JSON 格式输出：</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Few-Shot Prompt 示例 — 产品信息抽取</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-string">请抽取产品名称和核心卖点 2 个字段，格式为 Json，我提供 2 个示例。
+
+示例1：MacBookPro高效节能，性能强大，适合牛马工作使用
+输出：{"产品名称": "MacBookPro", "产品卖点": "高效节能，性能强大"}
+
+示例2：联想笔记本拥有RTX4060独立显卡，畅玩游戏，丝滑流畅
+输出：{"产品名称": "联想笔记本", "产品卖点": "畅玩游戏，丝滑流畅"}
+
+请处理：华为MatepadPro，高清大屏，长效续航，你的好帮手。"""</span>
+
+<span class="code-comment"># 模型参考前 2 个示例的格式，对第 3 个输入进行抽取：</span>
+<span class="code-comment"># &rarr; {"产品名称": "华为MatepadPro", "产品卖点": "高清大屏，长效续航"}</span></code></pre>
+                </div>
+
+                <div class="highlight-box teal">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        Few-Shot 示例的设计要点
+                    </div>
+                    <div class="highlight-box-content">
+                        <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
+                            <li style="margin-bottom:0.4rem;"><strong>示例数量</strong>：通常 1~5 个即可，过多会浪费 Token 且边际收益递减</li>
+                            <li style="margin-bottom:0.4rem;"><strong>示例质量</strong>：比数量更重要！示例必须准确反映你期望的输出格式和风格</li>
+                            <li style="margin-bottom:0.4rem;"><strong>示例多样性</strong>：覆盖不同情况（如不同长度、不同难度），避免模型过拟合单一模式</li>
+                            <li style="margin-bottom:0.4rem;"><strong>示例顺序</strong>：将最典型、最重要的示例放在前面，最后放待处理的输入</li>
+                            <li><strong>In-Context Learning</strong>：Few-Shot 的本质不是「训练」，而是通过上下文示例引导模型定位正确的输出模式</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <figure style="margin: 1.5rem 0; text-align: center;">
+                    <img src="https://aka.doubaocdn.com/s/EyYn1wQgCn" alt="课程截图：Few-Shot少样本思想讲解" class="course-screenshot" loading="lazy">
+                    <figcaption class="screenshot-caption">课程截图：Few-Shot 少样本思想 —— 包含训练层面的相似度泛化类比与提示词层面的产品信息抽取完整示例</figcaption>
+                </figure>
+            </div>
+        </article>
+
+        <!-- ==================== Section 04: 总结对比 ==================== -->
+        <article class="section-card accent-bar-info" id="s4" data-animate>
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2 class="section-title">总结对比：Zero-Shot vs Few-Shot</h2>
+            </div>
+            <div class="section-content">
+                <p>
+                    Zero-Shot 和 Few-Shot 是提示词工程的两大核心范式。
+                    它们在<strong>模型训练层面</strong>和<strong>提示词优化层面</strong>有着不同的含义和应用方式。
+                    理清两者的区别与联系，是选择正确提示策略的关键。
+                </p>
+
+                <h3 class="section-subtitle">双维度对比表</h3>
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>维度</th>
+                                <th>对比维度</th>
                                 <th>Zero-Shot 零样本</th>
                                 <th>Few-Shot 少样本</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>定义</strong></td>
-                                <td>不提供任何示例，仅靠自然语言指令引导模型完成任务</td>
-                                <td>在指令中提供 1~5 个输入-输出示例对，让模型模仿模式</td>
+                                <td><strong>训练层面含义</strong></td>
+                                <td>基于已训练的属性/语义关联，迁移到未知的新类别（如：已知马/虎/熊猫 → 推理识别斑马）</td>
+                                <td>基于少量样本 + 相似度判断，快速泛化识别新样本（如：几张企鹅图 → 识别未知企鹅）</td>
                             </tr>
                             <tr>
-                                <td><strong>知识来源</strong></td>
-                                <td>完全依赖模型<strong>预训练阶段</strong>学到的知识</td>
-                                <td>结合预训练知识 + 从示例中<strong>上下文学习（In-Context Learning）</strong></td>
+                                <td><strong>提示词层面含义</strong></td>
+                                <td>不提供示例，仅用语言描述任务要求，依赖模型预训练知识直接生成结果</td>
+                                <td>给模型少量示例，引导模型对齐示例的输出格式与风格</td>
+                            </tr>
+                            <tr>
+                                <td><strong>核心机制</strong></td>
+                                <td>「用语言定义任务，解放（信任）模型的预训练知识」</td>
+                                <td>「用示例定义任务，提升模型回答的对齐精度」</td>
+                            </tr>
+                            <tr>
+                                <td><strong>是否需要示例</strong></td>
+                                <td><code>否</code> — 纯自然语言指令</td>
+                                <td><code>是</code> — 需要 1~5 个输入-输出示例对</td>
                             </tr>
                             <tr>
                                 <td><strong>Token 成本</strong></td>
-                                <td>低 — 只有指令本身</td>
-                                <td>较高 — 指令 + 所有示例的 token</td>
+                                <td>低 — 仅指令本身的 Token</td>
+                                <td>较高 — 指令 + 所有示例的 Token</td>
                             </tr>
                             <tr>
                                 <td><strong>输出稳定性</strong></td>
-                                <td>中等 — 依赖指令质量，容易产生格式偏差</td>
+                                <td>中等 — 依赖指令质量和预训练覆盖度</td>
                                 <td>高 — 示例约束了输出格式和风格</td>
                             </tr>
                             <tr>
                                 <td><strong>适用场景</strong></td>
-                                <td>通用任务、常识推理、简单分类、翻译/摘要</td>
-                                <td>特定格式输出、领域分类、复杂推理、风格迁移</td>
+                                <td>通用任务（翻译/摘要/简单分类/常识问答）</td>
+                                <td>特定格式输出/领域分类/复杂推理/风格迁移</td>
                             </tr>
                             <tr>
                                 <td><strong>典型用法</strong></td>
                                 <td><code>"将以下中文翻译成英文：{text}"</code></td>
-                                <td><code>"参考以下示例完成翻译...\n例1: 你好→Hello\n例2: ..."</code></td>
+                                <td><code>"参考以下示例... 例1:&rarr;输出 例2:&rarr;输出 请处理:{text}"</code></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <figure style="margin: 1.5rem 0; text-align: center;">
-                    <div class="css-diagram diagram-zeroshot">
-                        <div class="d-col d-col-left">
-                            <span class="d-badge">Zero-Shot</span>
-                            <div class="d-prompt-box">"将以下中文翻译成英文：{text}"</div>
-                            <span class="d-arrow-down">↓</span>
-                            <div class="d-llm-box">🤖 LLM 输出</div>
-                        </div>
-                        <div class="d-vs-divider">
-                            <span class="d-vs-text">VS</span>
-                        </div>
-                        <div class="d-col d-col-right">
-                            <span class="d-badge">Few-Shot</span>
-                            <div class="d-examples">
-                                <div class="d-ex-item">例1: 你好 → Hello</div>
-                                <div class="d-ex-item">例2: 谢谢 → Thank you</div>
-                                <div class="d-ex-item">例3: 再见 → Goodbye</div>
-                            </div>
-                            <div class="d-prompt-box">+ "翻译：{text}"</div>
-                            <span class="d-arrow-down">↓</span>
-                            <div class="d-llm-box">🤖 LLM 输出</div>
-                        </div>
-                    </div>
-                    <figcaption style="font-size:0.8125rem;color:var(--text-muted);margin-top:0.75rem;font-style:italic;">
-                        图 1-1：Zero-Shot 与 Few-Shot 的核心区别 —— Zero-Shot 仅通过自然语言指令直接驱动模型；Few-Shot 在指令基础上附加示例对，利用 In-Context Learning 引导模型归纳输出模式
-                    </figcaption>
+                    <img src="https://aka.doubaocdn.com/s/CXWY1wQgCn" alt="课程截图：Zero-Shot vs Few-Shot 总结对比" class="course-screenshot" loading="lazy">
+                    <figcaption class="screenshot-caption">课程截图：Zero-Shot 与 Few-Shot 的完整总结对比 —— 双维度（训练层 vs 提示词层）全景对比</figcaption>
                 </figure>
 
-                <h3 class="section-subtitle">何时用 Zero-Shot？何时升级到 Few-Shot？</h3>
+                <h3 class="section-subtitle">如何选择？经验法则</h3>
                 <div class="info-grid">
                     <div class="info-item">
-                        <div class="info-item-label">✅ 优先使用 Zero-Shot</div>
-                        <div class="info-item-value">文本翻译 · 摘要生成 · 常识问答 · 简单情感分类 · 格式转换 · 通用写作辅助</div>
+                        <div class="info-item-label">&#9989; 优先使用 Zero-Shot</div>
+                        <div class="info-item-value">文本翻译 &middot; 摘要生成 &middot; 常识问答 &middot; 简单情感分类 &middot; 格式转换</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">⚡ 考虑 Few-Shot</div>
-                        <div class="info-item-value">特定领域分类 · 非标准 JSON 输出 · 风格化改写 · 复杂多步推理 · 边界情况处理</div>
+                        <div class="info-item-label">&#9889; 升级到 Few-Shot</div>
+                        <div class="info-item-value">特定领域分类 &middot; 非 JSON 标准输出 &middot; 风格化改写 &middot; 边界情况处理</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">🔬 进阶：CoT + Few-Shot</div>
-                        <div class="info-item-value">数学推理 · 逻辑推演 · 多条件决策 · 需要展示推理链路的场景</div>
+                        <div class="info-item-label">&#128161; 进阶组合</div>
+                        <div class="info-item-value">CoT + Few-Shot 用于数学推理 &middot; 多步逻辑推演 &middot; 复杂决策链</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">💡 经验法则</div>
-                        <div class="info-item-value">先试 Zero-Shot → 效果不够再叠加 Few-Shot → 还不够加 CoT</div>
+                        <div class="info-item-label">&#128203; 经验法则</div>
+                        <div class="info-item-value">先试 Zero-Shot &rarr; 效果不够再叠加 Few-Shot &rarr; 还不够加 CoT</div>
                     </div>
-                </div>
-
-                <div class="highlight-box warning">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        关键认知：In-Context Learning 不是「训练」
-                    </div>
-                    <div class="highlight-box-content">
-                        Few-Shot 中的示例并不会改变模型的权重参数。它的工作机制是：<strong>示例作为额外的上下文信息，帮助模型在当前对话中定位到正确的输出模式</strong>。
-                        这就好比考试时给你看了几道例题——你并没有因此变得更聪明，但你更清楚老师期望的答题格式和深度。
-                        因此 Few-Shot 示例的<strong>质量和代表性</strong>远比数量重要。
-                    </div>
-                </div>
-            </div>
-        </article>
-
-        <!-- ==================== Section 02: Zero-Shot 原理深入与实践 ==================== -->
-        <article class="section-card accent-bar-success" id="s2" data-animate>
-            <div class="section-header">
-                <span class="section-number">02</span>
-                <h2 class="section-title">Zero-Shot Prompting：原理与实战</h2>
-            </div>
-            <div class="section-content">
-                <p>
-                    Zero-Shot 提示的本质是<strong>利用大语言模型在预训练阶段习得的广泛知识来完成新任务</strong>。
-                    当你给出一个清晰的指令时，模型会在其参数空间中检索与该任务相关的知识模式，
-                    并据此生成输出。这个过程不需要任何针对特定任务的微调或示例演示。
-                </p>
-
-                <h3 class="section-subtitle">工作原理：从预训练到零样本推理</h3>
-                <p>
-                    大语言模型（如 GPT 系列、Claude、Qwen、DeepSeek 等）在海量文本数据上进行自监督预训练。
-                    这些数据天然包含了各种任务的隐式模式：
-                </p>
-                <ul class="content-list">
-                    <li><strong>翻译模式</strong>：「Hello」经常与「你好」共现 → 学会双语映射</li>
-                    <li><strong>摘要模式</strong>：长文章后常跟着简短总结 → 学会信息压缩</li>
-                    <li><strong>分类模式</strong>：「太棒了！」常被标记为正面 → 学会情感判断</li>
-                    <li><strong>问答模式</strong>：问题后紧跟答案 → 学会问题-答案关联</li>
-                </ul>
-
-                <h3 class="section-subtitle">实战：用 OpenAI 兼容 API 调用 Zero-Shot</h3>
-                <p>下面是一个可直接运行的完整代码示例，使用 Qwen 或 DeepSeek 的 API：</p>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python — Zero-Shot 完整调用示例</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> openai <span class="code-keyword">import</span> OpenAI
-
-<span class="code-comment"># 初始化客户端（兼容 OpenAI API 格式的服务均可）</span>
-<span class="code-comment"># 支持：Qwen / DeepSeek / OpenAI / 本地 Ollama 等</span>
-client = OpenAI(
-    api_key=<span class="code-string">"your-api-key"</span>,
-    base_url=<span class="code-string">"https://dashscope.aliyuncs.com/compatible-mode/v1"</span>  <span class="code-comment"># Qwen</span>
-)
-
-<span class="code-comment"># ===== Zero-Shot Prompt 定义 =====</span>
-zero_shot_prompt = <span class="code-string">"""请判断以下用户评价的情感倾向。
-
-评价文本：
-"{review_text}"
-
-请从以下三个选项中选择最匹配的一个：
-A. 正面（Positive）
-B. 负面（Negative）
-C. 中性（Neutral）
-
-只输出选项字母和对应标签，不要额外解释。"""</span>
-
-<span class="code-comment"># ===== 调用 API =====</span>
-response = client.chat.completions.create(
-    model=<span class="code-string">"qwen-plus"</span>,          <span class="code-comment"># 或 "deepseek-chat", "gpt-4o-mini" 等</span>
-    messages=[
-        {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, <span class="code-string">"content"</span>: <span class="code-string">"你是一个专业的情感分析助手。"</span>},
-        {<span class="code-string">"role"</span>: <span class="code-string">"user"</span>,   <span class="code-string">"content"</span>: zero_shot_prompt.format(
-            review_text=<span class="code-string">"这个产品太棒了！物流很快，包装也很用心，完全超出我的预期！"</span>
-        )}
-    ],
-    temperature=<span class="code-param">0.3</span>,              <span class="code-comment"># 低温度 = 更确定性的输出</span>
-    max_tokens=<span class="code-param">100</span>
-)
-
-<span class="code-comment"># 解析结果</span>
-result = response.choices[<span class="code-param">0</span>].message.content
-<span class="code-function">print</span>(f<span class="code-string">"模型输出: {result}"</span>)
-<span class="code-comment"># 典型输出: A. 正面（Positive）</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">Zero-Shot 的关键优化技巧</h3>
-                <div class="highlight-box success">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
-                        技巧清单：提升 Zero-Shot 成功率的 6 个要点
-                    </div>
-                    <div class="highlight-box-content">
-                        <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
-                            <li style="margin-bottom:0.4rem;"><strong>明确选项范围</strong>：不要说「判断情感」，而是列出具体选项（正面/负面/中性），减少自由发挥空间</li>
-                            <li style="margin-bottom:0.4rem;"><strong>约束输出格式</strong>：「只输出 A/B/C 和标签」比「请分析」能得到更稳定、可解析的结果</li>
-                            <li style="margin-bottom:0.4rem;"><strong>设定 System Role</strong>：system message 设定角色（如"你是专业分析师"）能激活特定领域的知识子空间</li>
-                            <li style="margin-bottom:0.4rem;"><strong>控制 Temperature</strong>：分类任务用 0~0.3，创意写作用 0.7~1.0，根据任务类型调整</li>
-                            <li style="margin-bottom:0.4rem;"><strong>使用结构化标记</strong>：用 ## 标题、### 子标题、- 列表等 Markdown 结构组织 prompt，提升模型理解力</li>
-                            <li><strong>添加负面约束</strong>：「不要输出解释」「不要编造信息」比只说正面要求更有效</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </article>
-
-        <!-- ==================== Section 03: Prompt 优化案例（差→好 改造过程） ==================== -->
-        <article class="section-card accent-bar-accent" id="s3" data-animate>
-            <div class="section-header">
-                <span class="section-number">03</span>
-                <h2 class="section-title">Prompt 优化实战：从差到好的五步改造</h2>
-            </div>
-            <div class="section-content">
-                <p>
-                    理论讲得再多，不如看一个真实的逐步优化过程。
-                    下面以<strong>「电商产品评价分析」</strong>为任务目标，
-                    展示一个粗糙的 prompt 如何经过五轮迭代，最终变成生产级的高质量 prompt。
-                    每一步都明确标注了<strong>改了什么、为什么改、效果如何</strong>。
-                </p>
-
-                <h3 class="section-subtitle">📋 任务定义</h3>
-                <div class="highlight-box">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                        目标任务
-                    </div>
-                    <div class="highlight-box-content">
-                        对用户产品评价进行<strong>多维度分析</strong>，包括：情感倾向判断、置信度评估、正负向因素提取、购买意图预测、一句话总结。
-                        最终输出必须是<strong>可被程序直接解析的 JSON 格式</strong>。
-                    </div>
-                </div>
-
-                <h3 class="section-subtitle">❌ Step 0：原始 Bad Prompt</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Step 0 — 问题版 Prompt</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code>prompt_v0 = <span class="code-string">"""
-分析一下这个评价：
-东西收到了，用了一段时间感觉还行吧，
-没有特别惊艳的地方但也不算差，客服回复挺快的。
-"""</span>
-
-<span class="code-comment"># === 问题诊断 ===</span>
-<span class="code-comment"># ❌ 无角色设定 → 模型不知道用什么视角分析</span>
-<span class="code-comment"># ❌ 无任务描述 → 不知道要提取哪些维度</span>
-<span class="code-comment"># ❌ 无格式约束 → 输出可能是段落、列表或混合体</span>
-<span class="code-comment"># ❌ 无输出控制 → 可能附带大量冗余分析文字</span>
-<span class="code-comment">#</span>
-<span class="code-comment"># 模型典型输出（不可控、不可解析）：</span>
-<span class="code-comment"># 这条评价整体来看是中性的。用户表示产品"还行"，说明...</span>
-<span class="code-comment"># （后续还有几百字的分析性文字，无法被程序自动处理）</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">🔧 Step 1：加入角色设定</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Step 1 — 加入角色设定</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code>prompt_v1 = <span class="code-string">"""
-## 角色
-你是一名专业的电商数据分析师，擅长从用户评价中提取结构化洞察。
-
-## 任务
-分析一下这个评价：
-东西收到了，用了一段时间感觉还行吧，
-没有特别惊艳的地方但也不算差，客服回复挺快的。
-"""</span>
-
-<span class="code-comment"># ✅ 改进：加入了角色设定</span>
-<span class="code-comment"># 🎯 原理：角色设定激活模型在数据分析领域的知识子空间</span>
-<span class="code-comment"># ⚠️ 仍缺：任务描述模糊、无格式约束</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">🔧 Step 2：明确任务描述 + 维度定义</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Step 2 — 明确任务与维度</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code>prompt_v2 = <span class="code-string">"""
-## 角色
-你是一名专业的电商数据分析师，擅长从用户评价中提取结构化洞察。
-
-## 任务
-对以下产品评价进行情感分析和关键信息提取，需要覆盖以下维度：
-1. 情感倾向（正面/负面/中性）
-2. 置信度评估
-3. 正向因素提取
-4. 负向因素提取
-5. 购买意图判断
-6. 一句话总结
-
-## 待分析文本
-"东西收到了，用了一段时间感觉还行吧，
-没有特别惊艳的地方但也不算差，客服回复挺快的。"
-"""</span>
-
-<span class="code-comment"># ✅ 改进：明确了6个分析维度</span>
-<span class="code-comment"># 🎯 原理：减少模型对"分析什么"的猜测空间</span>
-<span class="code-comment"># ⚠️ 仍缺：输出格式未约束 → 结果仍可能是非结构化的</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">🔧 Step 3：添加严格的格式约束（JSON Schema）</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Step 3 — JSON 格式约束</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code>prompt_v3 = <span class="code-string">"""
-## 角色
-你是一名专业的电商数据分析师，擅长从用户评价中提取结构化洞察。
-
-## 任务
-对以下产品评价进行情感分析和关键信息提取。
-
-## 待分析文本
-"东西收到了，用了一段时间感觉还行吧，
-没有特别惊艳的地方但也不算差，客服回复挺快的。"
-
-## 输出要求
-请严格按照以下 JSON 格式返回，不要输出任何其他内容：
-{
-  "sentiment": "正面/负面/中性",
-  "confidence": "高/中/低",
-  "positive_factors": ["因素1", "因素2"],
-  "negative_factors": ["因素1"],
-  "neutral_factors": ["因素1"],
-  "purchase_intent": "会回购/犹豫/不会回购",
-  "one_line_summary": "一句话总结"
-}
-"""</span>
-
-<span class="code-comment"># ✅ 改进：指定了完整的 JSON Schema（7个字段）</span>
-<span class="code-comment"># 🎯 原理：输出可直接 json.loads() 解析，无需正则后处理</span>
-<span class="code-comment"># ⚠️ 仍缺：可能混入 ```json 标记或多余说明文字</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">🔧 Step 4：强化输出控制 + 负面约束</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Step 4 — 强化输出控制</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code>prompt_v4 = <span class="code-string">"""
-## 角色
-你是一名专业的电商数据分析师，擅长从用户评价中提取结构化洞察。
-
-## 任务
-对以下产品评价进行情感分析和关键信息提取。
-
-## 待分析文本
-"东西收到了，用了一段时间感觉还行吧，
-没有特别惊艳的地方但也不算差，客服回复挺快的。"
-
-## 输出要求
-请严格按照以下 JSON 格式返回：
-{
-  "sentiment": "正面/负面/中性",
-  "confidence": "高/中/低",
-  "positive_factors": ["因素1", "因素2"],
-  "negative_factors": ["因素1"],
-  "neutral_factors": ["因素1"],
-  "purchase_intent": "会回购/犹豫/不会回购",
-  "one_line_summary": "一句话总结"
-}
-
-## 注意事项
-- 只输出 JSON 对象，不要包含 markdown 代码块标记
-- 不要输出任何分析过程或解释性文字
-- 不要编造文本中没有提及的信息
-- factors 数组中的每项必须是原文中出现过的具体内容
-"""</span>
-
-<span class="code-comment"># ✅ 改进：增加了4条明确的负面约束</span>
-<span class="code-comment"># 🎯 原理：负面约束（"不要..."）往往比正面要求更有约束力</span>
-<span class="code-comment"># ✅ 当前版本已达到生产可用水平</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">✅ Step 5：最终版 + 实际输出效果</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Step 5 — 最终版 &amp; 模型输出</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-comment"># 最终版 prompt（即上面的 v4 版本）调用后的典型输出：</span>
-
-{
-  <span class="code-string">"sentiment"</span>: <span class="code-string">"中性"</span>,
-  <span class="code-string">"confidence"</span>: <span class="code-string">"高"</span>,
-  <span class="code-string">"positive_factors"</span>: [<span class="code-string">"客服回复快"</span>],
-  <span class="code-string">"negative_factors"</span>: [],
-  <span class="code-string">"neutral_factors"</span>: [<span class="code-string">"产品表现一般"</span>, <span class="code-string">"无明显亮点"</span>],
-  <span class="code-string">"purchase_intent"</span>: <span class="code-string">"犹豫"</span>,
-  <span class="code-string">"one_line_summary"</span>: <span class="code-string">"用户态度中立，认可客服质量但对产品本身无强烈感受"</span>
-}
-
-<span class="code-comment"># ✅ 可直接用 json.loads() 解析</span>
-<span class="code-comment"># ✅ 字段完整，无缺失</span>
-<span class="code-comment"># ✅ 因素均来自原文，无幻觉</span></code></pre>
-                </div>
-
-                <figure style="margin: 1.5rem 0; text-align: center;">
-                    <div class="css-diagram diagram-optimize">
-                        <div class="d-side d-side-bad">
-                            <span class="d-side-label">❌ Bad Prompt</span>
-                            <div class="d-mock-output">"分析一下这个评价：东西收到了，用了一段时间感觉还行吧，没有特别惊艳的地方但也不算差，客服回复挺快的。"<br><br>→ 模型输出：一段不可控的、非结构的分析性文字（几百字），无法被程序自动解析处理...</div>
-                        </div>
-                        <div class="d-arrow-zone">
-                            <span class="d-big-arrow">→</span>
-                            <div class="d-step-tags">
-                                <span class="d-step-tag">① 角色设定</span>
-                                <span class="d-step-tag">② 任务定义</span>
-                                <span class="d-step-tag">③ JSON Schema</span>
-                                <span class="d-step-tag">④ 负面约束</span>
-                                <span class="d-step-tag">⑤ 验证迭代</span>
-                            </div>
-                        </div>
-                        <div class="d-side d-side-good">
-                            <span class="d-side-label">✅ Optimized Prompt</span>
-                            <div class="d-mock-output">{<br>&nbsp;&nbsp;"sentiment": "中性",<br>&nbsp;&nbsp;"confidence": "高",<br>&nbsp;&nbsp;"positive_factors": ["客服回复快"],<br>&nbsp;&nbsp;"negative_factors": [],<br>&nbsp;&nbsp;"purchase_intent": "犹豫",<br>&nbsp;&nbsp;"one_line_summary": "..."<br>}</div>
-                        </div>
-                    </div>
-                    <figcaption style="font-size:0.8125rem;color:var(--text-muted);margin-top:0.75rem;font-style:italic;">
-                        图 3-1：Prompt 优化的五步改造过程 —— 从无结构的随意提问（左）到有角色、有维度、有格式、有约束的结构化 Prompt（右），每一步都在缩小模型的「猜测空间」
-                    </figcaption>
-                </figure>
-
-                <h3 class="section-subtitle">五步优化汇总表</h3>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>步骤</th>
-                                <th>优化动作</th>
-                                <th>解决的问题</th>
-                                <th>效果提升</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Step 1</strong></td>
-                                <td>加入角色设定</td>
-                                <td>模型不知道用什么视角</td>
-                                <td>激活领域知识子空间</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Step 2</strong></td>
-                                <td>明确任务 + 分析维度</td>
-                                <td>不知道要输出什么</td>
-                                <td>聚焦目标，避免遗漏</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Step 3</strong></td>
-                                <td>指定 JSON Schema</td>
-                                <td>输出格式不可控</td>
-                                <td>程序可直接解析</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Step 4</strong></td>
-                                <td>添加负面约束</td>
-                                <td>混入多余文字/幻觉</td>
-                                <td>输出纯净稳定</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Step 5</strong></td>
-                                <td>验证 & 迭代</td>
-                                <td>边界情况处理</td>
-                                <td>达到生产级质量</td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
 
                 <div class="highlight-box danger">
                     <div class="highlight-box-title">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                        优化的本质
+                        本集核心结论
                     </div>
                     <div class="highlight-box-content">
-                        <strong>提示词优化的本质就是持续减少模型的「自由发挥空间」。</strong>
-                        差的 prompt 让模型自己决定一切：输出什么格式？包含哪些字段？用什么语气？
-                        好的 prompt 把这些决策权全部收回——你告诉模型 exactly 要什么，
-                        模型只需要专注于「如何最好地完成这个明确的任务」。<strong>每增加一个有效约束，就减少一个不确定性来源。</strong>
-                        但注意：<strong>过度约束也会限制模型的能力</strong>，需要在灵活性和可控性之间找到平衡点。
+                        <p style="margin-bottom:0.5rem;">提示词工程实战的业务需求是在金融业务内完成<strong>文本分类、信息抽取、文本匹配</strong>共 3 个任务目标，通过 Zero-Shot、Few-Shot 思想设计提示词来完成。</p>
+                        <p style="margin-bottom:0;"><strong>不管是 RAG 还是 Agent 智能体亦或是其它围绕模型的各类复杂开发工作，本质上都可以简单总结为——在提示词上下功夫。</strong></p>
                     </div>
                 </div>
-            </div>
-        </article>
-
-        <!-- ==================== Section 04: 提示词模板基础（Python原生方式） ==================== -->
-        <article class="section-card accent-bar-info" id="s4" data-animate>
-            <div class="section-header">
-                <span class="section-number">04</span>
-                <h2 class="section-title">提示词模板基础：Python 原生方案</h2>
-            </div>
-            <div class="section-content">
-                <p>
-                    当你的提示词需要在多个场景下复用时，<strong>模板化（Templating）</strong>就变得至关重要。
-                    模板的核心思想是将提示词中的<strong>固定部分</strong>与<strong>可变部分</strong>分离——
-                    固定部分（指令、约束、格式定义）写一次，可变部分（用户输入、动态参数）运行时填入。
-                    这是提示词工程从「一次性对话」进化到「生产级应用」的关键一步。
-                </p>
-
-                <h3 class="section-subtitle">为什么需要模板化？</h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-item-label">🔄 复用性</div>
-                        <div class="info-item-value">同一套逻辑适配不同输入，避免重复编写相似 prompt</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">📦 可维护性</div>
-                        <div class="info-item-value">修改模板一处即可全局生效，无需逐个调整</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">⚡ 一致性</div>
-                        <div class="info-item-value">所有调用共享相同指令结构和约束条件</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">🔧 可组合性</div>
-                        <div class="info-item-value">子模板可拼接成复杂 Pipeline，支持模块化管理</div>
-                    </div>
-                </div>
-
-                <h3 class="section-subtitle">方案一：str.format() —— 最基础的模板方式</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python — str.format() 模板</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-comment"># ========== 定义模板（使用 {variable} 占位符）==========</span>
-review_template = <span class="code-string">"""
-## 角色
-你是一名{role}，擅长{expertise_domain}。
-
-## 任务
-对以下产品评价进行情感分析和关键信息提取。
-
-## 待分析文本
-"{review_text}"
-
-## 输出要求
-请严格按照 JSON 格式返回，包含以下字段：
-sentiment, confidence, positive_factors, negative_factors,
-neutral_factors, purchase_intent, one_line_summary
-
-只输出 JSON，不要其他内容。
-"""</span>
-
-<span class="code-comment"># ========== 使用时填充变量 ==========</span>
-prompt_1 = review_template.format(
-    role=<span class="code-string">"电商数据分析师"</span>,
-    expertise_domain=<span class="code-string">"用户行为分析与情感计算"</span>,
-    review_text=<span class="code-string">"太棒了！物流超快，包装精美，五星好评！"</span>
-)
-
-prompt_2 = review_template.format(
-    role=<span class="code-string">"电商数据分析师"</span>,
-    expertise_domain=<span class="code-string">"用户行为分析与情感计算"</span>,
-    review_text=<span class="code-string">"质量太差了，用了两天就坏，退款！"</span>
-)
-
-<span class="code-function">print</span>(prompt_1)
-<span class="code-comment"># → 两份 prompt 共享相同的指令结构和约束，只有 review_text 不同</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">方案二：Partial 预填充 —— 减少运行时变量</h3>
-                <p>
-                    当模板中有大量变量，但其中很多是<strong>固定不变</strong>的（如角色、格式要求等），
-                    可以先用 <code>format()</code> 填充固定变量，生成一个「半成品」模板，
-                    后续每次只需传入真正变化的变量。
-                </p>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python — Partial 预填充模式</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-comment"># ========== 第一步：定义全量模板 ==========</span>
-full_template = <span class="code-string">"""
-## 角色
-你是一名{role}，擅长{expertise_domain}。
-
-## 任务
-对以下{content_type}进行{task_type}。
-
-## 待处理内容
-{content}
-
-## 输出要求
-- 语言：{language}
-- 格式：{output_format}
-- 长度限制：{max_length}
-"""</span>
-
-<span class="code-comment"># ========== 第二步：预填充固定变量（生成半成品模板）==========</span>
-<span class="code-comment"># 角色和格式是固定的，只有 content 是每次调用都不同的</span>
-analyst_template = full_template.format(
-    role=<span class="code-string">"金融分析师"</span>,
-    expertise_domain=<span class="code-string">"市场分析、财务建模、风险评估"</span>,
-    content_type=<span class="code-string">"财经新闻文本"</span>,
-    task_type=<span class="code-string">"多维度分类标注"</span>,
-    language=<span class="code-string">"中文"</span>,
-    output_format=<span class="code-string">"JSON"</span>,
-    max_length=<span class="code-string">"不超过200字"</span>,
-    content=<span class="code-string">"{content}"</span>     <span class="code-comment"># ← 保留占位符，稍后填入</span>
-)
-
-<span class="code-comment"># ========== 第三步：运行时只需传入变化的部分 ==========</span>
-news_1 = analyst_template.format(content=<span class="code-string">"央行今日宣布降准0.5个百分点，释放长期资金约1万亿元"</span>)
-news_2 = analyst_template.format(content=<span class="code-string">"某科技巨头Q3营收同比增长35%，超市场预期"</span>)
-
-<span class="code-comment"># 优势：业务代码只需关心 content 参数，其余配置集中管理</span></code></pre>
-                </div>
-
-                <div class="highlight-box teal">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                        Partial 模式的价值
-                    </div>
-                    <div class="highlight-box-content">
-                        Partial 预填充实现了<strong>「配置与数据的分离」</strong>。
-                        固定不变的配置（角色、格式、约束）在系统初始化时一次性填入，
-                        变化的数据（用户输入、待处理文本）在每次请求时动态注入。
-                        这种模式在批量处理场景下尤为强大——比如你需要分析 1000 条评论，
-                        只需构造一次半成品模板，然后循环填入不同评论即可。
-                    </div>
-                </div>
-            </div>
-        </article>
-
-        <!-- ==================== Section 05: LangChain PromptTemplate & ChatPromptTemplate ==================== -->
-        <article class="section-card accent-bar-teal" id="s5" data-animate>
-            <div class="section-header">
-                <span class="section-number">05</span>
-                <h2 class="section-title">LangChain 模板体系：PromptTemplate & ChatPromptTemplate</h2>
-            </div>
-            <div class="section-content">
-                <p>
-                    当项目规模增长到需要管理大量提示词时，纯 Python 字符串模板就开始显得力不从心了。
-                    <strong>LangChain</strong> 提供了一套成熟的提示词模板体系——<code>PromptTemplate</code> 用于单轮补全式提示，
-                    <code>ChatPromptTemplate</code> 用于多轮对话式提示。它们不仅支持变量管理，
-                    还提供了<strong>三种变量注入方式</strong>、<code>partial_variables</code> 动态绑定、
-                    以及与 LLM Chain 的无缝集成能力。
-                </p>
-
-                <h3 class="section-subtitle">5.1 PromptTemplate：单轮补全式模板</h3>
-                <p><code>PromptTemplate</code> 是最基础的模板类，适用于将整个 prompt 作为一个整体发送给模型的场景（类似 GPT-3 的 text completion 接口）：</p>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">LangChain — PromptTemplate 基础用法</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> PromptTemplate
-
-<span class="code-comment"># ========== 方式一：from_template（推荐）==========</span>
-template = <span class="code-string">"""
-请对以下产品评价进行情感分析：
-
-评价内容：{review_text}
-
-请判断情感倾向（正面/负面/中性），并给出置信度。
-只输出结果，不要解释。
-"""</span>
-
-prompt_template = PromptTemplate.from_template(template)
-
-<span class="code-comment"># 查看模板中的变量名</span>
-<span class="code-function">print</span>(prompt_template.input_variables)
-<span class="code-comment"># 输出: ['review_text']</span>
-
-<span class="code-comment"># ========== 方式二：format 注入（最常用）==========</span>
-prompt = prompt_template.format(review_text=<span class="code-string">"这个产品太棒了，超出预期！"</span>)
-<span class="code-function">print</span>(prompt)
-<span class="code-comment"># → 生成的完整 prompt 文本</span>
-
-<span class="code-comment"># ========== 方式三：partial 预填充（返回新模板对象）==========</span>
-<span class="code-comment"># 预填充部分变量，得到一个只需要剩余变量的新模板</span>
-partial_tmpl = prompt_template.partial(review_text=<span class="code-string">"默认评论文本"</span>)
-<span class="code-comment"># partial_tmpl 现在是一个不需要任何变量的「已完成」模板</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">5.2 ChatPromptTemplate：多轮对话式模板</h3>
-                <p>
-                    现代 LLM API（OpenAI Chat Completions、Qwen、DeepSeek 等）都是基于<strong>消息列表</strong>的多轮对话接口。
-                    <code>ChatPromptTemplate</code> 专为这种场景设计，它管理一组 <code>System / User / Assistant</code> 消息模板，
-                    每条消息都可以包含独立的变量。
-                </p>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">LangChain — ChatPromptTemplate.from_messages</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
-
-<span class="code-comment"># ========== 定义多轮对话模板 ==========</span>
-chat_template = ChatPromptTemplate.from_messages([
-    (<span class="code-string">"system"</span>, <span class="code-string">"你是一名{role}，擅长{expertise}。请始终以专业的态度回答问题。"</span>),
-    (<span class="code-string">"user"</span>,  <span class="code-string">"请分析以下评价：\n{review_text}"</span>),
-])
-
-<span class="code-comment"># ========== format_messages：生成消息列表（直接传给 API）==========</span>
-messages = chat_template.format_messages(
-    role=<span class="code-string">"电商数据分析师"</span>,
-    expertise=<span class="code-string">"用户情感分析与行为洞察"</span>,
-    review_text=<span class="code-string">"物流很快，但产品质量一般般"</span>
-)
-
-<span class="code-comment"># messages 是一个 [SystemMessage, UserMessage] 列表</span>
-<span class="code-function">print</span>(messages[<span class="code-param">0</span>].content)
-<span class="code-comment"># → "你是一名电商数据分析师，擅长用户情感分析与行为洞察。请始终以专业的态度回答问题。"</span>
-
-<span class="code-function">print</span>(messages[<span class="code-param">1</span>].content)  
-<span class="code-comment"># → "请分析以下评价：\n物流很快，但产品质量一般般"</span>
-
-<span class="code-comment"># ========== 直接传给 LLM（无缝集成）==========</span>
-<span class="code-comment"># response = llm.invoke(messages)</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">5.3 三种变量注入方式对比</h3>
-                <p>LangChain 模板体系提供了三种变量注入机制，各有适用场景：</p>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>方式</th>
-                                <th>方法名</th>
-                                <th>返回值</th>
-                                <th>适用场景</th>
-                                <th>特点</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>format</strong></td>
-                                <td><code>.format(**kwargs)</code></td>
-                                <td><code>str</code> (字符串)</td>
-                                <td>需要获取完整 prompt 文本</td>
-                                <td>最常用，一次性填入所有变量</td>
-                            </tr>
-                            <tr>
-                                <td><strong>format_messages</strong></td>
-                                <td><code>.format_messages(**kwargs)</code></td>
-                                <td><code>List[Message]</code></td>
-                                <td>直接传给 ChatModel</td>
-                                <td>ChatPromptTemplate 专用，返回消息对象列表</td>
-                            </tr>
-                            <tr>
-                                <td><strong>partial / partial_variables</strong></td>
-                                <td><code>.partial()</code> / 构造参数</td>
-                                <td><code>新 Template 对象</code></td>
-                                <td>预填充固定变量</td>
-                                <td>返回新模板，剩余变量延后填入</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3 class="section-subtitle">5.4 partial_variables：动态变量的高级用法</h3>
-                <p>
-                    <code>partial_variables</code> 是 <code>partial()</code> 的进阶版——它允许你传入一个<strong>可调用对象（函数）</strong>，
-                    每次格式化时动态执行该函数来获取变量值。这在需要<strong>动态生成时间戳、加载外部配置</strong>等场景下非常有用。
-                </p>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">LangChain — partial_variables 动态绑定</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> datetime <span class="code-keyword">import</span> datetime
-<span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> PromptTemplate, ChatPromptTemplate
-
-<span class="code-comment"># ========== 定义动态变量函数 ==========</span>
-<span class="code-keyword">def</span> <span class="code-function">get_current_time</span>():
-    <span class="code-keyword">return</span> datetime.now().strftime(<span class="code-string">"%Y-%m-%d %H:%M:%S"</span>)
-
-<span class="code-keyword">def</span> <span class="code-function">load_system_config</span>():
-    <span class="code-comment"># 可从数据库、配置文件、环境变量等动态加载</span>
-    <span class="code-keyword">return</span> {
-        <span class="code-string">"version"</span>: <span class="code-string">"v2.1"</span>,
-        <span class="code-string">"rules"</span>: <span class="code-string">"严格遵循JSON格式，不输出markdown标记"</span>
-    }
-
-<span class="code-comment"># ========== PromptTemplate + partial_variables ==========</span>
-template = PromptTemplate.from_template(
-    <span class="code-string">"""
-当前时间：{current_time}
-系统配置：{system_config}
-
-请分析以下内容：{content}
-"""</span>
-)
-
-<span class="code-comment"># 绑定动态变量（函数会在每次 format 时自动调用）</span>
-partial_tmpl = template.partial(
-    current_time=get_current_time,      <span class="code-comment"># 传入函数引用</span>
-    system_config=load_system_config     <span class="code-comment"># 传入函数引用</span>
-)
-
-<span class="code-comment"># 每次 format 时，动态函数会重新执行</span>
-prompt_1 = partial_tmpl.format(content=<span class="code-string">"第一条评论"</span>)   <span class="code-comment"># 时间: 2026-05-15 10:30:00</span>
-<span class="code-keyword">import</span> time; time.sleep(<span class="code-param">2</span>)
-prompt_2 = partial_tmpl.format(content=<span class="code-string">"第二条评论"</span>)   <span class="code-comment"># 时间: 2026-05-15 10:30:02（自动更新！）</span>
-
-<span class="code-comment"># ========== ChatPromptTemplate + partial_variables ==========</span>
-chat_tmpl = ChatPromptTemplate.from_messages([
-    (<span class="code-string">"system"</span>, <span class="code-string">"分析时间：{current_time}\n规则：{rules}"</span>),
-    (<span class="code-string">"user"</span>, <span class="code-string">"请分析：{content}"</span>),
-])
-
-<span class="code-comment"># 通过构造参数绑定 partial_variables</span>
-chat_with_partial = chat_tmpl.partial(
-    current_time=get_current_time,
-    rules=<span class="code-keyword">lambda</span>: load_system_config()[<span class="code-string">"rules"</span>]
-)
-
-messages = chat_with_partial.format_messages(content=<span class="code-string">"测试评论"</span>)
-<span class="code-comment"># SystemMessage 中自动包含最新的时间和规则</span></code></pre>
-                </div>
-
-                <figure style="margin: 1.5rem 0; text-align: center;">
-                    <div class="css-diagram diagram-workflow">
-                        <div class="d-flow-row">
-                            <div class="d-flow-step">
-                                <div class="d-step-card">
-                                    <span class="d-step-num">1</span>
-                                    <div class="d-step-title">定义模板</div>
-                                    <div class="d-step-desc">使用 {variable} 占位符编写 Prompt 模板字符串</div>
-                                    <div class="d-step-code">PromptTemplate(template)</div>
-                                </div>
-                            </div>
-                            <span class="d-flow-arrow">→</span>
-                            <div class="d-flow-step">
-                                <div class="d-step-card">
-                                    <span class="d-step-num">2</span>
-                                    <div class="d-step-title">变量注入</div>
-                                    <div class="d-step-desc">选择注入方式，填入运行时数据</div>
-                                    <div class="d-methods-bar" style="margin:0.5rem 0 0;">
-                                        <span class="d-method-chip m-format">.format() → str</span>
-                                        <span class="d-method-chip m-fmsg">.format_messages()</span>
-                                        <span class="d-method-chip m-partial">.partial()</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="d-flow-arrow">→</span>
-                            <div class="d-flow-step">
-                                <div class="d-step-card">
-                                    <span class="d-step-num">3</span>
-                                    <div class="d-step-title">生成输出</div>
-                                    <div class="d-step-desc">得到完整 prompt 字符串或消息列表对象</div>
-                                    <div class="d-step-code">str / List[Message]</div>
-                                </div>
-                            </div>
-                            <span class="d-flow-arrow">→</span>
-                            <div class="d-flow-step">
-                                <div class="d-step-card">
-                                    <span class="d-step-num">4</span>
-                                    <div class="d-step-title">送入 LLM</div>
-                                    <div class="d-step-desc">将格式化后的内容传给大语言模型执行推理</div>
-                                    <div class="d-step-code">llm.invoke(prompt)</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="d-llm-final">
-                            <span class="d-llm-pill">🤖 LLM 推理 & 输出结果</span>
-                        </div>
-                    </div>
-                    <figcaption style="font-size:0.8125rem;color:var(--text-muted);margin-top:0.75rem;font-style:italic;">
-                        图 5-1：LangChain 模板工作流程 —— 从模板定义（含占位符）→ 选择变量注入方式（format/format_messages/partial）→ 生成最终 prompt 或消息列表 → 送入 LLM 执行
-                    </figcaption>
-                </figure>
-
-                <div class="highlight-box success">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
-                        选择建议：什么时候用什么？
-                    </div>
-                    <div class="highlight-box-content">
-                        <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
-                            <li style="margin-bottom:0.4rem;"><strong>简单脚本 / 快速原型</strong>：直接用 Python f-string 或 str.format()，零依赖，足够用</li>
-                            <li style="margin-bottom:0.4rem;"><strong>单轮补全场景</strong>：用 <code>PromptTemplate.from_template()</code> + <code>.format()</code></li>
-                            <li style="margin-bottom:0.4rem;"><strong>多轮对话 / Chat API 场景</strong>：用 <code>ChatPromptTemplate.from_messages()</code> + <code>.format_messages()</code></li>
-                            <li style="margin-bottom:0.4rem;"><strong>批量处理 / Pipeline</strong>：用 <code>.partial()</code> 或 <code>partial_variables</code> 预填充固定配置</li>
-                            <li><strong>需要动态变量（时间、外部配置）</strong>：用 <code>partial_variables</code> 绑定函数，实现懒求值</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </article>
-
-        <!-- ==================== Section 06: 本集小结 & 实践 ==================== -->
-        <article class="section-card accent-bar-danger" id="s6" data-animate>
-            <div class="section-header">
-                <span class="section-number">06</span>
-                <h2 class="section-title">本集小结 & 实践 Checklist</h2>
-            </div>
-            <div class="section-content">
-                <h3 class="section-subtitle">核心知识地图</h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-item-label">Zero-Shot 核心</div>
-                        <div class="info-item-value">不提供示例，仅靠自然语言指令引导模型完成任务，依赖预训练知识</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">vs Few-Shot</div>
-                        <div class="info-item-value">Few-Shot 利用 In-Context Learning 从示例中归纳模式，输出更稳定但 Token 成本更高</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">优化方法论</div>
-                        <div class="info-item-value">角色设定 → 明确任务 → 格式约束 → 负面约束 → 验证迭代（五步法）</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">模板化三要素</div>
-                        <div class="info-item-value">固定/可变分离 · Partial 预填充 · 变量注入（format/partial/partial_variables）</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">LangChain 模板栈</div>
-                        <div class="info-item-value">PromptTemplate（单轮）· ChatPromptTemplate（多轮）· from_template / from_messages</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">优化本质</div>
-                        <div class="info-item-value">每增加一个有效约束 = 减少一个不确定性来源 = 提升输出稳定性</div>
-                    </div>
-                </div>
-
-                <h3 class="section-subtitle">实践 Checklist</h3>
-                <div class="highlight-box success" style="margin-top: 1.25rem;">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
-                        Zero-Shot + 模板化 自检清单
-                    </div>
-                    <div class="highlight-box-content">
-                        <ul style="list-style:none;padding:0;margin:0;">
-                            <li style="padding:0.35rem 0;border-bottom:1px solid var(--border-color);">
-                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
-                                &nbsp;<strong>Zero-Shot 检查</strong>：指令是否列出了明确的选项范围？（而非开放式提问）
-                            </li>
-                            <li style="padding:0.35rem 0;border-bottom:1px solid var(--border-color);">
-                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
-                                &nbsp;<strong>格式约束检查</strong>：输出是否有明确格式要求？（JSON Schema / 表格 / 固定字段）
-                            </li>
-                            <li style="padding:0.35rem 0;border-bottom:1px solid var(--border-color);">
-                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
-                                &nbsp;<strong>负面约束检查</strong>：是否使用了「不要...」类型的约束来消除不想要的输出？
-                            </li>
-                            <li style="padding:0.35rem 0;border-bottom:1px solid var(--border-color);">
-                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
-                                &nbsp;<strong>A/B 测试验证</strong>：是否对比过 Bad vs Good prompt 的实际输出差异？
-                            </li>
-                            <li style="padding:0.35rem 0;border-bottom:1px solid var(--border-color);">
-                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
-                                &nbsp;<strong>模板化检查</strong>：重复使用的 prompt 是否已模板化？（使用 {variable} 占位符）
-                            </li>
-                            <li style="padding:0.35rem 0;border-bottom:1px solid var(--border-color);">
-                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
-                                &nbsp;<strong>Partial 使用</strong>：固定配置是否通过 Partial 预填充来减少运行时变量数量？
-                            </li>
-                            <li style="padding:0.35rem 0;">
-                                <code style="background:rgba(85,180,130,0.1);color:var(--success);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
-                                &nbsp;<strong>LangChain 选型</strong>：是否根据场景正确选择了 PromptTemplate 还是 ChatPromptTemplate？
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <h3 class="section-subtitle">下集预告</h3>
-                <p>
-                    下一集将进入<strong>角色设定与人格塑造（Role Prompting）</strong>专题。
-                    我们将深入探讨如何通过精心设计的 System Prompt 激活模型的特定领域能力，
-                    包括<strong>专家人设构建、思维框架植入、人格一致性维护</strong>等高级技巧。
-                    你将学到如何让模型扮演「资深 Python 架构师」「临床医学专家」「创意文案总监」等专业角色，
-                    并理解为什么一个好的角色设定能带来<strong>质的输出飞跃</strong>~
-                </p>
             </div>
         </article>
 
@@ -2071,7 +1220,9 @@ messages = chat_with_partial.format_messages(content=<span class="code-string">"
         </nav>
         <div class="footer-reference">
             课程来源：<a href="https://www.bilibili.com/video/BV1yjz5BLEoY" target="_blank">B站视频 BV1yjz5BLEoY</a> &middot;
-            P12 起始
+            P12 起始 &middot;
+            参考自 <a href="https://dontla.blog.csdn.net/article/details/157844042" target="_blank">dontla's CSDN</a> &
+            <a href="https://blog.csdn.net/zql1455890112/article/details/158464453" target="_blank">zql1455890112's CSDN</a>
         </div>
     </div>
 </footer>

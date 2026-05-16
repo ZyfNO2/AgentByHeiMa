@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>第04集 - JSON 数据格式控制 | 提示词工程学习笔记</title>
+    <title>第04集 - JSON 数据格式 | 提示词工程学习笔记</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -715,204 +715,6 @@
         ::-webkit-scrollbar-track { background: var(--bg-page); }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-        /* ════════════════════════════════════════
-           图表 1: Output Parser 横向工作流程
-           ════════════════════════════════════════ */
-        .workflow-diagram {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0;
-            padding: 1.5rem 0.75rem;
-            background: var(--bg-subtle);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-            overflow-x: auto;
-        }
-        .wf-step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 130px;
-            max-width: 150px;
-            flex-shrink: 0;
-        }
-        .wf-step-icon {
-            width: 48px; height: 48px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
-            flex-shrink: 0;
-        }
-        .wf-step-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-align: center;
-            line-height: 1.4;
-            color: var(--text-primary);
-            white-space: nowrap;
-        }
-        .wf-step-desc {
-            font-size: 0.68rem;
-            color: var(--text-muted);
-            text-align: center;
-            margin-top: 2px;
-            white-space: nowrap;
-        }
-        .wf-arrow {
-            display: flex; align-items: center;
-            color: var(--primary);
-            font-size: 1.3rem;
-            margin: 0 4px;
-            flex-shrink: 0;
-            opacity: 0.6;
-        }
-        .wf-step:nth-child(1) .wf-step-icon { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
-        .wf-step:nth-child(3) .wf-step-icon { background: linear-gradient(135deg, #f093fb, #f5576c); color: white; }
-        .wf-step:nth-child(5) .wf-step-icon { background: linear-gradient(135deg, var(--primary), var(--teal)); color: white; }
-        .wf-step:nth-child(7) .wf-step-icon { background: linear-gradient(135deg, #43e97b, #38f9d7); color: white; }
-        .wf-step:nth-child(9) .wf-step-icon { background: linear-gradient(135deg, #fa709a, #fee140); color: white; }
-
-        /* ════════════════════════════════════════
-           图表 2: Pydantic Schema 层级树状图
-           ════════════════════════════════════════ */
-        .schema-tree {
-            padding: 1.5rem 1.5rem 1.5rem 2rem;
-            background: var(--bg-subtle);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.78rem;
-        }
-        .tree-root { position: relative; }
-        .tree-node {
-            position: relative;
-            padding-left: 1.5rem;
-            margin: 4px 0;
-        }
-        .tree-node::before {
-            content: '';
-            position: absolute;
-            left: 6px; top: 0;
-            width: 1px;
-            height: 100%;
-            background: var(--border-color);
-        }
-        .tree-root > .tree-node::before,
-        .tree-node:last-child::before { height: 14px; }
-        .tree-node::after {
-            content: '';
-            position: absolute;
-            left: 6px; top: 14px;
-            width: 10px;
-            height: 1px;
-            background: var(--border-color);
-        }
-        .tree-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 3px 8px 3px 10px;
-            border-radius: 6px;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .tree-type-tag {
-            font-size: 0.62rem;
-            padding: 1px 5px;
-            border-radius: 3px;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-        }
-        .tree-root > .tree-node > .tree-label { background: linear-gradient(135deg, var(--primary), var(--teal)); color: white; }
-        .tree-lvl1 > .tree-label { background: rgba(85,120,250,0.10); color: var(--primary); border: 1px solid rgba(85,120,250,0.20); }
-        .tree-lvl2 > .tree-label { background: rgba(80,180,160,0.08); color: var(--teal); border: 1px solid rgba(80,180,160,0.18); }
-        .tree-type-str .tree-type-tag { background: #e8f5e9; color: #2e7d32; }
-        .tree-type-enum .tree-type-tag { background: #fff3e0; color: #e65100; }
-        .tree-type-optional .tree-type-tag { background: #fce4ec; color: #c62828; }
-        .tree-type-list .tree-type-tag { background: #e3f2fd; color: #1565c0; }
-        .tree-type-float .tree-type-tag { background: #f3e5f5; color: #7b1fa2; }
-        .tree-type-bool .tree-type-tag { background: #fff8e1; color: #f57f17; }
-
-        /* ════════════════════════════════════════
-           图表 3: 四层错误处理流程图
-           ════════════════════════════════════════ */
-        .error-flow {
-            display: grid;
-            grid-template-columns: auto 40px auto 40px auto 40px auto;
-            align-items: center;
-            gap: 4px;
-            padding: 1.25rem 1rem;
-            background: var(--bg-subtle);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-        }
-        .ef-layer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 110px;
-        }
-        .ef-layer-num {
-            width: 28px; height: 28px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            font-size: 0.72rem;
-            color: white;
-            margin-bottom: 6px;
-        }
-        .ef-layer-name {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.68rem;
-            font-weight: 600;
-            text-align: center;
-            color: var(--text-primary);
-            padding: 4px 8px;
-            border-radius: 6px;
-            background: white;
-            border: 1px solid var(--border-color);
-            white-space: nowrap;
-        }
-        .ef-arrow-down, .ef-arrow-right {
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.15rem; font-weight: bold;
-            flex-shrink: 0;
-        }
-        .ef-arrow-down { color: var(--success); }
-        .ef-arrow-right { color: var(--danger); }
-        .ef-result-box {
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            font-weight: 600;
-            text-align: center;
-            white-space: nowrap;
-        }
-        .ef-success { background: rgba(85,180,130,0.12); color: var(--success); border: 1px solid rgba(85,180,130,0.25); }
-        .ef-fail { background: rgba(220,90,80,0.08); color: var(--danger); border: 1px solid rgba(220,90,80,0.18); }
-        .ef-fallback { background: rgba(235,180,80,0.12); color: var(--accent); border: 1px solid rgba(235,180,80,0.25); }
-        .ef-layer:nth-child(1) .ef-layer-num { background: var(--primary); }
-        .ef-layer:nth-child(3) .ef-layer-num { background: oklch(0.60 0.18 200); }
-        .ef-layer:nth-child(5) .ef-layer-num { background: oklch(0.58 0.16 50); }
-        .ef-layer:nth-child(7) .ef-layer-num { background: var(--danger); }
-
-        @media (max-width: 768px) {
-            .workflow-diagram { gap: 0; padding: 1rem 0.5rem; }
-            .wf-step { min-width: 100px; max-width: 115px; }
-            .wf-step-label { font-size: 0.62rem; }
-            .wf-step-desc { display: none; }
-            .wf-step-icon { width: 38px; height: 38px; font-size: 1rem; }
-            .wf-arrow { font-size: 1rem; margin: 0 2px; }
-            .schema-tree { font-size: 0.7rem; padding: 1rem 0.75rem 1rem 1.25rem; }
-            .error-flow { grid-template-columns: auto 28px auto 28px auto 28px auto; gap: 2px; padding: 1rem 0.5rem; }
-            .ef-layer { min-width: 85px; }
-            .ef-layer-name { font-size: 0.6rem; padding: 3px 5px; }
-        }
     </style>
 </head>
 <body>
@@ -927,9 +729,9 @@
             <a href="01-提示词工程基础.html" class="nav-link">P01 基础</a>
             <a href="02-结构化提示词.html" class="nav-link">P02 结构化</a>
             <a href="03-角色设定与人格.html" class="nav-link">P03 角色设定</a>
-            <a href="#s1" class="nav-anchor">&sect;1 动机</a>
-            <a href="#s2" class="nav-link active">P04 JSON格式</a>
-            <a href="#s3" class="nav-anchor">&sect;3 Schema</a>
+            <a href="#s1" class="nav-anchor">&sect;1 JSON结构</a>
+            <a href="#" class="nav-link active">P04 JSON格式</a>
+            <a href="#s2" class="nav-anchor">&sect;2 Python代码</a>
             <a href="05-Chain-of-Thought思维链.html" class="nav-link">P05 思维链</a>
             <a href="06-信息提取实战.html" class="nav-link">P06 实战</a>
         </nav>
@@ -939,13 +741,13 @@
 <main class="main-container">
 
     <section class="hero">
-        <div class="hero-badge">P04 / Chapter 04 &middot; JSON Output &amp; Few-Shot Advanced</div>
+        <div class="hero-badge">P04 / Chapter 04 &middot; JSON 数据格式基础</div>
         <h1 class="hero-title">
-            第04集：<span class="hero-title-accent">JSON 数据格式控制与输出解析器</span>
+            第04集：<span class="hero-title-accent">JSON 数据格式（json.dumps / json.loads / ensure_ascii）</span>
         </h1>
         <p class="hero-subtitle">
-            深入 LangChain Output Parser 体系——从 JsonOutputParser 到 PydanticOutputParser，
-            掌握让 LLM 输出精确可解析结构化数据的完整技术栈
+            从 JSON 结构介绍到 Python 中 json 模块的完整使用——掌握 dumps、loads、ensure_ascii 等核心方法，
+            为后续 LLM 信息抽取实战打下坚实的 JSON 基础
         </p>
         <div class="hero-meta">
             <span class="meta-tag">
@@ -954,11 +756,11 @@
             </span>
             <span class="meta-tag">
                 <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                时长 ~35min
+                时长 ~20min
             </span>
             <span class="meta-tag">
                 <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-                Few-Shot 进阶
+                Python JSON 基础
             </span>
         </div>
     </section>
@@ -966,284 +768,231 @@
     <div class="content-section">
 
         <!-- ═══════════════════════════════════════════════════ -->
-        <!-- SECTION 01: 为什么需要 JSON 格式控制                    -->
+        <!-- SECTION 01: JSON 结构介绍                              -->
         <!-- ═══════════════════════════════════════════════════ -->
         <article class="section-card" id="s1" data-animate>
             <div class="section-header">
                 <span class="section-number">01</span>
-                <h2 class="section-title">为什么需要 JSON 格式控制</h2>
+                <h2 class="section-title">JSON 结构介绍</h2>
             </div>
             <div class="section-content">
                 <p>
-                    在 LangChain 的 LLM 应用开发中，一个反复出现且令人头疼的问题是：<strong>模型输出的自由文本无法被下游程序可靠地消费</strong>。
-                    当你用 ChatGPT 做对话时，自由文本完全没问题；但当你试图把 LLM 嵌入到一个自动化 Pipeline 中时，
-                    自由文本的「不可预测性」就会成为整个系统的阿喀琉斯之踵。
+                    在进入代码实操之前，我们需要先理解 <strong>JSON（JavaScript Object Notation）</strong> 的基本数据结构。
+                    JSON 是一种轻量级的数据交换格式，易于人阅读和编写，同时也易于机器解析和生成。
+                    它是当前 Web 开发和 LLM 应用中<strong>最主流的结构化数据格式</strong>。
                 </p>
 
                 <figure class="figure-container">
-                    <div class="workflow-diagram">
-                        <div class="wf-step">
-                            <div class="wf-step-icon">👤</div>
-                            <div class="wf-step-label">User Prompt</div>
-                            <div class="wf-step-desc">用户输入</div>
-                        </div>
-                        <div class="wf-arrow">→</div>
-                        <div class="wf-step">
-                            <div class="wf-step-icon">🤖</div>
-                            <div class="wf-step-label">LLM Output</div>
-                            <div class="wf-step-desc">自由文本</div>
-                        </div>
-                        <div class="wf-arrow">→</div>
-                        <div class="wf-step">
-                            <div class="wf-step-icon">⚙️</div>
-                            <div class="wf-step-label">Output Parser</div>
-                            <div class="wf-step-desc">解析 & 校验</div>
-                        </div>
-                        <div class="wf-arrow">→</div>
-                        <div class="wf-step">
-                            <div class="wf-step-icon">{ }</div>
-                            <div class="wf-step-label">Structured JSON</div>
-                            <div class="wf-step-desc">结构化数据</div>
-                        </div>
-                        <div class="wf-arrow">→</div>
-                        <div class="wf-step">
-                            <div class="wf-step-icon">📱</div>
-                            <div class="wf-step-label">Application</div>
-                            <div class="wf-step-desc">下游消费</div>
-                        </div>
-                    </div>
-                    <figcaption class="figure-caption">图 1-1：LLM Output Parser 工作流程 —— 从自由文本到结构化数据的关键转换层</figcaption>
+                    <img src="https://aka.doubaocdn.com/s/1LWT1wQgCq" alt="JSON 对象结构示例截图">
+                    <figcaption class="figure-caption">图 1-1：JSON 对象（Object）结构 —— 键值对形式，类似 Python 字典</figcaption>
                 </figure>
 
-                <h3 class="section-subtitle">自由文本在生产环境中的三大致命缺陷</h3>
-                <ul class="content-list">
-                    <li>
-                        <strong>不可解析（Unparseable）</strong>：同一个 prompt，模型可能这次返回 Markdown 表格、
-                        下次返回 YAML 格式、再下次干脆就是一段带 emoji 的纯文字。正则表达式永远追不上模型的创造力——
-                        你写的匹配规则今天能工作，明天可能就因为模型多输出了一个换行符而失效。
-                        根据 LangChain 社区的统计报告，<strong>约 23% 的首次 LLM 调用会因为格式问题导致后处理失败</strong>。
-                    </li>
-                    <li>
-                        <strong>不稳定（Unstable）</strong>：即使你精心设计了 prompt 来约束输出格式，
-                        不同 temperature 设置、不同模型版本（如 GPT-4o vs GPT-4o-mini）、甚至同一模型在不同时段调用，
-                        输出的格式细节都会发生漂移。字段顺序变化、引号类型切换（单引号↔双引号）、
-                        多余空行插入、末尾附带解释性文字……这些微小的变化足以让你的 <code>json.loads()</code> 抛出异常。
-                    </li>
-                    <li>
-                        <strong>不可集成（Unintegrable）</strong>：现代应用架构中，LLM 的输出需要流入数据库、
-                        传递给前端组件、写入消息队列或作为 API 响应返回。这些下游系统全部要求<strong>结构化的数据对象</strong>，
-                        而非自然语言段落。没有标准接口意味着每处 LLM 接入点都需要定制化的后处理管道——
-                        维护成本随接入点数量线性增长。
-                    </li>
-                </ul>
-
-                <h3 class="section-subtitle">为什么选择 JSON 作为目标格式？</h3>
-                <p>
-                    在众多数据序列化格式（XML、YAML、Protocol Buffers、MessagePack 等）中，
-                    JSON 凭借以下五个核心优势成为 LLM 结构化输出的<strong>事实标准</strong>：
-                </p>
+                <h3 class="section-subtitle">两种核心数据结构</h3>
                 <div class="info-grid">
                     <div class="info-item">
-                        <div class="info-item-label">&#x1F4E6; 全语言原生支持</div>
-                        <div class="info-item-value">Python 的 <code>json.loads()</code>、JS 的 <code>JSON.parse()</code>、Java 的 Gson……<br>零依赖即可获得字典/对象，无需引入额外序列化库</div>
+                        <div class="info-item-label">{ } JSON 对象（Object）</div>
+                        <div class="info-item-value">
+                            由<strong>键值对</strong>组成，用花括号包裹。<br>
+                            类似 Python 的 <code>dict</code>。键必须是字符串，值可以是任意合法 JSON 类型。
+                        </div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">&#x1F527; 类型安全桥梁</div>
-                        <div class="info-item-value">配合 Pydantic v2 / TypeScript / dataclass，实现从 LLM 字符串到强类型对象的自动转换，IDE 补全和静态检查全程生效</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F4CB; 嵌套表达能力</div>
-                        <div class="info-item-value">天然支持任意深度的 object 和 array 嵌套，完美映射复杂业务实体（公司→部门→员工→技能树）</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x2699;&#xFE0F; 生态工具链成熟</div>
-                        <div class="info-item-value">JSON Schema 标准化验证、OpenAPI/Swagger 文档自动生成、ORM 映射、数据库迁移一气呵成</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F4DD; 双向可读性</div>
-                        <div class="info-item-value">机器友好 + 人类可读——调试时直接看原始输出，协作时团队成员都能理解数据结构</div>
+                        <div class="info-item-label">[ ] JSON 数组（Array）</div>
+                        <div class="info-item-value">
+                            有序的<strong>值列表</strong>，用方括号包裹。<br>
+                            类似 Python 的 <code>list</code>。元素之间用逗号分隔，可以是任意类型。
+                        </div>
                     </div>
                 </div>
+
+                <figure class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/Zebj1wQgCq" alt="JSON 数组与嵌套结构截图">
+                    <figcaption class="figure-caption">图 1-2：JSON 数组结构与嵌套组合 —— 对象和数组可以任意深度嵌套</figcaption>
+                </figure>
+
+                <h3 class="section-subtitle">为什么 LLM 要输出 JSON 格式？</h3>
+                <p>
+                    在提示词工程的实战场景中，让 LLM 以 JSON 格式输出结果具有<strong>决定性意义</strong>：
+                </p>
+                <ul class="content-list">
+                    <li>
+                        <strong>便于程序自动解析</strong>：LLM 返回的是一段文本字符串，
+                        如果是自由文本，程序很难可靠地从中提取信息；而如果是标准 JSON 格式，
+                        用 <code>json.loads()</code> 一行代码就能转为 Python 字典/列表，后续处理非常方便。
+                    </li>
+                    <li>
+                        <strong>降低后处理成本</strong>：不需要写复杂的正则表达式来从文本中"抠"数据，
+                        不需要处理各种不确定的换行、空格、标点变化——JSON 格式的确定性让整个 Pipeline 更健壮。
+                    </li>
+                    <li>
+                        <strong>结构化信息抽取的前提</strong>：下一集（P05）将讲解金融文本的信息抽取实战，
+                        其核心技术就是让 LLM 输出 JSON 格式的结构化数据，然后用程序直接消费这些数据。
+                        <strong>本集就是在为下一集打基础！</strong>
+                    </li>
+                </ul>
 
                 <div class="highlight-box teal">
                     <div class="highlight-box-title">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                        本集核心命题
+                        本集定位说明
                     </div>
                     <div class="highlight-box-content">
-                        <strong>如何以最小的工程成本，让 LLM 稳定地输出符合预定 Schema 的 JSON？</strong><br><br>
-                        答案是 LangChain 的 <strong>Output Parser 体系</strong>——一套将格式约束声明式地注入 Prompt、
-                        并在输出端自动完成解析和校验的工具链。本集将从最基础的 <code>JsonOutputParser</code> 讲到功能完备的 
-                        <code>PydanticOutputParser</code>，覆盖原理、实战、Schema 设计和错误处理的全链路知识。
+                        <strong>⚠️ 这不是讲 PydanticOutputParser 或 LangChain Output Parser 体系的内容。</strong><br><br>
+                        本集的核心内容是：<strong>Python 原生 json 模块的基础操作</strong>——<code>json.dumps()</code>、
+                        <code>json.loads()</code>、<code>ensure_ascii</code> 参数等。这是从"普通 Python 编程"
+                        到 "LLM 输出格式控制"之间的过渡集，目的是确保每位学习者都掌握了 JSON 序列化/反序列化的基本功，
+                        为后面 LLM 返回 JSON 字符串后的解析操作做好准备。
                     </div>
                 </div>
             </div>
         </article>
 
         <!-- ═══════════════════════════════════════════════════ -->
-        <!-- SECTION 02: JsonOutputParser 深度解析                   -->
+        <!-- SECTION 02: Python 中 JSON 的使用 —— 完整代码演示          -->
         <!-- ═══════════════════════════════════════════════════ -->
         <article class="section-card accent-bar-success" id="s2" data-animate>
             <div class="section-header">
                 <span class="section-number">02</span>
-                <h2 class="section-title">JsonOutputParser 原理与 format_instructions 机制</h2>
+                <h2 class="section-title">Python 中 JSON 的使用 —— 06_JSON_Usage_Demo.py</h2>
             </div>
             <div class="section-content">
                 <p>
-                    <code>JsonOutputParser</code> 是 LangChain 中最轻量的 JSON 解析方案，位于 
-                    <code>langchain_core.output_parsers</code> 包中。它的设计哲学是：<strong>最小化用户配置，
-                    最大化开箱即用的体验</strong>。你不需要定义任何 Schema，不需要写 Pydantic 模型——
-                    只需要告诉模型「请给我 JSON」，剩下的交给 Parser 自动处理。
+                    本节通过视频课程中的完整示例代码 <strong>06_JSON_Usage_Demo.py</strong>，
+                    系统演示 Python <code>json</code> 模块的两大核心操作：
+                    <strong>序列化（dumps）</strong>和<strong>反序列化（loads）</strong>。
+                    代码包含三个典型示例，覆盖了字典转 JSON、列表转 JSON、以及 JSON 字符串转回字典的完整流程。
                 </p>
 
-                <h3 class="section-subtitle">核心机制：format_instructions 是什么？</h3>
-                <p>
-                    这是理解整个 Output Parser 体系的<strong>钥匙</strong>。<code>JsonOutputParser</code> 
-                    （以及所有其他 Parser）的核心能力来源是一个方法：<code>get_format_instructions()</code>。
-                    这个方法会生成一段<strong>精心设计的提示文本</strong>，告诉 LLM 应该以什么格式输出。
-                </p>
+                <figure class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/3aDR1wQgCq" alt="任务图 - JSON 使用演示任务要求">
+                    <figcaption class="figure-caption">图 2-1：任务图 —— 课程中给出的 JSON 操作演示任务要求</figcaption>
+                </figure>
 
+                <h3 class="section-subtitle">完整源码：06_JSON_Usage_Demo.py</h3>
                 <div class="code-block">
                     <div class="code-header">
-                        <span class="code-lang">Python / format_instructions 机制演示</span>
+                        <span class="code-lang">Python / 06_JSON_Usage_Demo.py</span>
                         <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.output_parsers <span class="code-keyword">import</span> JsonOutputParser
+                    <div class="code-body"><pre><code><span class="code-keyword">import</span> json
 
-<span class="code-comment"># Step 1: 创建 Parser 实例（无参数，零配置）</span>
-parser = JsonOutputParser()
 
-<span class="code-comment"># Step 2: 获取格式指令 —— 这是核心！</span>
-instructions = parser.<span class="code-function">get_format_instructions</span>()
+<span class="code-comment"># ============================================================</span>
+<span class="code-comment"># 示例1：字典 → JSON 字符串（含中文 + 嵌套结构）</span>
+<span class="code-comment"># 演示 json.dumps() 的基本用法、ensure_ascii 和 indent 参数</span>
+<span class="code-comment"># ============================================================</span>
+person_data = {
+    <span class="code-string">"name"</span>: <span class="code-string">"张三"</span>,
+    <span class="code-string">"age"</span>: <span class="code-variable">25</span>,
+    <span class="code-string">"skills"</span>: [<span class="code-string">"Python"</span>, <span class="code-string">"JavaScript"</span>, <span class="code-string">"SQL"</span>],
+    <span class="code-string">"contact"</span>: {
+        <span class="code-string">"email"</span>: <span class="code-string">"zhangsan@example.com"</span>,
+        <span class="code-string">"phone"</span>: <span class="code-string">"13800138000"</span>
+    }
+}
 
-<span class="code-function">print</span>(instructions)
-<span class="code-comment"># ──────────────────────────────────────────────</span>
-<span class="code-comment"># 输出结果（实际生成的完整文本）：</span>
-<span class="code-comment">#</span>
-<span class="code-comment"># The output should be formatted as a JSON instance that conforms to the</span>
-<span class="code-comment"># JSON schema below.</span>
-<span class="code-comment">#</span>
-<span class="code-comment"># As an example, for the schema {"properties": {"foo": {"title": "Foo",</span>
-<span class="code-comment"># "type": "string"}}, "required": ["foo"], "type": "object"}</span>
-<span class="code-comment"># the object {"foo": "bar"} matches the schema.</span>
-<span class="code-comment">#</span>
-<span class="code-comment"># As an example, for the schema {"properties": {"foo": {"title": "Foo",</span>
-<span class="code-comment"># "type": "string"}, "bar": {"title": "Bar", "type": "number"}},</span>
-<span class="code-comment"># "required": ["foo", "bar"], "type": "object"}</span>
-<span class="code-comment"># the object {"foo": "bar", "bar": 123} matches the schema.</span>
-<span class="code-comment">#</span>
-<span class="code-comment"># As an example, for the schema {"$ref": "#/$defs/MyArray",</span>
-<span class="code-comment"># "$defs": {"MyArray": {"items": {"additionalProperties": {},</span>
-<span class="code-comment"># "properties": {"name": {"title": "Name", "type": "string"}, ...</span>
-<span class="code-comment"># ──────────────────────────────────────────────</span></code></pre>
+<span class="code-comment"># 将 Python 字典转换为 JSON 字符串</span>
+<span class="code-comment"># ensure_ascii=False: 让中文正常显示为汉字，而不是转义成 \uXXXX 形式</span>
+<span class="code-comment"># indent=2: 美化输出，缩进2个空格，使 JSON 更易读</span>
+json_str = json.<span class="code-function">dumps</span>(person_data, ensure_ascii=<span class="code-keyword">False</span>, indent=<span class="code-variable">2</span>)
+<span class="code-function">print</span>(<span class="code-string">"=== 示例1：字典 → JSON ==="</span>)
+<span class="code-function">print</span>(json_str)
+<span class="code-function">print</span>(<span class="code-string">"类型:"</span>, <span class="code-keyword">type</span>(json_str))
+<span class="code-function">print</span>()
+
+<span class="code-comment"># 输出结果：</span>
+<span class="code-comment"># {</span>
+<span class="code-comment">#   "name": "张三",</span>
+<span class="code-comment">#   "age": 25,</span>
+<span class="code-comment">#   "skills": ["Python", "JavaScript", "SQL"],</span>
+<span class="code-comment">#   "contact": {</span>
+<span class="code-comment">#     "email": "zhangsan@example.com",</span>
+<span class="code-comment">#     "phone": "13800138000"</span>
+<span class="code-comment">#   }</span>
+<span class="code-comment"># }</span>
+<span class="code-comment"># 类型: &lt;class 'str'&gt;</span>
+
+
+<span class="code-comment"># ============================================================</span>
+<span class="code-comment"># 示例2：列表 → JSON 字符串（产品价格库存列表）</span>
+<span class="code-comment"># 演示列表类型的序列化</span>
+<span class="code-comment"># ============================================================</span>
+products = [
+    {<span class="code-string">"name"</span>: <span class="code-string">"笔记本电脑"</span>, <span class="code-string">"price"</span>: <span class="code-variable">5999</span>, <span class="code-string">"stock"</span>: <span class="code-variable">120</span>},
+    {<span class="code-string">"name"</span>: <span class="code-string">"无线鼠标"</span>, <span class="code-string">"price"</span>: <span class="code-variable">79</span>, <span class="code-string">"stock"</span>: <span class="code-variable">500</span>},
+    {<span class="code-string">"name"</span>: <span class="code-string">"机械键盘"</span>, <span class="code-string">"price"</span>: <span class="code-variable">299</span>, <span class="code-string">"stock"</span>: <span class="code-variable">80</span>}
+]
+
+products_json = json.<span class="code-function">dumps</span>(products, ensure_ascii=<span class="code-keyword">False</span>, indent=<span class="code-variable">2</span>)
+<span class="code-function">print</span>(<span class="code-string">"=== 示例2：列表 → JSON ==="</span>)
+<span class="code-function">print</span>(products_json)
+<span class="code-function">print</span>()
+
+<span class="code-comment"># 输出结果：</span>
+<span class="code-comment"># [</span>
+<span class="code-comment">#   {"name": "笔记本电脑", "price": 5999, "stock": 120},</span>
+<span class="code-comment">#   {"name": "无线鼠标", "price": 79, "stock": 500},</span>
+<span class="code-comment">#   {"name": "机械键盘", "price": 299, "stock": 80}</span>
+<span class="code-comment"># ]</span>
+
+
+<span class="code-comment"># ============================================================</span>
+<span class="code-comment"># 示例3：JSON 字符串 → Python 字典（反序列化）</span>
+<span class="code-comment"># 演示 json.loads() 将 JSON 字符串还原为 Python 对象</span>
+<span class="code-comment"># 这是 LLM 应用中最关键的操作——LLM 返回的就是 JSON 字符串！</span>
+<span class="code-comment"># ============================================================</span>
+json_string = <span class="code-string">'''{</span>
+<span class="code-string">  "school": "江汉大学",</span>
+<span class="code-string">  "major": "计算机科学与技术",</span>
+<span class="code-string">  "courses": ["数据结构", "算法分析", "机器学习", "深度学习"],</span>
+<span class="code-string">  "grade": 3</span>
+<span class="code-string"}'''</span>
+
+<span class="code-comment"># 将 JSON 字符串解析为 Python 字典</span>
+parsed_data = json.<span class="code-function">loads</span>(json_string)
+<span class="code-function">print</span>(<span class="code-string">"=== 示例3：JSON 字符串 → 字典 ==="</span>)
+<span class="code-function">print</span>(<span class="code-string">"学校:"</span>, parsed_data[<span class="code-string">"school"</span>])
+<span class="code-function">print</span>(<span class="code-string">"专业:"</span>, parsed_data[<span class="code-string">"major"</span>])
+<span class="code-function">print</span>(<span class="code-string">"课程列表:"</span>, parsed_data[<span class="code-string">"courses"</span>])
+<span class="code-function">print</span>(<span class="code-string">"年级:"</span>, parsed_data[<span class="code-string">"grade"</span>])
+<span class="code-function">print</span>(<span class="code-string">"类型:"</span>, <span class="code-keyword">type</span>(parsed_data))
+
+<span class="code-comment"># 输出结果：</span>
+<span class="code-comment"># 学校: 江汉大学</span>
+<span class="code-comment"># 专业: 计算机科学与技术</span>
+<span class="code-comment"># 课程列表: ['数据结构', '算法分析', '机器学习', '深度学习']</span>
+<span class="code-comment"># 年级: 3</span>
+<span class="code-comment"># 类型: &lt;class 'dict'&gt;</span></code></pre>
                 </div>
 
-                <div class="highlight-box success">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
-                        format_instructions 的本质
-                    </div>
-                    <div class="highlight-box-content">
-                        <strong>format_instructions = 一段注入 Prompt 的元指令（Meta-instruction）。</strong><br><br>
-                        它做了三件事：<br>
-                        &#x25B6; <strong>声明期望格式</strong>：「输出应为符合以下 JSON Schema 的 JSON 实例」<br>
-                        &#x25B6; <strong>提供 Few-Shot 示例</strong>：展示 Schema 与合法 JSON 的对应关系<br>
-                        &#x25B6; <strong>嵌入完整 Schema 定义</strong>：包含 properties、required、type 等约束<br><br>
-                        这段文本会被拼接到你的 Prompt 中，相当于给 LLM 加了一道「格式紧箍咒」。
-                    </div>
-                </div>
+                <figure class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/lRMg1wQgCq" alt="AI 回复图 - JSON 操作运行结果">
+                    <figcaption class="figure-caption">图 2-2：AI 回复/运行结果 —— 三个示例的实际终端输出效果</figcaption>
+                </figure>
 
-                <h3 class="section-subtitle">完整用法示例：从创建到调用</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / JsonOutputParser 完整 Pipeline</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.output_parsers <span class="code-keyword">import</span> JsonOutputParser
-<span class="code-keyword">from</span> langchain_openai <span class="code-keyword">import</span> ChatOpenAI
-<span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate
-
-<span class="code-comment"># ══════════════════════════════════</span>
-<span class="code-comment"># Step 1: 创建 Parser</span>
-<span class="code-comment"># ══════════════════════════════════</span>
-parser = JsonOutputParser()
-
-<span class="code-comment"># ══════════════════════════════════</span>
-<span class="code-comment"># Step 2: 构建 Prompt Template</span>
-<span class="code-comment"># 关键：用 {format_instructions} 占位符预留位置</span>
-<span class="code-comment"># ══════════════════════════════════</span>
-prompt = ChatPromptTemplate.<span class="code-function">from_messages</span>([
-    (<span class="code-string">"system"</span>, <span class="code-string">"""你是一位专业的数据分析助手。
-请从用户的描述中提取关键信息，并以 JSON 格式返回。
-
-{format_instructions}
-
-请只输出 JSON，不要添加任何额外的解释文字。"""</span>),
-    (<span class="code-string">"human"</span>, <span class="code-string">"{user_input}"</span>)
-])
-
-<span class="code-comment"># ══════════════════════════════════</span>
-<span class="code-comment"># Step 3: 用 LCEL 构建执行链</span>
-<span class="code-comment"># pipe 操作符 | 将各组件串联为 Pipeline</span>
-<span class="code-comment"># ══════════════════════════════════</span>
-llm = ChatOpenAI(model=<span class="code-string">"gpt-4o-mini"</span>, temperature=<span class="code-variable">0</span>)
-chain = prompt | llm | parser
-
-<span class="code-comment"># ══════════════════════════════════</span>
-<span class="code-comment"># Step 4: 执行并获取结构化结果</span>
-<span class="code-comment"># ══════════════════════════════════</span>
-result = chain.<span class="code-function">invoke</span>({
-    <span class="code-string">"format_instructions"</span>: parser.<span class="code-function">get_format_instructions</span>(),
-    <span class="code-string">"user_input"</span>: (
-        <span class="code-string">"苹果公司2024年第三季度营收达到943亿美元，"</span>
-        <span class="code-string">"同比增长6%，iPhone业务占比约50%，"</span>
-        <span class="code-string">"大中华区收入同比下降13%。"</span>
-    )
-})
-
-<span class="code-comment"># ✅ result 已经是 Python dict！可以直接用</span>
-<span class="code-function">print</span>(<span class="code-string">f"类型: {type(result)}"</span>)       <span class="code-comment"># &lt;class 'dict'&gt;</span>
-<span class="code-function">print</span>(result[<span class="code-string">'company'</span>])          <span class="code-comment"># 苹果公司</span>
-<span class="code-function">print</span>(result.get(<span class="code-string">'revenue'</span>))      <span class="code-comment"># 943亿美元</span>
-<span class="code-comment"># 典型输出：</span>
-<span class="code-comment"># {'company': '苹果公司', 'revenue': '943亿美元',</span>
-<span class="code-comment">#  'growth': '+6%', 'region': '大中华区',</span>
-<span class="code-comment">#  'change': '-13%', 'quarter': '2024Q3'}</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">JsonOutputParser 内部处理流程详解</h3>
-                <p>
-                    当你在 Chain 末尾挂上 <code>JsonOutputParser</code> 时，它在幕后完成了以下步骤：
-                </p>
+                <h3 class="section-subtitle">两个核心方法详解</h3>
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>阶段</th>
-                                <th>操作</th>
-                                <th>说明</th>
+                                <th>方法</th>
+                                <th>方向</th>
+                                <th>作用</th>
+                                <th>关键参数</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>1. Pre-parse</strong></td>
-                                <td>Markdown 剥离</td>
-                                <td>检测并移除 <code>```json ... ```</code> 代码块包裹符（模型常犯的错误之一）</td>
+                                <td><code>json.dumps(obj)</code></td>
+                                <td>Python → JSON 字符串</td>
+                                <td>将 Python 对象（dict/list）序列化为 JSON 格式的字符串</td>
+                                <td><code>ensure_ascii=False</code>（中文不转义）、<code>indent=2</code>（美化缩进）</td>
                             </tr>
                             <tr>
-                                <td><strong>2. Parse</strong></td>
-                                <td><code>json.loads()</code></td>
-                                <td>将清洗后的字符串解析为 Python <code>dict</code> 对象</td>
-                            </tr>
-                            <tr>
-                                <td><strong>3. Post-process</strong></td>
-                                <td>自动修复</td>
-                                <td>尝试修复常见问题：尾随逗号、单引号→双引号、未转义字符等</td>
-                            </tr>
-                            <tr>
-                                <td><strong>4. Return</strong></td>
-                                <td>类型转换</td>
-                                <td>返回 <code>dict</code> 或 <code>list[dict]</code>，可直接用于后续逻辑</td>
+                                <td><code>json.loads(s)</code></td>
+                                <td>JSON 字符串 → Python</td>
+                                <td>将 JSON 格式的字符串反序列化为 Python 对象（dict/list）</td>
+                                <td>无需额外参数，输入必须是合法 JSON 字符串</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1252,911 +1001,261 @@ result = chain.<span class="code-function">invoke</span>({
                 <div class="highlight-box warning">
                     <div class="highlight-box-title">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        JsonOutputParser 的局限性
+                        ensure_ascii 参数的重要性
                     </div>
                     <div class="highlight-box-content">
-                        <strong>它不校验字段的类型和结构。</strong><br><br>
-                        返回的是裸 <code>dict</code>——你期望的 <code>rating</code> 字段可能是数字也可能是字符串；
-                        必填字段可能缺失；嵌套结构的深度不可控。<br><br>
-                        <strong>适用场景</strong>：快速原型、简单键值对提取、对格式精度要求不高的场景。<br>
-                        <strong>生产环境推荐</strong>：升级到 <code>PydanticOutputParser</code>（下一节详讲），获得完整的类型安全保障。
+                        <strong>这是本集最重要的一个参数细节。</strong><br><br>
+                        当 JSON 数据中包含中文字符时：<br>
+                        &#x25B6; <code>ensure_ascii=True</code>（默认）：中文会被转义为 <code>\u5f20\u4e09</code> 这种 Unicode 编码形式，人类不可读<br>
+                        &#x25B6; <code>ensure_ascii=False</code>：中文原样保留为 <code>"张三"</code>，清晰可读<br><br>
+                        <strong>在 LLM 应用场景中务必设置 <code>ensure_ascii=False</code></strong>，
+                        否则模型返回的中文信息会变成一堆乱码般的 Unicode 转义字符。
                     </div>
                 </div>
             </div>
         </article>
 
         <!-- ═══════════════════════════════════════════════════ -->
-        <!-- SECTION 03: PydanticOutputParser 四步流水线              -->
+        <!-- SECTION 03: 运行测试结果                               -->
         <!-- ═══════════════════════════════════════════════════ -->
-        <article class="section-card accent-bar-accent" id="s3" data-animate>
+        <article class="section-card accent-bar-info" id="s3" data-animate>
             <div class="section-header">
                 <span class="section-number">03</span>
-                <h2 class="section-title">PydanticOutputParser 深度讲解：四步流水线</h2>
+                <h2 class="section-title">运行测试结果分析</h2>
             </div>
             <div class="section-content">
                 <p>
-                    如果说 <code>JsonOutputParser</code> 是一把瑞士军刀，那 <code>PydanticOutputParser</code> 
-                    就是一台精密机床——它能做到的不只是「解析 JSON」，而是<strong>定义 → 约束 → 验证 → 类型化</strong> 
-                    的全链路自动化。它是 LangChain 中<strong>生产级结构化输出的标准方案</strong>。
+                    执行上述 <code>06_JSON_Usage_Demo.py</code> 后，终端输出的完整结果如下。
+                    我们逐段分析每个示例的输出含义和关键观察点。
                 </p>
 
-                <h3 class="section-subtitle">Step 1：用 Pydantic BaseModel 定义数据 Schema</h3>
+                <h3 class="section-subtitle">示例 1 输出：字典 → JSON 字符串</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Terminal / 示例1 输出</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment">=== 示例1：字典 → JSON ===</span>
+{
+  <span class="code-string">"name"</span>: <span class="code-string">"张三"</span>,
+  <span class="code-string">"age"</span>: <span class="code-variable">25</span>,
+  <span class="code-string">"skills"</span>: [<span class="code-string">"Python"</span>, <span class="code-string">"JavaScript"</span>, <span class="code-string">"SQL"</span>],
+  <span class="code-string">"contact"</span>: {
+    <span class="code-string">"email"</span>: <span class="code-string">"zhangsan@example.com"</span>,
+    <span class="code-string">"phone"</span>: <span class="code-string">"13800138000"</span>
+  }
+}
+<span class="code-comment">类型: &lt;class 'str'&gt;</span></code></pre>
+                </div>
+                <ul class="content-list">
+                    <li>
+                        <strong>类型确认</strong>：<code>&lt;class 'str'&gt;</code> —— 证明 <code>dumps()</code> 的输出确实是字符串类型，
+                        而不是字典对象。这个字符串可以被写入文件、通过网络发送、或存入数据库。
+                    </li>
+                    <li>
+                        <strong>中文正常显示</strong>：因为设置了 <code>ensure_ascii=False</code>，
+                        <code>"张三"</code> 直接以汉字形式呈现，而不是 <code>\u5f20\u4e09</code>。
+                    </li>
+                    <li>
+                        <strong>美化缩进生效</strong>：<code>indent=2</code> 让嵌套结构层次分明，
+                        <code>contact</code> 子对象正确地缩进显示。
+                    </li>
+                    <li>
+                        <strong>嵌套结构保留</strong>：原始字典中的嵌套 dict（<code>contact</code>）
+                        和 list（<code>skills</code>）在 JSON 中被完整保留，结构一一对应。
+                    </li>
+                </ul>
+
+                <h3 class="section-subtitle">示例 2 输出：列表 → JSON 字符串</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Terminal / 示例2 输出</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment">=== 示例2：列表 → JSON ===</span>
+[
+  {<span class="code-string">"name"</span>: <span class="code-string">"笔记本电脑"</span>, <span class="code-string">"price"</span>: <span class="code-variable">5999</span>, <span class="code-string">"stock"</span>: <span class="code-variable">120</span>},
+  {<span class="code-string">"name"</span>: <span class="code-string">"无线鼠标"</span>, <span class="code-string">"price"</span>: <span class="code-variable">79</span>, <span class="code-string">"stock"</span>: <span class="code-variable">500</span>},
+  {<span class="code-string">"name"</span>: <span class="code-string">"机械键盘"</span>, <span class="code-string">"price"</span>: <span class="code-variable">299</span>, <span class="code-string">"stock"</span>: <span class="code-variable">80</span>}
+]</code></pre>
+                </div>
+                <ul class="content-list">
+                    <li>
+                        <strong>列表序列化为数组</strong>：Python 的 <code>list[dict]</code> 被转换为 JSON 数组 <code>[...]</code>，
+                        每个字典元素变成一个 JSON 对象。
+                    </li>
+                    <li>
+                        <strong>数值类型保持</strong>：<code>price</code> 和 <code>stock</code> 作为数字（而非字符串）被正确序列化。
+                    </li>
+                    <li>
+                        <strong>紧凑格式</strong>：由于每个元素内部较简单，即使有 <code>indent=2</code>，
+                        单行展示也足够清晰。
+                    </li>
+                </ul>
+
+                <h3 class="section-subtitle">示例 3 输出：JSON 字符串 → 字典（⭐ 最重要）</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Terminal / 示例3 输出</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment">=== 示例3：JSON 字符串 → 字典 ===</span>
+学校: 江汉大学
+专业: 计算机科学与技术
+课程列表: [<span class="code-string">'数据结构'</span>, <span class="code-string">'算法分析'</span>, <span class="code-string">'机器学习'</span>, <span class="code-string">'深度学习'</span>]
+年级: <span class="code-variable">3</span>
+类型: &lt;class <span class="code-string">'dict'</span>&gt;</code></pre>
+                </div>
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        为什么示例 3 最重要？
+                    </div>
+                    <div class="highlight-box-content">
+                        <strong>因为这就是 LLM 应用中的核心操作模式！</strong><br><br>
+                        当你调用大语言模型 API 时，模型返回的就是一个<strong>字符串</strong>（比如 OpenAI API 返回的 message.content）。
+                        如果你通过 Prompt 引导模型输出了 JSON 格式，那么拿到的就是一个 JSON 字符串——
+                        和示例 3 中的 <code>json_string</code> 一模一样。<br><br>
+                        此时你需要做的就是调用 <code>json.loads(llm_response)</code>，
+                        把这个字符串变成 Python 字典，然后就可以用 <code>data["school"]</code>、
+                        <code>data["courses"]</code> 这样的方式来访问各个字段了。<br><br>
+                        <strong>这就是本集要传达的最关键知识点：</strong>掌握 <code>json.loads()</code>，
+                        就等于拿到了打开 LLM 结构化输出大门的钥匙。
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- SECTION 04: JSON 与 LLM 的关系                          -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <article class="section-card accent-bar-accent" id="s4" data-animate>
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2 class="section-title">JSON 与 LLM 的关系 —— 为什么要学这节课？</h2>
+            </div>
+            <div class="section-content">
                 <p>
-                    一切从 Pydantic 模型开始。每个字段通过 <code>Field()</code> 描述其含义、类型和约束条件。
-                    这些 description 会自动出现在 format_instructions 中，成为指导 LLM 输出的微型提示词。
+                    学到这里，你可能会问：<strong>"这不就是基础的 Python JSON 操作吗？跟提示词工程有什么关系？"</strong>
+                    这个问题非常好。本节专门解释 JSON 基础在整个提示词工程学习路径中的位置和作用。
                 </p>
 
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / Pydantic Schema 定义（含嵌套模型）</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+                <h3 class="section-subtitle">本集在整体课程中的位置</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">&#x1F3E0; P01~P03 已完成</div>
+                        <div class="info-item-value">提示词基础语法、结构化提示词、角色设定与人格塑造——学会了如何跟 LLM "对话"</div>
                     </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> pydantic <span class="code-keyword">import</span> BaseModel, Field
-<span class="code-keyword">from</span> typing <span class="code-keyword">import</span> Optional, <span class="code-class">List</span>
-<span class="code-keyword">from</span> enum <span class="code-keyword">import</span> Enum
-
-<span class="code-comment"># ─── 枚举类型：限制模型输出范围 ───</span>
-<span class="code-keyword">class</span> <span class="code-class">Sentiment</span>(<span class="code-class">str</span>, Enum):
-    POSITIVE = <span class="code-string">"正面"</span>
-    NEGATIVE = <span class="code-string">"负面"</span>
-    NEUTRAL = <span class="code-string">"中性"</span>
-    MIXED = <span class="code-string">"混合"</span>
-
-<span class="code-keyword">class</span> <span class="code-class">AspectItem</span>(BaseModel):
-    <span class="code-string">"""评价维度条目（嵌套子模型）"""</span>
-    aspect: <span class="code-variable">str</span> = Field(
-        description=<span class="code-string">"评价维度名称（如：口感/服务/环境/性价比/包装）"</span>
-    )
-    sentiment: Sentiment = Field(
-        description=<span class="code-string">"该维度的情感倾向"</span>
-    )
-    detail: Optional[<span class="code-variable">str</span>] = Field(
-        <span class="code-keyword">None</span>,
-        description=<span class="code-string">"该维度的具体描述（如果原文有提及）"</span>
-    )
-    keywords: <span class="code-variable">List</span>[<span class="code-variable">str</span>] = Field(
-        default_factory=<span class="code-keyword">list</span>,
-        description=<span class="code-string">"该维度相关的关键词（2~5个）"</span>,
-        min_length=<span class="code-variable">0</span>,
-        max_length=<span class="code-variable">5</span>
-    )
-
-<span class="code-keyword">class</span> <span class="code-class">ProductReview</span>(BaseModel):
-    <span class="code-string">"""产品评论的结构化提取模型（顶层 Schema）"""</span>
-    
-    product_name: <span class="code-variable">str</span> = Field(
-        description=<span class="code-string">"评论涉及的产品名称"</span>
-    )
-    
-    overall_sentiment: Sentiment = Field(
-        description=<span class="code-string">"整体情感倾向"</span>
-    )
-    
-    rating_score: Optional[<span class="code-variable">float</span>] = Field(
-        <span class="code-keyword">None</span>,
-        ge=<span class="code-variable">0</span>, le=<span class="code-variable">5</span>,
-        description=<span class="code-string">"评分分数（0-5分制，原文未提及时为 null）"</span>
-    )
-    
-    aspects: <span class="code-variable">List</span>[<span class="code-class">AspectItem</span>] = Field(
-        description=<span class="code-string">"按维度拆解的评价列表（至少1个，至多8个）"</span>,
-        min_length=<span class="code-variable">1</span>,
-        max_length=<span class="code-variable">8</span>
-    )
-    
-    summary: <span class="code-variable">str</span> = Field(
-        description=<span class="code-string">"一句话总结这条评论的核心观点（不超过100字）"</span>,
-        max_length=<span class="code-variable">100</span>
-    )
-    
-    purchase_intent: Optional[<span class="code-variable">bool</span>] = Field(
-        <span class="code-keyword">None</span>,
-        description=<span class="code-string">"是否表达了购买意愿（true/false/null 表示未明确表达）"</span>
-    )
-
-<span class="code-comment"># 你可以随时查看 Pydantic 自动生成的 JSON Schema：</span>
-<span class="code-function">print</span>(ProductReview.<span class="code-function">model_json_schema</span>())</code></pre>
+                    <div class="info-item">
+                        <div class="info-item-label">&#x1F4D6; P04 本集 ★ 当前</div>
+                        <div class="info-item-value"><strong>Python JSON 基础</strong>——学会如何处理 JSON 数据的序列化和反序列化</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#x1F3AF; P05 下一集</div>
+                        <div class="info-item-value"><strong>金融文本信息抽取实战</strong>——LLM 输出 JSON → json.loads() 解析 → 程序消费</div>
+                    </div>
                 </div>
 
-                <h3 class="section-subtitle">Step 2：创建 Parser 并获取格式指令</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / Parser 创建与格式指令获取</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.output_parsers <span class="code-keyword">import</span> PydanticOutputParser
-
-<span class="code-comment"># 创建 Parser，绑定到上面定义的 Pydantic 模型</span>
-parser = PydanticOutputParser(pydantic_object=ProductReview)
-
-<span class="code-comment"># 获取格式指令 —— 这会生成非常详细的 JSON Schema 描述</span>
-<span class="code-comment"># 包含所有字段名、类型、约束条件、枚举值、嵌套结构等</span>
-format_instructions = parser.<span class="code-function">get_format_instructions</span>()
-
-<span class="code-comment"># 让我们看看生成了什么（截取关键部分）：</span>
-<span class="code-comment">#</span>
-<span class="code-comment"># The output should be formatted as a JSON instance that conforms</span>
-<span class="code-comment"># to the JSON schema below.</span>
-<span class="code-comment">#</span>
-<span class="code-comment"># As an example, for the schema {</span>
-<span class="code-comment">#   "properties": {</span>
-<span class="code-comment">#     "product_name": {"description": "评论涉及的产品名称",</span>
-<span class="code-comment">#                     "title": "Product Name", "type": "string"},</span>
-<span class="code-comment">#     "overall_sentiment": {</span>
-<span class="code-comment">#       "allOf": [{"enum": ["正面","负面","中性","混合"],</span>
-<span class="code-comment">#                  "type": "string"}],</span>
-<span class="code-comment">#       "description": "整体情感倾向",</span>
-<span class="code-comment">#       "title": "Overall Sentiment"},</span>
-<span class="code-comment">#     "aspects": {</span>
-<span class="code-comment">#       "items": {...嵌套的 AspectItem schema...},</span>
-<span class="code-comment">#       "description": "按维度拆解的评价列表..."</span>
-<span class="code-comment">#     }, ...</span>
-<span class="code-comment">#   }</span>
-<span class="code-comment"># }</span></code></pre>
-                </div>
-
-                <figure class="figure-container">
-                    <div class="schema-tree">
-                        <div class="tree-root">
-                            <div class="tree-node">
-                                <span class="tree-label">ProductReview <span class="tree-type-tag" style="background:rgba(255,255,255,0.25);color:white;">BaseModel</span></span>
-                                <div class="tree-lvl1">
-                                    <div class="tree-node">
-                                        <span class="tree-label tree-type-str">product_name <span class="tree-type-tag">str</span></span>
-                                    </div>
-                                    <div class="tree-node">
-                                        <span class="tree-label tree-type-enum">overall_sentiment <span class="tree-type-tag">Sentiment</span></span>
-                                    </div>
-                                    <div class="tree-node">
-                                        <span class="tree-label tree-type-optional">rating_score <span class="tree-type-tag">float?</span></span>
-                                    </div>
-                                    <div class="tree-node">
-                                        <span class="tree-label tree-type-list">aspects <span class="tree-type-tag">List[...]</span></span>
-                                        <div class="tree-lvl2">
-                                            <div class="tree-node">
-                                                <span class="tree-label tree-type-str">aspect <span class="tree-type-tag">str</span></span>
-                                            </div>
-                                            <div class="tree-node">
-                                                <span class="tree-label tree-type-enum">sentiment <span class="tree-type-tag">Sentiment</span></span>
-                                            </div>
-                                            <div class="tree-node">
-                                                <span class="tree-label tree-type-optional">detail <span class="tree-type-tag">str?</span></span>
-                                            </div>
-                                            <div class="tree-node">
-                                                <span class="tree-label tree-type-list">keywords <span class="tree-type-tag">List[str]</span></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="tree-node">
-                                        <span class="tree-label tree-type-str">summary <span class="tree-type-tag">str</span></span>
-                                    </div>
-                                    <div class="tree-node">
-                                        <span class="tree-label tree-type-bool">purchase_intent <span class="tree-type-tag">bool?</span></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <figcaption class="figure-caption">图 3-1：Pydantic Schema 层级结构示意 —— ProductReview 顶层模型包含嵌套的 AspectItem 子模型数组</figcaption>
-                </figure>
-
-                <h3 class="section-subtitle">Step 3：将格式指令注入 Prompt 模板</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / Prompt 模板构建与指令注入</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_core.prompts <span class="code-keyword">import</span> ChatPromptTemplate, HumanMessagePromptTemplate
-<span class="code-keyword">from</span> langchain_core.messages <span class="code-keyword">import</span> SystemMessage
-
-<span class="code-comment"># 使用 ChatPromptTemplate 构建结构化 Prompt</span>
-<span class="code-comment"># 关键点：{format_instructions} 占位符会在运行时被替换</span>
-prompt_template = ChatPromptTemplate.<span class="code-function">from_messages</span>([
-    SystemMessage(content=<span class="code-string">"""你是一位专业的电商评论分析师。
-你的任务是从用户的产品评论中提取结构化信息。
-
-## 输出要求
-{format_instructions}
-
-## 分析规则
-1. 仔细阅读全文，不要遗漏任何评价维度
-2. 情感判断要基于上下文，不能只看单个形容词
-3. 如果原文没有明确提到评分，rating_score 设为 null
-4. summary 要简洁有力，抓住核心观点
-5. 只输出 JSON，不要有任何其他文字"""</span>),
-    HumanMessagePromptTemplate.from_template(<span class="code-string">"{review_text}"</span>)
-])
-
-<span class="code-comment"># 填充模板变量</span>
-prompt_value = prompt_template.<span class="code-function">format_prompt</span>(
-    format_instructions=format_instructions,
-    review_text=<span class="code-string">"""买了这款蓝牙耳机用了两周，说说真实感受：
-音质方面比预期好不少，低音有质感，高音也不刺耳。
-续航大概能撑6小时左右，比我之前那个强。
-但是佩戴舒适度一般，戴久了耳朵有点疼。
-客服响应很快，问的问题都耐心解答了。
-总体来说这个价位算不错，推荐给学生党。"""</span>
-)</code></pre>
-                </div>
-
-                <h3 class="section-subtitle">Step 4：构建 LCEL Pipeline 并执行</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / 完整 Pipeline 执行与结果消费</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain_openai <span class="code-keyword">import</span> ChatOpenAI
-<span class="code-keyword">import</span> json
-
-<span class="code-comment"># 初始化 LLM（temperature=0 保证输出稳定性）</span>
-llm = ChatOpenAI(model=<span class="code-string">"gpt-4o"</span>, temperature=<span class="code-variable">0</span>)
-
-<span class="code-comment"># ═══ LCEL Pipeline：Prompt → LLM → Parser ═══</span>
-<span class="code-comment"># | 操作符将三个组件串联成一个 Runnable 链</span>
-chain = prompt_template | llm | parser
-
-<span class="code-comment"># 执行调用</span>
-result: ProductReview = chain.<span class="code-function">invoke</span>({
-    <span class="code-string">"format_instructions"</span>: format_instructions,
-    <span class="code-string">"review_text"</span>: <span class="code-string">"（同上文的耳机评论）"</span>
-})
-
-<span class="code-comment"># ════════════════════════════════════════</span>
-<span class="code-comment">// ✅ result 是强类型的 ProductReview 对象！</span>
-<span class="code-comment">// IDE 能提供完整的类型提示和自动补全</span>
-<span class="code-comment"># ════════════════════════════════════════</span>
-
-<span class="code-function">print</span>(<span class="code-string">f"产品名: {result.product_name}"</span>)
-<span class="code-comment"># 产品名: 蓝牙耳机</span>
-
-<span class="code-function">print</span>(<span class="code-string">f"情感: {result.overall_sentiment.value}"</span>)
-<span class="code-comment"># 情感: 正面</span>
-
-<span class="code-function">print</span>(<span class="code-string">f"评分: {result.rating_score}"</span>)
-<span class="code-comment"># 评分: 4.0</span>
-
-<span class="code-comment">// 遍历嵌套的 aspects 数组</span>
-<span class="code-keyword">for</span> aspect <span class="code-keyword">in</span> result.aspects:
-    <span class="code-function">print</span>(<span class="code-string">f"  [{aspect.aspect}] {aspect.sentiment.value}: {aspect.detail}"</span>)
-    <span class="code-comment"># [音质] 正面: 比预期好不少，低音有质感</span>
-    <span class="code-comment"># [续航] 正面: 能撑6小时左右</span>
-    <span class="code-comment"># [佩戴舒适度] 负面: 戴久了耳朵有点疼</span>
-    <span class="code-comment"># [客服] 正面: 响应很快，耐心解答</span>
-    <span class="code-comment"># [性价比] 正面: 这个价位算不错</span>
-
-<span class="code-function">print</span>(<span class="code-string">f"总结: {result.summary}"</span>)
-<span class="code-comment"># 总结: 音质和续航表现优秀，佩戴舒适度有待改进，</span>
-    <span class="code-comment"># 性价比高适合学生群体</span>
-
-<span class="code-comment">// 导出为标准 JSON 字符串（可直接存入数据库或发送 API）</span>
-json_output = result.<span class="code-function">model_dump_json</span>()
-<span class="code-function">print</span>(json_output)
-<span class="code-comment"># {"product_name":"蓝牙耳机","overall_sentiment":"正面",...}</span></code></pre>
-                </div>
+                <h3 class="section-subtitle">JSON 操作在 LLM Pipeline 中的具体角色</h3>
+                <p>
+                    下图展示了从用户输入到最终结构化数据的完整链路，以及本集所学的 JSON 操作在其中扮演的角色：
+                </p>
 
                 <div class="highlight-box teal">
                     <div class="highlight-box-title">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                        PydanticOutputParser 的三位一体能力
+                        LLM × JSON 数据流
                     </div>
-                    <div class="highlight-box-content">
-                        <strong>格式指令生成 + 自动解析 + 运行时校验</strong>，三者无缝衔接。<br><br>
-                        &#x25B6; <strong>格式指令</strong>：从 Pydantic Model 自动生成详细的 JSON Schema 描述，注入 Prompt<br>
-                        &#x25B6; <strong>自动解析</strong>：接收 LLM 文本输出，剥离 markdown 包裹，解析为 Python 对象<br>
-                        &#x25B6; <strong>运行时校验</strong>：类型检查、范围验证、必填字段检查——不符合则抛出 <code>ValidationError</code><br><br>
-                        你只需定义一次 Model，整条管线全自动运行。这就是「声明式编程」在 LLM 应用中的完美体现。
+                    <div class="highlight-box-content" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;line-height:1.8;">
+                        用户输入文本<br>
+                        &nbsp;&nbsp;&nbsp;↓<br>
+                        <strong>Prompt 引导 LLM 输出 JSON 格式</strong>（P03 学到的角色设定 + P02 学到的结构化提示词）<br>
+                        &nbsp;&nbsp;&nbsp;↓<br>
+                        LLM 返回：<code style="background:rgba(80,180,160,0.10);padding:1px 5px;border-radius:3px;">'{"company":"xxx","amount":123,...}'</code> （这是一个<strong>字符串</strong>！）<br>
+                        &nbsp;&nbsp;&nbsp;↓<br>
+                        <strong style="color:var(--teal);">★ json.loads() 解析 ★</strong> （<strong>本集学的核心技能</strong>）<br>
+                        &nbsp;&nbsp;&nbsp;↓<br>
+                        得到 Python <code style="background:rgba(80,180,160,0.10);padding:1px 5px;border-radius:3px;">dict</code> 对象 → 程序可以直接使用各字段数据
                     </div>
                 </div>
-            </div>
-        </article>
 
-        <!-- ═══════════════════════════════════════════════════ -->
-        <!-- SECTION 04: Schema 设计最佳实践                       -->
-        <!-- ═══════════════════════════════════════════════════ -->
-        <article class="section-card accent-bar-info" id="s4" data-animate>
-            <div class="section-header">
-                <span class="section-number">04</span>
-                <h2 class="section-title">Schema 设计最佳实践与反模式</h2>
-            </div>
-            <div class="section-content">
-                <p>
-                    Schema 设计的质量<strong>直接决定</strong>了 LLM 输出的准确率和解析成功率。
-                    一个设计良好的 Schema 可以让模型轻松遵循；而一个糟糕的 Schema 则会导致频繁的格式错误和字段缺失。
-                    本节汇总了来自 LangChain 官方文档、社区最佳实践和生产环境的经验法则。
-                </p>
-
-                <h3 class="section-subtitle">黄金法则一：Description 即提示词</h3>
-                <p>
-                    每个 <code>Field(description=...)</code> 中的描述文本不仅是文档——它们会被原封不动地嵌入 
-                    <code>format_instructions</code>，最终出现在发给 LLM 的 Prompt 中。这意味着：
-                </p>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / Description 写法对比</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> pydantic <span class="code-keyword">import</span> BaseModel, Field
-
-<span class="code-comment"># ❌ 反模式：描述太模糊</span>
-<span class="code-keyword">class</span> <span class="code-class">BadSchema</span>(BaseModel):
-    name: <span class="code-variable">str</span> = Field(description=<span class="code-string">"名字"</span>)
-    value: <span class="code-variable">float</span> = Field(description=<span class="code-string">"数值"</span>)
-
-<span class="code-comment"># ✅ 最佳实践：描述具体、带示例、限定范围</span>
-<span class="code-keyword">class</span> <span class="code-class">GoodSchema</span>(BaseModel):
-    company_full_name: <span class="code-variable">str</span> = Field(
-        description=<span class="code-string">"公司的法定全称（如'贵州茅台酒股份有限公司'，</span>
-                      <span class="code-string">不是简称也不是股票名）"</span>
-    )
-    revenue_amount: Optional[<span class="code-variable">float</span>] = Field(
-        <span class="code-keyword">None</span>,
-        description=<span class="code-string">"营业收入金额（单位：亿元人民币，仅填数字，</span>
-                      <span class="code-string">如 943.0 表示 943 亿元）"</span>
-    )
-    reporting_period: <span class="code-variable">str</span> = Field(
-        description=<span class="code-string">"财报周期，格式为 YYYYQn（如 2024Q3）或 YYYY年度（如 2024年度）"</span>
-    )</code></pre>
-                </div>
-
-                <h3 class="section-subtitle">黄金法则二：Optional 的艺术</h3>
+                <h3 class="section-subtitle">四个关键连接点</h3>
                 <ul class="content-list">
                     <li>
-                        <strong>必填字段（无 Optional）</strong>：仅用于任务<strong>绝对必需</strong>的核心信息。
-                        如提取任务中的实体名称、分类任务的类别标签。必填字段过多会导致模型被迫编造值。
+                        <strong>json.loads() 解析 LLM 返回值</strong>：LLM API 返回的 content 是字符串类型，
+                        即使内容看起来像 JSON，它本质上仍然是 str。必须用 <code>json.loads()</code> 转换为 dict 才能编程操作。
                     </li>
                     <li>
-                        <strong>可选字段（Optional[T] = None）</strong>：用于<strong>可能不存在</strong>的补充信息。
-                        如股票代码、详细金额、时间戳等。当原文没提及时，模型应输出 <code>null</code> 而非编造。
+                        <strong>ensure_ascii=False 保证中文不乱码</strong>：当 LLM 返回包含中文的 JSON 时，
+                        如果在某个环节用了默认的 <code>ensure_ascii=True</code>，所有中文都会变成 Unicode 转义序列。
+                        这是在中文 LLM 应用开发中最常见的"坑"之一。
                     </li>
                     <li>
-                        <strong>经验公式</strong>：在一个 Schema 中，必填字段数量建议控制在 <strong>3~5 个</strong>以内，
-                        其余全部标记为 Optional。这样既保证核心信息的完整性，又给模型足够的灵活性。
+                        <strong>json.dumps() 用于调试和日志</strong>：当你需要把 LLM 的输出记录到日志文件、
+                        或者在调试时打印中间结果时，<code>json.dumps(data, ensure_ascii=False, indent=2)</code>
+                        是最佳选择——格式清晰、中文可读。
+                    </li>
+                    <li>
+                        <strong>为 Few-Shot 信息抽取打基础</strong>：下一集 P05 将进入实战阶段，
+                        通过 Few-Shot 示例引导 LLM 从金融文本中抽取实体信息并以 JSON 格式返回。
+                        届时本集学的每一个知识点都会派上用场。
                     </li>
                 </ul>
-
-                <h3 class="section-subtitle">黄金法则三：枚举约束优于自由文本</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / Enum 约束 vs 自由文本对比</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> enum <span class="code-keyword">import</span> Enum
-
-<span class="code-comment"># ✅ 用 Enum 严格约束输出范围</span>
-<span class="code-keyword">class</span> <span class="code-class">DocumentType</span>(<span class="code-class">str</span>, Enum):
-    ANNUAL_REPORT = <span class="code-string">"年报"</span>
-    QUARTERLY_REPORT = <span class="code-string">"季报"</span>
-    NEWS_ARTICLE = <span class="code-string">"新闻"</span>
-    RESEARCH_REPORT = <span class="code-string">"研报"</span>
-    COMPANY_ANNOUNCEMENT = <span class="code-string">"公告"</span>
-    OTHER = <span class="code-string">"其他"</span>
-
-<span class="code-keyword">class</span> <span class="code-class">RiskLevel</span>(<span class="code-class">str</span>, Enum):
-    LOW = <span class="code-string">"低风险"</span>
-    MEDIUM = <span class="code-string">"中风险"</span>
-    HIGH = <span class="code-string">"高风险"</span>
-    CRITICAL = <span class="code-string">"严重风险"</span>
-
-<span class="code-keyword">class</span> <span class="code-class">ExtractionResult</span>(BaseModel):
-    doc_type: DocumentType = Field(description=<span class="code-string">"文档类型分类"</span>)
-    risk_level: RiskLevel = Field(description=<span class="code-string">"内容风险评估等级"</span>)
-    
-    <span class="code-comment"># Enum 生成的 format_instructions 会明确列出所有可选值：</span>
-    <span class="code-comment"># "enum": ["年报", "季报", "新闻", "研报", "公告", "其他"]</span>
-    <span class="code-comment"># 模型只能从中选择，彻底杜绝了 "新闻报道稿"、"财务报表" 等变体</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">黄金法则四：嵌套层次控制在 3 层以内</h3>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>嵌套层级</th>
-                                <th>解析成功率</th>
-                                <th>推荐场景</th>
-                                <th>注意事项</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>1 层（扁平）</strong></td>
-                                <td>&#x2605;&#x2605;&#x2605;&#x2605;&#x2605; ~98%</td>
-                                <td>简单键值对提取</td>
-                                <td>最稳定的首选方案</td>
-                            </tr>
-                            <tr>
-                                <td><strong>2 层（一层嵌套）</strong></td>
-                                <td>&#x2605;&#x2605;&#x2605;&#x2605;&#x2606; ~92%</td>
-                                <td>主实体 + 子项列表</td>
-                                <td>大多数场景的最佳平衡点</td>
-                            </tr>
-                            <tr>
-                                <td><strong>3 层（两层嵌套）</strong></td>
-                                <td>&#x2605;&#x2605;&#x2605;&#x2606;&#x2606; ~82%</td>
-                                <td>复杂业务实体</td>
-                                <td>可接受，但需充分测试</td>
-                            </tr>
-                            <tr>
-                                <td><strong>4+ 层（深层嵌套）</strong></td>
-                                <td>&#x2605;&#x2605;&#x2606;&#x2606;&#x2606; &lt;70%</td>
-                                <td>不推荐</td>
-                                <td>考虑拆分为多次提取</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3 class="section-subtitle">常见反模式（Anti-patterns）速查</h3>
-                <div class="info-grid">
-                    <div class="info-item" style="border-left: 3px solid var(--danger);">
-                        <div class="info-item-label" style="color: var(--danger);">&#x274C; 反模式 1</div>
-                        <div class="info-item-value">Schema 中全是必填字段，模型被迫为不存在的信息编造值</div>
-                    </div>
-                    <div class="info-item" style="border-left: 3px solid var(--danger);">
-                        <div class="info-item-label" style="color: var(--danger);">&#x274C; 反模式 2</div>
-                        <div class="info-item-value">Field description 只写了字段名的中文翻译，没有说明取值规则和格式</div>
-                    </div>
-                    <div class="info-item" style="border-left: 3px solid var(--danger);">
-                        <div class="info-item-label" style="color: var(--danger);">&#x274C; 反模式 3</div>
-                        <div class="info-item-value">嵌套超过 4 层，单次提取试图获取过于复杂的结构</div>
-                    </div>
-                    <div class="info-item" style="border-left: 3px solid var(--danger);">
-                        <div class="info-item-label" style="color: var(--danger);">&#x274C; 反模式 4</div>
-                        <div class="info-item-value">用 str 类型接收本应是数值的字段，丢失类型安全</div>
-                    </div>
-                </div>
             </div>
         </article>
 
         <!-- ═══════════════════════════════════════════════════ -->
-        <!-- SECTION 05: 错误处理与容错策略                       -->
+        <!-- SECTION 05: 总结 + 下集预告                             -->
         <!-- ═══════════════════════════════════════════════════ -->
-        <article class="section-card accent-bar-danger" id="s5" data-animate>
+        <article class="section-card accent-bar-teal" id="s5" data-animate>
             <div class="section-header">
                 <span class="section-number">05</span>
-                <h2 class="section-title">输出解析失败的处理策略</h2>
-            </div>
-            <div class="section-content">
-                <p>
-                    即使有了完美的 Schema 和精心设计的 Prompt，LLM 仍然可能输出不符合要求的内容——
-                    这是大语言模型的固有特性，无法完全消除。生产级代码必须具备<strong>多层容错防线</strong>，
-                    在解析失败时优雅降级而非直接崩溃。
-                </p>
-
-                <h3 class="section-subtitle">策略总览：四层防御体系</h3>
-                <figure class="figure-container">
-                    <div class="error-flow">
-                        <div class="ef-layer">
-                            <div class="ef-layer-num">L1</div>
-                            <div class="ef-layer-name">Direct Parse</div>
-                            <div class="ef-result-box ef-success">✓ json.loads()</div>
-                        </div>
-                        <div class="ef-arrow-down">↓</div>
-                        <div class="ef-layer">
-                            <div class="ef-layer-num">L2</div>
-                            <div class="ef-layer-name">MD Strip</div>
-                            <div class="ef-result-box ef-success">✓ 剥离 ```</div>
-                        </div>
-                        <div class="ef-arrow-right">✗→</div>
-                        <div class="ef-layer">
-                            <div class="ef-layer-num">L3</div>
-                            <div class="ef-layer-name">Regex Extract</div>
-                            <div class="ef-result-box ef-success">✓ 提取 JSON</div>
-                        </div>
-                        <div class="ef-arrow-right">✗→</div>
-                        <div class="ef-layer">
-                            <div class="ef-layer-num">L4</div>
-                            <div class="ef-layer-name">Fallback</div>
-                            <div class="ef-result-box ef-fallback">⚠ 降级/重试</div>
-                        </div>
-                    </div>
-                    <figcaption class="figure-caption">图 5-1：JSON 解析四层容错策略 —— 逐层降级，确保系统不会因单次解析失败而崩溃</figcaption>
-                </figure>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / 生产级鲁棒解析器（完整实现）</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">import</span> json
-<span class="code-keyword">import</span> re
-<span class="code-keyword">import</span> logging
-<span class="code-keyword">from</span> pydantic <span class="code-keyword">import</span> ValidationError
-<span class="code-keyword">from</span> typing <span class="code-keyword">import</span> TypeVar, Generic
-<span class="code-keyword">from</span> langchain_core.output_parsers <span class="code-keyword">import</span> PydanticOutputParser
-
-logger = logging.<span class="code-function">getLogger</span>(<span class="code-string">__name__</span>)
-T = TypeVar(<span class="code-string">'T'</span>, bound=BaseModel)
-
-<span class="code-keyword">class</span> <span class="code-class">RobustParser</span>(Generic[T]):
-    <span class="code-string">"""
-    鲁棒的 Pydantic 输出解析器
-    
-    实现四层容错策略：
-    Layer 1: 直接 json.loads() + model_validate()
-    Layer 2: 剥离 Markdown 代码块包裹符后重试
-    Layer 3: 正则表达式提取 JSON 片段后重试  
-    Layer 4: 全部失败时触发 Fallback 或抛出明确异常
-    """</span>
-    
-    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(<span class="code-param">self</span>, <span class="param">parser</span>: PydanticOutputParser):
-        self.parser = parser
-        self.model_cls = parser.pydantic_object
-    
-    <span class="code-keyword">def</span> <span class="code-function">parse</span>(<span class="code-param">self</span>, <span class="param">raw_output</span>: <span class="code-variable">str</span>, <span class="param">strict</span>: <span class="code-variable">bool</span> = <span class="code-keyword">False</span>) -> T:
-        <span class="code-string">"""
-        解析 LLM 原始输出为目标 Pydantic 模型
-        
-        Args:
-            raw_output: LLM 返回的原始文本
-            strict: True 时跳过所有容错策略，直接抛出异常
-            
-        Returns:
-            T: 目标 Pydantic 模型的实例
-            
-        Raises:
-            ValueError: 所有策略均失败时抛出
-        """</span>
-        <span class="code-keyword">if</span> strict:
-            <span class="code-keyword">return</span> self._layer1_direct_parse(raw_output)
-        
-        <span class="code-comment"># 尝试四层策略</span>
-        strategies = [
-            (self._layer1_direct_parse, <span class="code-string">"直接解析"</span>),
-            (self._layer2_strip_markdown, <span class="code-string">"MD 包裹剥离"</span>),
-            (self._layer3_regex_extract, <span class="code-string">"正则 JSON 提取"</span>),
-        ]
-        
-        <span class="code-keyword">for</span> strategy_fn, name <span class="code-keyword">in</span> strategies:
-            <span class="code-keyword">try</span>:
-                result = strategy_fn(raw_output)
-                logger.<span class="code-function">info</span>(<span class="code-string">f"JSON 解析成功 (策略: {name})"</span>)
-                <span class="code-keyword">return</span> result
-            <span class="code-keyword">except</span> (json.JSONDecodeError, ValidationError, ValueError) <span class="code-keyword">as</span> e:
-                logger.<span class="code-function">debug</span>(<span class="code-string">f"策略 [{name}] 失败: {e}"</span>)
-                <span class="code-keyword">continue</span>
-        
-        <span class="code-comment"># Layer 4: 全部失败</span>
-        error_msg = (
-            <span class="code-string">f"所有解析策略均失败。\n"</span>
-            <span class="code-string">f"原始输出前 300 字符: {raw_output[:300]}"</span>
-        )
-        logger.<span class="code-function">error</span>(error_msg)
-        <span class="code-keyword">raise</span> <span class="code-function">ValueError</span>(error_msg)
-    
-    <span class="code-keyword">def</span> _layer1_direct_parse(<span class="code-param">self</span>, <span class="param">raw</span>: <span class="code-variable">str</span>) -> T:
-        <span class="code-string">"""Layer 1: 直接解析（理想路径）"""</span>
-        data = json.<span class="code-function">loads</span>(raw.strip())
-        <span class="code-keyword">return</span> self.model_cls.<span class="code-function">model_validate</span>(data)
-    
-    <span class="code-keyword">def</span> _layer2_strip_markdown(<span class="code-param">self</span>, <span class="param">raw</span>: <span class="code-variable">str</span>) -> T:
-        <span class="code-string">"""
-        Layer 2: 剥离 Markdown 代码块
-        
-        LLM 经常在 JSON 外面套上 ```json ... ``` 包裹符，
-        这里统一移除这些噪音后再重试解析。
-        """</span>
-        cleaned = raw.strip()
-        
-        <span class="code-comment"># 移除 ```json 开头和 ``` 结尾</span>
-        patterns = [
-            r'<span class="code-string">^```(?:json)?\s*</span>',     <span class="code-comment"># 开头的 ```json 或 ```</span>
-            r'<span class="code-string">\s*```\s*$</span>',           <span class="code-comment"># 结尾的 ```</span>
-            r'<span class="code-string">^.*?```\s*</span>',           <span class="code-comment"># 开头到第一个 ``` 的所有内容</span>
-            r'<span class="code-string">^.*?(?=\{)</span>',           <span class="code-comment"># 第一个 { 之前的内容</span>
-        ]
-        
-        <span class="code-keyword">for</span> pattern <span class="code-keyword">in</span> patterns:
-            cleaned = re.<span class="code-function">sub</span>(pattern, <span class="code-string">''</span>, cleaned, flags=re.DOTALL)
-        
-        <span class="code-keyword">if</span> <span class="code-keyword">not</span> cleaned.strip():
-            <span class="code-keyword">raise</span> <span class="code-function">ValueError</span>(<span class="code-string">"清洗后内容为空"</span>)
-        
-        data = json.<span class="code-function">loads</span>(cleaned)
-        <span class="code-keyword">return</span> self.model_cls.<span class="code-function">model_validate</span>(data)
-    
-    <span class="code-keyword">def</span> _layer3_regex_extract(<span class="code-param">self</span>, <span class="param">raw</span>: <span class="code-variable">str</span>) -> T:
-        <span class="code-string">"""
-        Layer 3: 正则提取 JSON 片段
-        
-        当模型在 JSON 前后附带了额外解释文字时，
-        用正则从中提取出合法的 JSON 部分。
-        """</span>
-        <span class="code-comment"># 匹配 JSON 对象 {...}</span>
-        obj_match = re.<span class="code-function">search</span>(r'\{[\s\S]*\}', raw)
-        <span class="code-keyword">if</span> obj_match:
-            <span class="code-keyword">try</span>:
-                data = json.<span class="code-function">loads</span>(obj_match.<span class="code-function">group</span>())
-                <span class="code-keyword">return</span> self.model_cls.<span class="code-function">model_validate</span>(data)
-            <span class="code-keyword">except</span> (json.JSONDecodeError, ValidationError):
-                <span class="code-keyword">pass</span>
-        
-        <span class="code-comment"># 匹配 JSON数组 [...]</span>
-        arr_match = re.<span class="code-function">search</span>(r'\[[\s\S]*\]', raw)
-        <span class="code-keyword">if</span> arr_match:
-            <span class="code-keyword">try</span>:
-                data = json.<span class="code-function">loads</span>(arr_match.<span class="code-function">group</span>())
-                <span class="code-keyword">return</span> self.model_cls.<span class="code-function">model_validate</span>(data)
-            <span class="code-keyword">except</span> (json.JSONDecodeError, ValidationError):
-                <span class="code-keyword">pass</span>
-        
-        <span class="code-keyword">raise</span> <span class="code-function">ValueError</span>(<span class="code-string">"正则未找到有效 JSON"</span>)
-
-
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-<span class="code-comment"># 使用方式：替换原来的 parser 为 RobustParser</span>
-<span class="code-comment"># ══════════════════════════════════════════════</span>
-<span class="code-keyword">def</span> <span class="code-function">safe_parse_chain</span>(<span class="code-param">llm_output</span>: <span class="code-variable">str</span>, <span class="param">parser</span>: PydanticOutputParser):
-    <span class="code-string">"""安全的解析包装函数，带重试和日志"""</span>
-    robust = RobustParser(parser)
-    <span class="code-keyword">try</span>:
-        <span class="code-keyword">return</span> robust.<span class="code-function">parse</span>(llm_output)
-    <span class="code-keyword">except</span> ValueError <span class="code-keyword">as</span> e:
-        <span class="code-comment"># 生产环境中这里可以触发重试逻辑或 fallback 流程</span>
-        logger.<span class="code-function">warning</span>(<span class="code-string">f"解析失败，启用 fallback: {e}"</span>
-        <span class="code-keyword">return</span> <span class="code-function">fallback_handler</span>(llm_output)
-
-<span class="code-keyword">def</span> <span class="code-function">fallback_handler</span>(<span class="param">raw</span>: <span class="code-variable">str</span>):
-    <span class="code-string">"""Fallback：返回一个部分填充的结果或默认值"""</span>
-    <span class="code-comment"># 实际项目中可以根据需求自定义 fallback 行为</span>
-    <span class="code-keyword">return</span> {<span class="code-string">"_raw"</span>: raw, <span class="code-string">"_parse_failed"</span>: <span class="code-keyword">True</span>}</code></pre>
-                </div>
-
-                <h3 class="section-subtitle">Retry with Fix：LangChain 内置的重试机制</h3>
-                <p>
-                    除了自行编写容错逻辑，LangChain 还提供了内置的 <code>OutputFixingParser</code>——
-                    当初始解析失败时，它会<strong>自动将错误信息反馈给 LLM，请求修正输出</strong>。
-                </p>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python / OutputFixingParser 自动修复</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code><span class="code-keyword">from</span> langchain.output_parsers <span class="code-keyword">import</span> OutputFixingParser
-<span class="code-keyword">from</span> langchain_openai <span class="code-keyword">import</span> ChatOpenAI
-
-<span class="code-comment"># 创建一个"修复者" LLM（可以用更便宜的模型来降低成本）</span>
-fixer_llm = ChatOpenAI(model=<span class="code-string">"gpt-4o-mini"</span>, temperature=<span class="code-variable">0</span>)
-
-<span class="code-comment">// 用 OutputFixingParser 包装原始 Parser</span>
-<span class="code-comment">// 当 parse 失败时，它会自动：</span>
-<span class="code-comment">// 1. 捕获 ValidationError 的详细信息</span>
-<span class="code-comment">// 2. 构建一条 fix prompt（包含错误信息和原始输出）</span>
-<span class="code-comment">// 3. 发送给 fixer_llm 请求修正</span>
-<span class="code-comment">// 4. 用修正后的输出重新尝试解析</span>
-fixing_parser = OutputFixingParser.<span class="code-function">from_llm</span>(
-    llm=fixer_llm,
-    parser=parser,  <span class="code-comment"># 你的 PydanticOutputParser</span>
-    max_retries=<span class="code-variable">2</span>   <span class="code-comment"># 最多重试 2 次</span>
-)
-
-<span class="code-comment">// 替换 chain 中的 parser</span>
-chain = prompt_template | llm | fixing_parser
-
-<span class="code-comment">// 现在 chain 会自动处理大部分格式错误！</span>
-<span class="code-comment">// 成功率通常可以从 ~85% 提升到 ~96%+</span></code></pre>
-                </div>
-
-                <div class="highlight-box danger">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        注意事项
-                    </div>
-                    <div class="highlight-box-content">
-                        <strong>OutputFixingParser 会增加延迟和 token 消耗。</strong>每次重试都意味着一次额外的 LLM 调用。<br><br>
-                        &#x25B6; <strong>推荐配置</strong>：fixer_llm 用轻量模型（gpt-4o-mini），max_retries 设为 1~2<br>
-                        &#x25B6; <strong>成本考量</strong>：在高并发场景下，优先用 RobustParser 的本地容错策略（零额外 API 调用）<br>
-                        &#x25B6; <strong>组合策略</strong>：先走 RobustParser 四层策略 → 全部失败后再触发 OutputFixingParser 重试
-                    </div>
-                </div>
-            </div>
-        </article>
-
-        <!-- ═══════════════════════════════════════════════════ -->
-        <!-- SECTION 06: 三种 Parser 对比与选型指南               -->
-        <!-- ═══════════════════════════════════════════════════ -->
-        <article class="section-card accent-bar-teal" id="s6" data-animate>
-            <div class="section-header">
-                <span class="section-number">06</span>
-                <h2 class="section-title">Parser 选型指南与对比矩阵</h2>
-            </div>
-            <div class="section-content">
-                <p>
-                    LangChain 的 Output Parser 体系不止前面介绍的两种。在实际项目中，
-                    <strong>根据场景选择合适的 Parser</strong> 是优化性能和控制成本的关键一步。
-                    下面是完整的对比分析和选型决策树。
-                </p>
-
-                <h3 class="section-subtitle">全系列 Parser 功能对比矩阵</h3>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Parser 类</th>
-                                <th>输入</th>
-                                <th>输出类型</th>
-                                <th>Schema 约束</th>
-                                <th>类型校验</th>
-                                <th>嵌套支持</th>
-                                <th>适用场景</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>StrOutputParser</code></td>
-                                <td>任意文本</td>
-                                <td><code>str</code></td>
-                                <td>&#x2718;</td>
-                                <td>&#x2718;</td>
-                                <td>N/A</td>
-                                <td>纯文本输出、对话场景</td>
-                            </tr>
-                            <tr>
-                                <td><code>JsonOutputParser</code></td>
-                                <td>JSON 文本</td>
-                                <td><code>dict / list</code></td>
-                                <td>基本（通用 Schema）</td>
-                                <td>弱</td>
-                                <td>有限</td>
-                                <td>简单 KV 提取、原型阶段</td>
-                            </tr>
-                            <tr>
-                                <td><code>PydanticOutputParser</code></td>
-                                <td>JSON 文本</td>
-                                <td><code>BaseModel</code></td>
-                                <td><strong>完整（自定义）</strong></td>
-                                <td><strong>强</strong></td>
-                                <td><strong>任意深度</strong></td>
-                                <td><strong>生产级结构化输出</strong></td>
-                            </tr>
-                            <tr>
-                                <td><code>OutputFixingParser</code></td>
-                                <td>任意文本</td>
-                                <td>取决于内层 Parser</td>
-                                <td>继承自内层</td>
-                                <td>继承自内层</td>
-                                <td>继承自内层</td>
-                                <td>需要自动修复错误的场景</td>
-                            </tr>
-                            <tr>
-                                <td><code>RetryOutputParser</code></td>
-                                <td>任意文本</td>
-                                <td>取决于内层 Parser</td>
-                                <td>继承自内层</td>
-                                <td>继承自内层</td>
-                                <td>继承自内层</td>
-                                <td>需要完整重新调用的场景</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3 class="section-subtitle">选型决策树</h3>
-                <div class="highlight-box success">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
-                        快速选型指南
-                    </div>
-                    <div class="highlight-box-content">
-                        <strong>Q1: 需要结构化数据吗？</strong><br>
-                        &#x25B6; 不需要 → <code>StrOutputParser</code><br>
-                        &#x25B6; 需要 → 继续 Q2<br><br>
-                        <strong>Q2: 需要严格的类型约束和字段校验吗？</strong><br>
-                        &#x25B6; 不需要（简单提取）→ <code>JsonOutputParser</code><br>
-                        &#x25B6; 需要（生产环境）→ 继续Q3<br><br>
-                        <strong>Q3: 能容忍偶尔的解析失败吗？</strong><br>
-                        &#x25B6; 能容忍 → <code>PydanticOutputParser</code> + 手动错误处理<br>
-                        &#x25B6; 不能容忍 → <code>PydanticOutputParser</code> + <code>OutputFixingParser</code> 包装<br><br>
-                        <strong>Q4: 解析失败时需要重新走完整 LLM 调用吗？</strong><br>
-                                &#x25B6; 是 → <code>RetryOutputParser</code><br>
-                        &#x25B6; 否（仅需修复格式）→ <code>OutputFixingParser</code>
-                    </div>
-                </div>
-
-                <h3 class="section-subtitle">性能基准参考（基于 GPT-4o-mini 测试）</h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F4CA; JsonOutputParser</div>
-                        <div class="info-item-value">首解析成功率 <strong>~87%</strong><br>平均延迟 +0ms<br>额外 token 消耗 ~200</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F4CA; PydanticOutputParser</div>
-                        <div class="info-item-value">首解析成功率 <strong>~82%</strong><br>平均延迟 +0ms<br>额外 token 消耗 ~400</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F4CA; + OutputFixingParser</div>
-                        <div class="info-item-value">综合成功率 <strong>~96%</strong><br>平均延迟 +1.2s<br>额外 token 消耗 ~800</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">&#x1F4CA; + RobustParser 本地容错</div>
-                        <div class="info-item-value">综合成功率 <strong>~93%</strong><br>平均延迟 +5ms<br>额外 token 消耗 <strong>~0</strong></div>
-                    </div>
-                </div>
-            </div>
-        </article>
-
-        <!-- ═══════════════════════════════════════════════════ -->
-        <!-- SECTION 07: 本集小结与 Checklist                     -->
-        <!-- ═══════════════════════════════════════════════════ -->
-        <article class="section-card" id="s7" data-animate>
-            <div class="section-header">
-                <span class="section-number">07</span>
-                <h2 class="section-title">本集小结 &amp; 自检清单</h2>
+                <h2 class="section-title">本集小结 &amp; 下集预告</h2>
             </div>
             <div class="section-content">
                 <h3 class="section-subtitle">知识要点回顾</h3>
                 <div class="info-grid">
                     <div class="info-item">
-                        <div class="info-item-label">为什么需要 JSON 控制</div>
-                        <div class="info-item-value">解决自由文本的三大致命缺陷：<strong>不可解析 · 不稳定 · 不可集成</strong>。JSON 是 LLM 结构化输出的行业标准格式</div>
+                        <div class="info-item-label">JSON 两种基础结构</div>
+                        <div class="info-item-value">对象 <code>{ }</code>（键值对，对应 dict）+ 数组 <code>[ ]</code>（有序列表，对应 list），支持任意嵌套</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">format_instructions 机制</div>
-                        <div class="info-item-value">Parser 的核心能力来源——自动生成包含 Schema 定义和 Few-Shot 示例的<strong>元指令</strong>，注入 Prompt 约束模型输出</div>
+                        <div class="info-item-label">json.dumps()</div>
+                        <div class="info-item-value">Python 对象 → JSON 字符串。重点参数：<code>ensure_ascii=False</code>（中文不转义）、<code>indent=2</code>（美化输出）</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">PydanticOutputParser 四步法</div>
-                        <div class="info-item-value"><strong>定义 Schema → 创建 Parser → 注入 Prompt → 构建 Pipeline</strong>。声明式编程，定义一次全自动运行</div>
+                        <div class="info-item-label">json.loads() ⭐</div>
+                        <div class="info-item-value">JSON 字符串 → Python 对象。<strong>LLM 应用的核心操作</strong>——解析模型返回的 JSON 字符串为可编程的 dict</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">Schema 设计四大法则</div>
-                        <div class="info-item-value"><strong>Description 即提示词 · Optional 控制灵活性 · Enum 约束范围 · 嵌套 ≤3 层</strong></div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">四层容错防线</div>
-                        <div class="info-item-value">直接解析 → MD 剥离 → 正则提取 → Fallback/Retry。<code>RobustParser</code> 本地容错 + <code>OutputFixingParser</code> LLM 修复</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">Parser 选型心法</div>
-                        <div class="info-item-value">原型用 <code>JsonOutputParser</code>，生产用 <code>PydanticOutputParser</code>，高可靠性要求加 <code>OutputFixingParser</code></div>
+                        <div class="info-item-label">ensure_ascii 参数</div>
+                        <div class="info-item-value"><code>False</code> = 中文原样显示；<code>True</code>（默认）= 转为 Unicode 编码。中文场景必设 <code>False</code></div>
                     </div>
                 </div>
 
-                <h3 class="section-subtitle">JSON 格式控制自检清单</h3>
                 <div class="highlight-box success" style="margin-top: 1.25rem;">
                     <div class="highlight-box-title">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
-                        上线前的 7 项检查
+                        一句话总结
                     </div>
                     <div class="highlight-box-content">
-                        <ul style="list-style:none;padding:0;margin:0;">
-                            <li style="padding:0.35rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;">&#x2610;</code>
-                                &nbsp;是否使用了 OutputParser（而非仅在 Prompt 中用自然语言描述格式要求）？
-                            </li>
-                            <li style="padding:0.35rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;">&#x2610;</code>
-                                &nbsp;是否用 Pydantic BaseModel 定义了完整的 Schema（含字段类型和约束条件）？
-                            </li>
-                            <li style="padding:0.35rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;">&#x2610;</code>
-                                &nbsp;每个 Field 的 description 是否足够具体（包含取值范围、格式示例、边界说明）？
-                            </li>
-                            <li style="padding:0.35rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;">&#x2610;</code>
-                                &nbsp;是否正确区分了必填字段和 Optional 字段（必填 ≤5 个）？
-                            </li>
-                            <li style="padding:0.35rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;">&#x2610;</code>
-                                &nbsp;有限选项的字段是否使用了 Enum 类型进行约束？
-                            </li>
-                            <li style="padding:0.35rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;">&#x2610;</code>
-                                &nbsp;是否有鲁棒的多层错误处理机制（至少覆盖 MD 包裹剥离和 JSON 截断两种情况）？
-                            </li>
-                            <li style="padding:0.35rem 0;">
-                                <code style="background:rgba(85,180,130,0.12);color:var(--success);padding:2px 8px;border-radius:4px;font-size:0.8125rem;">&#x2610;</code>
-                                &nbsp;是否用 ≥10 个测试样本验证了解析成功率和关键字段的提取准确率？
-                            </li>
-                        </ul>
+                        本集学习了 Python <code>json</code> 模块的两大核心方法 <code>dumps()</code> 和 <code>loads()</code>，
+                        以及 <code>ensure_ascii</code> 参数对中文处理的重大影响。
+                        这些看似基础的 JSON 操作，实际上是<strong>让 LLM 输出变得"可用"的关键桥梁</strong>——
+                        没有它们，LLM 返回的只是一段无法被程序消费的自由文本。
                     </div>
                 </div>
 
                 <h3 class="section-subtitle">下集预告</h3>
                 <p>
-                    下一集我们将进入<strong>Chain-of-Thought（思维链）推理</strong>的世界——学习如何引导 LLM 
-                    进行逐步推理、展示思考过程，并将 CoT 与本集学到的 JSON 格式控制技术结合，
-                    解决需要<strong>多步推理才能得出结论</strong>的复杂任务。这是从「提取信息」到「智能分析」的关键跨越~
+                    <strong>下一集 P05：金融文本信息抽取实战</strong>
+                </p>
+                <p>
+                    掌握了 JSON 基础之后，我们将正式进入<strong>实战阶段</strong>。下集将综合运用前面所学：
+                    结合角色设定（P03）、结构化提示词（P02）和本集的 JSON 知识，
+                    完成<strong>从金融新闻文本中自动抽取公司名、金额、时间等关键信息</strong>的完整项目。
+                    核心流程就是：Prompt 引导 LLM 输出 JSON → <code>json.loads()</code> 解析 → 结构化数据入库。
+                    <strong>本集的每一个知识点都将在下集中得到实际应用！</strong>
                 </p>
             </div>
         </article>
@@ -2181,8 +1280,9 @@ chain = prompt_template | llm | fixing_parser
             </a>
         </nav>
         <div class="footer-reference">
-            课程来源：<a href="https://www.bilibili.com/video/BV1yjz5BLEoY" target="_blank">B站视频 BV1yjz5BLEoY</a> &middot;
-            LangChain 官方文档 &middot; P04 对应章节
+            课程来源：<a href="https://dontla.blog.csdn.net/article/details/157872286" target="_blank">CSDN - 提示词工程-04/05: Json数据格式</a> &middot;
+            <a href="https://blog.csdn.net/zql1455890112/article/details/158464453" target="_blank">Json数据格式部分</a> &middot;
+            P04 对应章节
         </div>
     </div>
 </footer>

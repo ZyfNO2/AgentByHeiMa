@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>第03集 - 角色设定与人格塑造 | 提示词工程学习笔记</title>
+    <title>第03集 - 提示词优化案例：金融文本分类任务 | 提示词工程学习笔记</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -710,83 +710,10 @@
             .tweaks-panel { bottom: 1rem; right: 1rem; }
         }
 
-        /* ========== CSS Diagram: Role Playing 概念图 ========== */
-        .diagram-role-playing {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0;
-            padding: 2rem 1rem;
-            background: linear-gradient(135deg, #f8f9fc, #eef1f7);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-            margin: 1.5rem 0;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-        }
-        .rp-node {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-            min-width: 140px;
-            flex-shrink: 0;
-        }
-        .rp-node-icon {
-            width: 56px; height: 56px;
-            border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.6rem;
-            box-shadow: var(--shadow-md);
-            transition: transform 0.2s ease;
-        }
-        .rp-node:hover .rp-node-icon { transform: scale(1.08); }
-        .rp-node-label {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            text-align: center;
-            line-height: 1.3;
-        }
-        .rp-node-sub {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            text-align: center;
-        }
-        .rp-arrow {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: 70px;
-            flex-shrink: 0;
-            padding: 0 0.25rem;
-        }
-        .rp-arrow-line {
-            width: 40px; height: 2px;
-            background: linear-gradient(90deg, var(--primary), var(--teal));
-            border-radius: 1px;
-            position: relative;
-        }
-        .rp-arrow-line::after {
-            content: '';
-            position: absolute;
-            right: -4px; top: -4px;
-            border: 5px solid transparent;
-            border-left-color: var(--teal);
-        }
-        .rp-arrow-text {
-            font-size: 0.65rem;
-            color: var(--primary);
-            font-weight: 600;
-            font-family: 'Space Grotesk', sans-serif;
-            white-space: nowrap;
-            margin-top: 4px;
-        }
-        .rp-icon-llm { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
-        .rp-icon-prompt { background: linear-gradient(135deg, var(--primary), var(--teal)); }
-        .rp-icon-expert { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-page); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
         /* ========== CSS Diagram: 金融文本分类流程图 ========== */
         .diagram-classification {
@@ -995,13 +922,93 @@
             color: var(--success);
         }
 
+        /* ========== 运行结果终端样式 ========== */
+        .terminal-output {
+            background: #1a1d26;
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            margin: 1.25rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.6;
+            color: #abb2bf;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+        .terminal-output .t-prompt { color: #61afef; }
+        .terminal-output .t-success { color: #98c379; }
+        .terminal-output .t-warning { color: #e5c07b; }
+        .terminal-output .t-error { color: #e06c75; }
+        .terminal-output .t-info { color: #56b6c2; }
+        .terminal-output .t-dim { color: #5c6370; }
+        .terminal-line { margin-bottom: 2px; }
+        .terminal-line:last-child { margin-bottom: 0; }
+
+        /* ========== 文本卡片样式 ========== */
+        .text-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0;
+        }
+        .text-card {
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--primary);
+            transition: all 0.2s ease;
+        }
+        .text-card:nth-child(2) { border-left-color: var(--success); }
+        .text-card:nth-child(3) { border-left-color: var(--accent); }
+        .text-card:nth-child(4) { border-left-color: #8b5cf6; }
+        .text-card:hover {
+            border-color: var(--primary);
+            background: rgba(85, 120, 250, 0.03);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        .text-card-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.625rem;
+            padding: 0.2rem 0.625rem;
+            border-radius: 4px;
+        }
+        .text-card:nth-child(1) .text-card-label { background: rgba(59,130,246,0.1); color: #2563eb; }
+        .text-card:nth-child(2) .text-card-label { background: rgba(16,185,129,0.1); color: #059669; }
+        .text-card:nth-child(3) .text-card-label { background: rgba(245,158,11,0.1); color: #d97706; }
+        .text-card:nth-child(4) .text-card-label { background: rgba(139,92,246,0.1); color: #7c3aed; }
+        .text-card-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+        .text-card-answer {
+            margin-top: 0.75rem;
+            padding-top: 0.625rem;
+            border-top: 1px dashed var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            font-weight: 600;
+        }
+        .text-card:nth-child(1) .text-card-answer { color: #2563eb; }
+        .text-card:nth-child(2) .text-card-answer { color: #059669; }
+        .text-card:nth-child(3) .text-card-answer { color: #d97706; }
+        .text-card:nth-child(4) .text-card-answer { color: #7c3aed; }
+
         @media (max-width: 768px) {
-            .diagram-role-playing { flex-direction: column; gap: 0.75rem; }
-            .rp-arrow { transform: rotate(90deg); min-width: 50px; }
             .cf-split-container { gap: 0.35rem; }
             .cf-output-card { min-width: 72px; font-size: 0.68rem; padding: 0.35rem 0.5rem; }
             .arch-layer-3 { flex-direction: column; align-items: center; }
             .arch-layer-3 .arch-box { max-width: 280px; width: 100%; }
+            .text-card-grid { grid-template-columns: 1fr; }
         }
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -1021,8 +1028,8 @@
         <nav class="nav-links">
             <a href="01-提示词工程基础.html" class="nav-link">P01 基础</a>
             <a href="02-结构化提示词.html" class="nav-link">P02 结构化</a>
-            <a href="#s1" class="nav-anchor">&sect;1 角色原理</a>
-            <a href="#s2" class="nav-link active">P03 角色设定</a>
+            <a href="#s1" class="nav-anchor">&sect;1 任务介绍</a>
+            <a href="#" class="nav-link active">P03 金融分类</a>
             <a href="#s3" class="nav-link">P04 Few-Shot</a>
             <a href="#s4" class="nav-link">P05 思维链</a>
         </nav>
@@ -1032,12 +1039,12 @@
 <main class="main-container">
 
     <section class="hero">
-        <div class="hero-badge">P13 / Chapter 03 &middot; Role Playing &amp; Financial Text Classification</div>
+        <div class="hero-badge">P13 / Chapter 03 &middot; Financial Text Classification Task</div>
         <h1 class="hero-title">
-            第03集：<span class="hero-title-accent">角色设定与人格 &amp; 金融文本分类实战</span>
+            第03集：<span class="hero-title-accent">提示词优化案例 — 金融文本分类任务</span>
         </h1>
         <p class="hero-subtitle">
-            深入理解 Role Playing 角色扮演技巧的底层原理，以金融领域四分类任务（新闻报道/公司公告/财务公告/分析师报告）为实战场景，综合运用角色设定 + Few-Shot + 结构化输出完成端到端分类系统构建
+            本集为完整代码实战：从 PPT 任务介绍 → 编写 Prompt → AI 生成代码 → 运行验证。通过金融领域四分类任务（新闻报道/公司公告/财务公告/分析师报告），综合运用 System Prompt 角色设定 + Few-Shot 少样本示例，使用 OpenAI SDK 调用 Qwen3-Max 模型完成端到端文本分类
         </p>
         <div class="hero-meta">
             <span class="meta-tag">
@@ -1046,7 +1053,7 @@
             </span>
             <span class="meta-tag">
                 <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                时长 ~45min
+                时长 ~30min
             </span>
             <span class="meta-tag">
                 <svg class="meta-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
@@ -1057,726 +1064,434 @@
 
     <div class="content-section">
 
-        <!-- ==================== Section 1: Role Playing 原理 ==================== -->
+        <!-- ==================== Section 1: 任务介绍 ==================== -->
         <article class="section-card" id="s1" data-animate>
             <div class="section-header">
                 <span class="section-number">01</span>
-                <h2 class="section-title">Role Playing 角色扮演：原理与机制</h2>
+                <h2 class="section-title">任务介绍：金融文本四分类</h2>
             </div>
             <div class="section-content">
                 <p>
-                    <strong>Role Playing（角色扮演）</strong>是提示词工程中最核心也最有效的技巧之一。
-                    它的核心理念非常直观——通过在 System Prompt 中为模型指定一个明确的「身份」或「角色」，
-                    引导模型激活与该角色相关的知识子空间，从而在特定领域内输出更专业、更准确、更符合预期的内容。
+                    本集的实战任务是：<strong>金融文本分类</strong>。给定一段中文财经相关文本，
+                    让大模型判断它属于以下四个类别中的哪一个：
+                    <code>['新闻报道', '公司公告', '财务公告', '分析师报告']</code>
                 </p>
 
                 <div class="figure-container">
-                    <div class="diagram-role-playing">
-                        <div class="rp-node">
-                            <div class="rp-node-icon rp-icon-llm">🤖</div>
-                            <div class="rp-node-label">通用 LLM</div>
-                            <div class="rp-node-sub">基础大模型</div>
-                        </div>
-                        <div class="rp-arrow">
-                            <div class="rp-arrow-line"></div>
-                            <div class="rp-arrow-text">角色设定 Prompt</div>
-                        </div>
-                        <div class="rp-node">
-                            <div class="rp-node-icon rp-icon-prompt">🎭</div>
-                            <div class="rp-node-label">专家 Persona</div>
-                            <div class="rp-node-sub">身份激活</div>
-                        </div>
-                        <div class="rp-arrow">
-                            <div class="rp-arrow-line"></div>
-                            <div class="rp-arrow-text">领域知识</div>
-                        </div>
-                        <div class="rp-node">
-                            <div class="rp-node-icon rp-icon-expert">💼</div>
-                            <div class="rp-node-label">金融分析师</div>
-                            <div class="rp-node-sub">变身完成 ✓</div>
-                        </div>
-                    </div>
-                    <p class="figure-caption">图 1：Role Playing 核心概念 —— 通过角色设定将通用大模型「变身」为领域专家</p>
+                    <img src="https://aka.doubaocdn.com/s/ApAn1wQgCn" alt="视频PPT截图 - 任务介绍页面1" loading="lazy">
+                    <p class="figure-caption">图 1：视频 PPT 截图 — 任务介绍（来源：B站 BV1yjz5BLEoY P13）</p>
                 </div>
 
-                <h3 class="section-subtitle">为什么角色设定能提升输出质量？</h3>
+                <h3 class="section-subtitle">待分类的 4 段测试文本</h3>
                 <p>
-                    从技术角度来看，角色设定的效果可以从以下几个层面解释：
+                    视频中给出了 4 段来自真实金融场景的文本样本，每段对应一个不同的类别。
+                    这就是我们的「金标数据」（Ground Truth）—— 模型的输出应当与这些预期结果一致：
                 </p>
 
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-item-label">🧠 知识子空间激活</div>
-                        <div class="info-item-value">大模型预训练阶段接触过海量各领域文本。角色指令相当于一个<strong>检索锚点</strong>，让模型的注意力机制优先聚焦于金融/医疗/法律等特定领域的 token 分布和语义模式</div>
+                <div class="text-card-grid">
+                    <div class="text-card">
+                        <div class="text-card-label">&#128240; 文本 #1</div>
+                        <div class="text-card-content">
+                            "今日，央行发布公告宣布降低利率，以刺激经济增长。这一降息举措将影响贷款利率，并在未来几个季度内对金融市场产生影响。"
+                        </div>
+                        <div class="text-card-answer">&#10149; 预期分类：新闻报道</div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-item-label">🎯 输出风格约束</div>
-                        <div class="info-item-value">不同角色的语言风格差异巨大。「资深金融分析师」的输出会自然使用专业术语、严谨的数据分析语气；而「科普博主」则会用更通俗的表达方式</div>
+                    <div class="text-card">
+                        <div class="text-card-label">&#128196; 文本 #2</div>
+                        <div class="text-card-content">
+                            "ABC公司今日发布公告称，已成功完成对XYZ公司股权的收购交易。本次交易是ABC公司在扩大业务范围、加强市场竞争力方面的重要举措。据悉，此次收购将进一步巩固ABC公司在行业中的地位..."
+                        </div>
+                        <div class="text-card-answer">&#10149; 预期分类：公司公告</div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-item-label">📐 推理框架引导</div>
-                        <div class="info-item-value">角色设定隐含了<strong>思维模式</strong>的约束。例如「金融分析师」会自动采用「数据→分析→结论」的推理路径，而非漫无边际的自由联想</div>
+                    <div class="text-card">
+                        <div class="text-card-label">&#128202; 文本 #3</div>
+                        <div class="text-card-content">
+                            "公司资产负债表显示，公司偿债能力强劲，现金流充足，为未来投资和扩张提供了坚实的财务基础。"
+                        </div>
+                        <div class="text-card-answer">&#10149; 预期分类：财务公告</div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-item-label">⚡ 上下文窗口优化</div>
-                        <div class="info-item-value">好的角色设定相当于在上下文窗口中预先填充了高质量的<strong>领域先验</strong>，减少模型需要从零开始「摸索」任务要求的 token 开销</div>
-                    </div>
-                </div>
-
-                <h3 class="section-subtitle">Prompt 工程指南中的六大技巧回顾</h3>
-                <p>
-                    在正式进入实战之前，让我们回顾一下本课程体系中的核心 Prompt 技巧框架。
-                    这些技巧并非孤立使用，而是可以灵活组合——本集的金融分类任务就是<strong>技巧二（角色扮演）+ 技巧五（提供示例/Few-Shot）+ 技巧四（指定步骤）</strong>的经典组合案例：
-                </p>
-
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>技巧编号</th>
-                                <th>技巧名称</th>
-                                <th>核心思想</th>
-                                <th>本集应用</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>技巧一</strong></td>
-                                <td><code>详细的描述</code></td>
-                                <td>清晰表达需求是所有技巧的基础</td>
-                                <td>✅ 分类任务描述精确到4个类别定义</td>
-                            </tr>
-                            <tr>
-                                <td><strong>技巧二</strong></td>
-                                <td><code>充当某个角色</code></td>
-                                <td>指定身份激活领域知识子空间</td>
-                                <td>✅✅ 设定「资深金融分析师」角色（核心）</td>
-                            </tr>
-                            <tr>
-                                <td><strong>技巧三</strong></td>
-                                <td><code>分隔符标明输入</code></td>
-                                <td>用 XML/三引号等划分输入区域</td>
-                                <td>✅ 使用 ### 分隔示例和待分类文本</td>
-                            </tr>
-                            <tr>
-                                <td><strong>技巧四</strong></td>
-                                <td><code>对任务指定步骤</code></td>
-                                <td>拆解复杂任务为可执行流程</td>
-                                <td>✅ 定义「识别→匹配→输出JSON」三步流程</td>
-                            </tr>
-                            <tr>
-                                <td><strong>技巧五</strong></td>
-                                <td><code>提供例子（Few-Shot）</code></td>
-                                <td>给模型展示正确范例降低理解偏差</td>
-                                <td>✅✅ 每类至少1个标注示例（核心）</td>
-                            </tr>
-                            <tr>
-                                <td><strong>技巧六</strong></td>
-                                <td><code>使用参考文本作答</code></td>
-                                <td>提供外部知识源减少幻觉</td>
-                                <td>⭕ 本集暂不涉及（RAG部分后续讲解）</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="highlight-box teal">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                        本天才的核心洞察
-                    </div>
-                    <div class="highlight-box-content">
-                        角色设定的本质是<strong>「注意力重定向」</strong>——它不改变模型的参数，
-                        而是通过精心设计的上下文信号，让模型在推理时优先调用与目标领域相关的知识和推理模式。
-                        一个设计精良的角色 Prompt 可以让基础模型的输出效果媲美经过简单微调的领域专用模型，
-                        这就是为什么提示词工程被称为「无需训练的模型能力增强术」~
+                    <div class="text-card">
+                        <div class="text-card-label">&#128200; 文本 #4</div>
+                        <div class="text-card-content">
+                            "最新的分析报告指出，可再生能源行业预计将在未来几年经历持续增长，投资者应该关注这一领域的投资机会"
+                        </div>
+                        <div class="text-card-answer">&#10149; 预期分类：分析师报告</div>
                     </div>
                 </div>
-            </div>
-        </article>
 
-        <!-- ==================== Section 2: 金融文本分类任务 ==================== -->
-        <article class="section-card accent-bar-success" id="s2" data-animate>
-            <div class="section-header">
-                <span class="section-number">02</span>
-                <h2 class="section-title">实战任务：金融文本四分类系统</h2>
-            </div>
-            <div class="section-content">
-                <p>
-                    本集选取<strong>金融文本分类</strong>作为综合实战场景。
-                    金融领域的文本分类是 NLP 在金融科技（FinTech）中的高价值应用，
-                    广泛覆盖舆情监控、智能投研、合规审查、信息抽取等业务场景。
-                    我们的任务目标是：给定一条中文财经相关文本，将其准确归入以下四个类别之一。
-                </p>
+                <div class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/Lv4E1wQgCn" alt="视频PPT截图 - 任务介绍页面2" loading="lazy">
+                    <p class="figure-caption">图 2：视频 PPT 截图 — 四个类别的定义与区分要点</p>
+                </div>
 
                 <div class="figure-container">
                     <div class="diagram-classification">
-                        <div class="cf-input-box">📄 输入：中文财经文本（待分类）</div>
+                        <div class="cf-input-box">&#128221; 输入：中文财经文本（待分类）</div>
                         <div class="cf-arrow-down"><div class="cf-arrow-down-line"></div></div>
-                        <div class="cf-llm-box">🧠 LLM 推理引擎 <span class="cf-prompt-tag">+ 角色Prompt</span></div>
+                        <div class="cf-llm-box">&#129504; LLM 推理引擎 <span class="cf-prompt-tag">+ System Prompt + Few-Shot</span></div>
                         <div class="cf-arrow-down"><div class="cf-arrow-down-line"></div></div>
                         <div class="cf-split-container">
                             <div class="cf-branch">
                                 <div class="cf-branch-line-v"></div>
                                 <div class="cf-branch-line-h"></div>
-                                <div class="cf-output-card cf-out-news">📰 新闻报道</div>
+                                <div class="cf-output-card cf-out-news">&#128240; 新闻报道</div>
                             </div>
                             <div class="cf-branch">
                                 <div class="cf-branch-line-v"></div>
                                 <div class="cf-branch-line-h"></div>
-                                <div class="cf-output-card cf-out-announce">📋 公司公告</div>
+                                <div class="cf-output-card cf-out-announce">&#128196; 公司公告</div>
                             </div>
                             <div class="cf-branch">
                                 <div class="cf-branch-line-v"></div>
                                 <div class="cf-branch-line-h"></div>
-                                <div class="cf-output-card cf-out-finance">📊 财务公告</div>
+                                <div class="cf-output-card cf-out-finance">&#128202; 财务公告</div>
                             </div>
                             <div class="cf-branch">
                                 <div class="cf-branch-line-v"></div>
                                 <div class="cf-branch-line-h"></div>
-                                <div class="cf-output-card cf-out-analyst">📈 分析师报告</div>
+                                <div class="cf-output-card cf-out-analyst">&#128200; 分析师报告</div>
                             </div>
                         </div>
                     </div>
-                    <p class="figure-caption">图 2：金融文本分类完整处理流水线 —— 从原始文本输入到结构化 JSON 输出的端到端流程</p>
+                    <p class="figure-caption">图 3：金融文本分类处理流程 — 输入文本经 LLM 推理后归入四类之一</p>
                 </div>
-
-                <h3 class="section-subtitle">四分类体系的详细定义</h3>
-                <p>
-                    与通用的宏观/行业/市场/政策四分法不同，本课程采用的是更贴近实际业务场景的分类体系：
-                    <strong>新闻报道、公司公告、财务报告、分析师报告</strong>。
-                    这四个类别对应着金融信息生产链条上的不同环节和不同的写作主体：
-                </p>
-
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>类别</th>
-                                <th>英文标识</th>
-                                <th>发布主体</th>
-                                <th>典型特征</th>
-                                <th>区分关键词</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>新闻报道</strong></td>
-                                <td><code>News Report</code></td>
-                                <td>媒体/记者</td>
-                                <td>第三人称叙述、引用多方观点、时效性强、标题吸引眼球</td>
-                                <td>据XX报道、今日、近日、市场人士认为、消息显示</td>
-                            </tr>
-                            <tr>
-                                <td><strong>公司公告</strong></td>
-                                <td><code>Company Announcement</code></td>
-                                <td>上市公司/企业</td>
-                                <td>第一人称或官方口吻、格式规范（董事会决议/股东大会）、法律效力</td>
-                                <td>本公司、董事会、股东大会、特此公告、关于、通知</td>
-                            </tr>
-                            <tr>
-                                <td><strong>财务公告</strong></td>
-                                <td><code>Financial Report</code></td>
-                                <td>公司/审计机构</td>
-                                <td>密集的数值数据（营收/利润/资产负债表指标）、定期披露</td>
-                                <td>营业收入、净利润、同比增长、EPS、ROE、资产负债率</td>
-                            </tr>
-                            <tr>
-                                <td><strong>分析师报告</strong></td>
-                                <td><code>Analyst Report</code></td>
-                                <td>券商研究所/分析师</td>
-                                <td>投资评级（买入/持有/卖出）、目标价、估值模型、行业深度分析</td>
-                                <td>维持评级、目标价、PE估值、DCF模型、投资建议、盈利预测</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3 class="section-subtitle">分类难点与边界情况</h3>
-                <p>
-                    实际业务中，这四个类别之间并非总是泾渭分明。以下是常见的边界模糊场景及处理策略：
-                </p>
-
-                <ul class="content-list">
-                    <li><strong>公司公告 vs 财务公告</strong>：两者发布主体相同，关键区别在于<strong>内容重心</strong>。如果文本以定性描述为主（如人事变动、股权激励方案），归入公司公告；如果以定量财务数据为核心（如年报摘要、季度业绩快报），归入财务公告。</li>
-                    <li><strong>新闻报道 vs 分析师报告</strong>：新闻是客观报道（即使包含分析师引语），而分析师报告本身带有明确的投资建议和评级判断。判断标准：<strong>是否有独立的投资评级和目标价</strong>。</li>
-                    <li><strong>混合型文本</strong>：一篇报道同时引用了公司公告内容和分析师点评。处理原则——<strong>以主要论述对象和信息来源为准</strong>，若无法判定则选择占比最大的成分。</li>
-                </ul>
 
                 <div class="highlight-box warning">
                     <div class="highlight-box-title">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        注意事项
+                        核心挑战
                     </div>
                     <div class="highlight-box-content">
-                        不同教材/视频教程可能采用略有差异的四分类命名（如宏观经济/行业公司/市场行情/政策法规 vs 新闻报道/公司公告/财务公告/分析师报告）。
-                        分类体系的设计取决于具体业务需求，没有绝对的对错之分。<strong>关键是保持一致性</strong>——一旦确定了分类体系，
-                        所有 Few-Shot 示例和评估标准都必须与之对齐。
+                        这 4 个类别之间并非总是泾渭分明。例如<strong>「公司公告」和「财务公告」</strong>的发布主体相同（都是企业），
+                        区别在于内容重心——定性描述 vs 定量数据。<strong>「新闻报道」和「分析师报告」</strong>也可能互相包含对方的内容。
+                        因此 Prompt 设计的质量直接决定了分类准确率。
                     </div>
                 </div>
             </div>
         </article>
 
-        <!-- ==================== Section 3: 角色 Prompt 设计 ==================== -->
-        <article class="section-card accent-bar-info" id="s3" data-animate>
+        <!-- ==================== Section 2: Prompt 设计（核心） ==================== -->
+        <article class="section-card accent-bar-success" id="s2" data-animate>
             <div class="section-header">
-                <span class="section-number">03</span>
-                <h2 class="section-title">金融分析师角色 Prompt 设计</h2>
+                <span class="section-number">02</span>
+                <h2 class="section-title">Prompt 设计：System Prompt + Few-Shot 示例</h2>
             </div>
             <div class="section-content">
                 <p>
-                    现在我们来设计完整的 System Prompt。一个好的角色 Prompt 应当包含四个核心要素：
-                    <strong>Identity（身份定位）→ Expertise（专业能力）→ Task（任务描述）→ Constraints（行为约束）</strong>。
-                    这四个要素层层递进，共同构成一个完整的角色画像。
+                    这是本集的<strong>核心环节</strong>！视频中强调，对于大模型来说，Prompt 的设计非常重要——
+                    一个明确的 Prompt 能够帮助我们更好地从大模型中获得想要的结果。
+                    在该任务的 Prompt 设计中，主要考虑两点：
                 </p>
 
-                <h3 class="section-subtitle">完整 System Prompt 代码</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">System Prompt — 资深金融分析师角色</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code>system_prompt = <span class="code-string">"""
-## 身份（Identity）
-你是一名拥有 15 年从业经验的**资深金融分析师**，
-曾任职于头部券商研究所（中信/中金/华泰级别），
-擅长宏观经济分析、行业研究和公司基本面分析。
-你对 A 股市场、港股、美股的财经信息有深刻的理解和敏锐的判断力。
+                <ul class="content-list">
+                    <li><strong>需要向模型解释什么叫作「文本分类任务」</strong>——让模型理解这个任务的本质</li>
+                    <li><strong>需要让模型按照我们指定的格式输出</strong>——只输出类别名称，不输出其他内容</li>
+                </ul>
 
-## 专业能力（Expertise）
-- **文本分类**：能够快速准确地将财经文本归类到正确类别
-- **多维度分析**：从发布主体、内容特征、写作风格、数据密度等角度综合判断
-- **边界处理**：对混合型和模糊边界的文本有成熟的判别策略
-- **金融术语**：精通各类金融专业术语和行业黑话
+                <p>
+                    为了让模型知道什么叫做「文本分类」，视频中采用了 <strong>Few-Shot（少样本）</strong> 的方式，
+                    给模型展示一些正确的例子。下面是视频中实际使用的 Prompt 结构：
+                </p>
 
-## 任务（Task）
-你是一个**金融文本四分类器**。对用户输入的中文财经文本，
-准确判断其所属类别并输出结构化结果。
-
-### 分类体系（4 类）
-| 类别 | 英文名 | 定义 |
-|------|--------|------|
-| 新闻报道 | News Report | 媒体发布的第三方财经新闻报道 |
-| 公司公告 | Company Announcement | 企业官方发布的公告性文件 |
-| 财务公告 | Financial Report | 以财务数据和业绩为核心的披露文件 |
-| 分析师报告 | Analyst Report | 券商/研究机构发布的投资研究报告 |
-
-## 行为规范（Constraints）
-1. 必须且仅能从上述 4 个类别中选择 **1 个**最匹配的类别
-2. 若文本涉及多个领域，以**主要论述对象和信息来源**为准
-3. 输出必须为严格的 JSON 格式，不包含任何其他文字
-4. 每条结果附带 confidence（置信度）和 reasoning（分类理由）
-5. confidence 取值范围：高 / 中 / 低
-"""</span></code></pre>
+                <div class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/ycdQ1wQgCn" alt="视频截图 - Prompt设计说明" loading="lazy">
+                    <p class="figure-caption">图 4：视频截图中对 Prompt 设计思路的讲解</p>
                 </div>
 
-                <h3 class="section-subtitle">Prompt 设计要点解析</h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-item-label">📋 具体化身份</div>
-                        <div class="info-item-value">「15年经验」「头部券商」「中信/中金/华泰级别」——越具体的背景描述，模型激活的知识子空间越精准</div>
+                <h3 class="section-subtitle">System Prompt 完整内容</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">System Prompt — 视频中实际使用的 system_prompt</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
-                    <div class="info-item">
-                        <div class="info-item-label">🎯 能力清单</div>
-                        <div class="info-item-value">列出4项专业能力，每项都直接服务于分类任务，避免泛泛而谈的空话</div>
+                    <div class="code-body"><pre><code><span class="code-string">"""你是一个专业的金融文本分类助手。你的任务是对给定的金融文本进行分类。
+
+文本分类任务是指：根据文本的内容和特征，将文本归类到预定义的类别中。
+
+你需要将文本分类到以下4个类别之一：
+- 新闻报道：描述金融市场动态、政策变化、市场波动等新闻性内容
+- 公司公告：公司发布的关于业务活动、收购、合作等公告信息
+- 财务公告：涉及公司财务状况、资产负债表、现金流等财务数据的内容
+- 分析师报告：分析行业趋势、投资机会、市场预测等分析性内容
+
+请严格按照以下格式输出：只输出类别名称，不要输出其他内容。
+
+下面是一些示例："""</span></code></pre>
+                </div>
+
+                <h3 class="section-subtitle">Few-Shot 示例对（视频中实际使用的）</h3>
+                <p>
+                    视频中使用 <strong>2 组 User/Assistant 对话</strong>作为 Few-Shot 示例，
+                    展示给模型看「什么样的输入应该得到什么样的输出」：
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Few-Shot Examples — 2组 user/assistant 对话示例</span>
+                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
-                    <div class="info-item">
-                        <div class="info-item-label">📊 表格化分类体系</div>
-                        <div class="info-item-value">用 Markdown 表格呈现4个类别，比纯文本列表更清晰，模型解析更稳定</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">🔒 行为硬约束</div>
-                        <div class="info-item-value">5条编号规则，涵盖单选限制、边界策略、输出格式、字段要求——消除歧义</div>
-                    </div>
+                    <div class="code-body"><pre><code><span class="code-comment"># FewShot 示例（以 messages 列表形式组织）</span>
+<span class="code-variable">fewshot_examples</span> = [
+    {
+        <span class="code-string">"role"</span>: <span class="code-string">"user"</span>,
+        <span class="code-string">"content"</span>: <span class="code-string">"\"今日,股市经历了一轮震荡,受到宏观经济数据和全球贸易紧张局势的影响。投资者密切关注美联储可能的政策调整,以适应市场的不确定性。\"是['新闻报道','公司公告','财务公告','分析师报告']里的什么类别?"</span>
+    },
+    {
+        <span class="code-string">"role"</span>: <span class="code-string">"assistant"</span>,
+        <span class="code-string">"content"</span>: <span class="code-string">"新闻报道"</span>
+    },
+    {
+        <span class="code-string">"role"</span>: <span class="code-string">"user"</span>,
+        <span class="code-string">"content"</span>: <span class="code-string">"\"本公司年度财务报告显示,去年公司实现了稳步增长的盈利,同时资产负债表呈现强劲的状况。经济环境的稳定和管理层的有效战略执行为公司的健康发展奠定了基础。\"是['新闻报道','公司公告','财务公告','分析师报告']里的什么类别?"</span>
+    },
+    {
+        <span class="code-string">"role"</span>: <span class="code-string">"assistant"</span>,
+        <span class="code-string">"content"</span>: <span class="code-string">"财务公告"</span>
+    }
+]</code></pre>
                 </div>
 
                 <div class="highlight-box success">
                     <div class="highlight-box-title">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
-                        经验法则：角色 Prompt 的「黄金比例」
+                        Prompt 设计要点解析
                     </div>
                     <div class="highlight-box-content">
                         <ul style="list-style:disc;padding-left:1.25rem;margin:0;">
-                            <li style="margin-bottom:0.3rem;"><strong>Identity 占 ~20%</strong>：简短有力，1-3句话建立可信度</li>
-                            <li style="margin-bottom:0.3rem;"><strong>Expertise 占 ~25%</strong>：列举与任务直接相关的技能清单</li>
-                            <li style="margin-bottom:0.3rem;"><strong>Task 占 ~35%</strong>：这是核心！详细定义分类体系和每个类别的含义</li>
-                            <li><strong>Constraints 占 ~20%</strong>：用编号列表给出不可违反的规则</li>
+                            <li style="margin-bottom:0.4rem;"><strong>角色定位</strong>：「你是一个专业的金融文本分类助手」——简洁明了的身份声明</li>
+                            <li style="margin-bottom:0.4rem;"><strong>任务解释</strong>：先定义什么是「文本分类任务」，再列出 4 个类别及每个类的特征描述</li>
+                            <li style="margin-bottom:0.4rem;"><strong>输出约束</strong>：「只输出类别名称，不要输出其他内容」——严格限制输出格式</li>
+                            <li style="margin-bottom:0.4rem;"><strong>Few-Shot 示例</strong>：2 组 user→assistant 对话，覆盖「新闻报道」和「财务公告」两个类别，让模型学会模式</li>
+                            <li><strong>User 提问格式</strong>：每次提问都附带完整类别列表 <code>['新闻报道','公司公告','财务公告','分析师报告']</code>，强化候选范围</li>
                         </ul>
-                        <p style="margin-top:0.75rem;margin-bottom:0;">总长度控制在 300-500 字（中文）为宜，过长会导致关键信息被稀释。</p>
                     </div>
                 </div>
-            </div>
-        </article>
 
-        <!-- ==================== Section 4: Few-Shot 示例设计 ==================== -->
-        <article class="section-card accent-bar-teal" id="s4" data-animate>
-            <div class="section-header">
-                <span class="section-number">04</span>
-                <h2 class="section-title">Few-Shot 少样本示例设计与编排</h2>
-            </div>
-            <div class="section-content">
+                <h3 class="section-subtitle">Prompt 的消息组装结构</h3>
                 <p>
-                    <strong>Few-Shot Learning（少样本学习）</strong>在提示词工程中的含义是：
-                    不更新模型参数，仅通过在 Prompt 中提供少量<strong>输入-输出示例对</strong>，
-                    让模型理解任务的期望行为模式。对于分类任务而言，Few-Shot 的价值尤为突出——
-                    它能让模型从「猜测你的意思」转变为「模仿正确的模式」。
-                </p>
-
-                <h3 class="section-subtitle">Zero-Shot vs Few-Shot 对比实验</h3>
-                <p>
-                    让我们用一个直观的对比来感受 Few-Shot 的威力。假设我们要分类这条文本：
-                </p>
-
-                <div class="highlight-box">
-                    <div class="highlight-box-title">测试文本</div>
-                    <div class="highlight-box-content" style="font-style:italic;">
-                        "比亚迪发布2025年度报告，全年新能源汽车销量突破400万辆，同比增长42%，实现归属于上市公司股东的净利润380亿元，同比增长35%。"
-                    </div>
-                </div>
-
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>方法</th>
-                                <th>Prompt 策略</th>
-                                <th>预期表现</th>
-                                <th>原因分析</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Zero-Shot</strong></td>
-                                <td>仅给出4个类别名称，无任何示例</td>
-                                <td><code style="background:rgba(220,90,80,0.1);color:var(--danger);">不稳定</code></td>
-                                <td>模型只能靠预训练知识的「直觉」猜测，容易混淆公司公告和财务公告</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Few-Shot</strong></td>
-                                <td>每类提供1-2个带理由的示例</td>
-                                <td><code style="background:rgba(85,180,130,0.1);color:var(--success);">稳定准确</code></td>
-                                <td>模型学会了「看数据密度→判断是否为财务公告」的模式</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3 class="section-subtitle">四类别的 Few-Shot 示例集</h3>
-                <p>
-                    下面展示针对我们四分类体系精心设计的 Few-Shot 示例。
-                    每个示例都包含了<strong>输入文本 + 正确标签 + 分类理由</strong>三元组，
-                    理由部分尤为重要——它教会模型「怎么思考」，而不只是「记住答案」。
-                </p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Few-Shot Examples — 金融四分类示例集</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code>few_shot_examples = <span class="code-string">"""
-
-### 示例 1 — 新闻报道
-文本：今日央行发布公告宣布下调存款准备金率0.5个百分点，
-以支持实体经济发展。市场人士普遍认为此次降准将释放长期资金约1万亿元，
-有利于提振市场信心。截至收盘，沪指上涨1.2%。
-分类：新闻报道
-理由：媒体第三方视角叙述，引用"市场人士"观点，具有时效性和新闻叙事特征
-
-### 示例 2 — 公司公告
-文本：本公司董事会及全体董事保证本公告内容不存在任何虚假记载、
-误导性陈述或者重大遗漏，并对其内容的真实性、准确性和完整性承担法律责任。
-经公司股东大会审议通过，聘任张三为公司总经理，任期三年。
-分类：公司公告
-理由：典型的上市公司公告格式，包含"本公司""董事会""保证...真实性"等法定措辞
-
-### 示例 3 — 财务公告
-文本：贵州茅台发布2024年年报，报告期内实现营业收入1505亿元，
-同比增长15.4%；归属于母公司净利润747亿元，同比增长16.2%；
-基本每股收益59.49元。拟向全体股东每10股派发现金红利308.56元（含税）。
-分类：财务公告
-理由：核心内容为密集的财务数据（营收/净利/EPS/分红），属于定期财务信息披露
-
-### 示例 4 — 分析师报告
-文本：【中金公司】宁德时代（300750.SZ）维持"跑赢行业"评级
-目标价上调至280元。考虑到公司在全球动力电池市场的龙头地位稳固，
-海外产能扩张顺利，我们上调2025-2027年EPS预测至12.5/15.2/18.1元。
-当前股价对应2025年PE为18x，具备安全边际，建议积极配置。
-分类：分析师报告
-理由：包含券商署名、投资评级（"跑赢行业"）、目标价、EPS预测和PE估值等典型研报要素
-
-"""</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">Few-Shot 设计的五大原则</h3>
-
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-item-label">📌 原则一：覆盖全类别</div>
-                        <div class="info-item-value">4个类别<strong>每个至少1个示例</strong>，避免某一类缺失导致模型对该类的理解偏差</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">🚫 原则二：包含负例暗示</div>
-                        <div class="info-item-value">通过理由说明某文本<strong>为什么不属于</strong>其他类别（如"虽有数据但非核心→非财务公告"）</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">⚖️ 原则三：平衡分布</div>
-                        <div class="info-item-value">各类示例数量尽量均衡，避免位置偏差（Position Bias）导致某类被过度偏好</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">🧠 原则四：理由驱动</div>
-                        <div class="info-item-value">每个示例必须附<strong>分类理由</strong>，教的是推理过程而非死记硬背</div>
-                    </div>
-                </div>
-
-                <div class="info-grid" style="margin-top: 0;">
-                    <div class="info-item">
-                        <div class="info-item-label">📏 原则五：长度匹配</div>
-                        <div class="info-item-value">示例文本长度应接近真实输入的平均长度，避免分布偏移影响模型判断</div>
-                    </div>
-                </div>
-
-                <div class="highlight-box danger">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y2="9" x2="15" y2="15"/></svg>
-                        常见陷阱：Recency Bias（近因偏差）
-                    </div>
-                    <div class="highlight-box-content">
-                        大模型对 Prompt 中<strong>最后出现的示例赋予更高的权重</strong>（Recency Bias）。
-                        这意味着如果你把「分析师报告」的示例放在最后，模型可能会倾向于将更多文本分类为分析师报告。
-                        <strong>应对策略</strong>：(1) 将最重要的或最容易混淆的类别放在最后；(2)
-                        或者在实际使用中随机打乱示例顺序进行多次投票取多数。
-                    </div>
-                </div>
-            </div>
-        </article>
-
-        <!-- ==================== Section 5: 完整 Prompt 组合 ==================== -->
-        <article class="section-card accent-bar-accent" id="s5" data-animate>
-            <div class="section-header">
-                <span class="section-number">05</span>
-                <h2 class="section-title">完整分类 Prompt 与 Python 实现</h2>
-            </div>
-            <div class="section-content">
-                <p>
-                    将前面设计的 System Prompt（角色设定）与 Few-Shot 示例组合，
-                    再加上输出格式约束，就构成了一个<strong>可直接投入使用的完整分类 Prompt</strong>。
-                    下面同时给出 Prompt 模板和基于 OpenAI 兼容接口调用 Qwen/DeepSeek 模型的 Python 可运行代码。
+                    最终发送给模型的 <code>messages</code> 列表按以下顺序组装：
                 </p>
 
                 <div class="figure-container">
                     <div class="diagram-architecture">
                         <div class="arch-layer arch-layer-1">
-                            <div class="arch-box">📋 Layer 1：System Prompt（角色定义 + 分类体系 + 输出约束）</div>
+                            <div class="arch-box">&#128221; Layer 1：system 角色（分类助手 + 4类定义 + 输出格式）</div>
                         </div>
-                        <div class="arch-connector"><div class="arch-conn-line"></div><div class="arch-conn-label">注入上下文</div></div>
+                        <div class="arch-connector"><div class="arch-conn-line"></div><div class="arch-conn-label">messages[0]</div></div>
                         <div class="arch-layer arch-layer-2">
-                            <div class="arch-box">📚 Layer 2：Few-Shot Examples（4类标注示例 + 分类理由）</div>
+                            <div class="arch-box">&#128214; Layer 2：Few-Shot 示例（2组 user/assistant 对话）</div>
                         </div>
-                        <div class="arch-connector"><div class="arch-conn-line"></div><div class="arch-conn-label">模式学习</div></div>
+                        <div class="arch-connector"><div class="arch-conn-line"></div><div class="arch-conn-label">messages[1~4]</div></div>
                         <div class="arch-layer arch-layer-3">
-                            <div class="arch-box arch-input-box">📝 User Input<br><span style="font-size:0.7rem;opacity:0.8;">待分类文本</span></div>
-                            <div class="arch-box arch-llm-box">🧠 LLM 推理<br><span style="font-size:0.7rem;opacity:0.8;">temperature=0.1</span></div>
+                            <div class="arch-box arch-input-box">&#128172; User Input<br><span style="font-size:0.7rem;opacity:0.8;">待分类文本 + 类别列表</span></div>
+                            <div class="arch-box arch-llm-box">&#129504; qwen3-max<br><span style="font-size:0.7rem;opacity:0.8;">stream=False</span></div>
                         </div>
-                        <div class="arch-connector"><div class="arch-conn-line"></div><div class="arch-conn-label">结构化输出</div></div>
+                        <div class="arch-connector"><div class="arch-conn-line"></div><div class="arch-conn-label">messages[-1] → output</div></div>
                         <div class="arch-output-row">
-                            <span class="arch-output-badge">{ "category": "...", "confidence": "...", "reasoning": "..." }</span>
+                            <span class="arch-output-badge">"新闻报道" / "公司公告" / "财务公告" / "分析师报告"</span>
                         </div>
                     </div>
-                    <p class="figure-caption">图 3：基于 Few-Shot 的金融文本分类器架构 —— System Prompt + Examples + LLM API 三层协作</p>
+                    <p class="figure-caption">图 5：消息组装架构 — system prompt + few-shot examples + user question 三层结构</p>
                 </div>
+            </div>
+        </article>
 
-                <h3 class="section-subtitle">完整 Prompt 模板（最终版）</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Complete Prompt Template</span>
-                        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-body"><pre><code>FINANCIAL_CLASSIFICATION_PROMPT = <span class="code-string">"""
-## 角色
-你是一名拥有15年从业经验的资深金融分析师，曾任职于头部券商研究所，
-擅长对财经文本进行精准的多类别分类。
-
-## 分类体系（4选1）
-| 类别 | 英文 | 判别要点 |
-|------|------|----------|
-| 新闻报道 | News Report | 第三人称媒体叙述，引用多方观点，时效性强 |
-| 公司公告 | Company Announcement | 企业官方发布，含"本公司/董事会/特此公告"等法定措辞 |
-| 财务公告 | Financial Report | 以财务数据为核心（营收/利润/EPS/ROE等），定期披露 |
-| 分析师报告 | Analyst Report | 含投资评级、目标价、估值模型、券商署名 |
-
-## 示例
-
-### [示例 1]
-文本：今日央行宣布降准0.5个百分点，市场人士认为将释放万亿级长期资金...
-分类：新闻报道
-理由：媒体第三方叙述视角，引用"市场人士"观点，具新闻时效性特征
-
-### [示例 2]
-文本：本公司董事会及全体董事保证本公告内容不存在虚假记载...
-聘任张三为公司总经理，任期三年。
-分类：公司公告
-理由：含"本公司""董事会""保证真实性"等上市公司公告法定格式
-
-### [示例 3]
-文本：贵州茅台2024年报：营收1505亿元(+15.4%)，净利747亿元(+16.2%)，
-EPS 59.49元，拟每10股派308.56元。
-分类：财务公告
-理由：全文围绕财务数据展开，含营收/净利润/EPS/分红等核心财务指标
-
-### [示例 4]
-文本：【中金公司】宁德时代维持"跑赢行业"评级，目标价上调至280元，
-上调2025-2027 EPS至12.5/15.2/18.1元，当前PE 18x，建议配置。
-分类：分析师报告
-理由：含券商署名、投资评级、目标价、EPS预测、PE估值等研报标志性元素
-
-## 待分类文本
-{text_to_classify}
-
-## 输出要求
-严格按以下JSON格式输出，不要包含任何其他文字：
-```json
-{{
-  "category": "类别名称",
-  "category_en": "English Name",
-  "confidence": "高/中/低",
-  "reasoning": "一句话说明分类依据"
-}}
-```
-"""</span></code></pre>
-                </div>
-
-                <h3 class="section-subtitle">Python 实现代码（OpenAI 兼容接口）</h3>
+        <!-- ==================== Section 3: 完整代码 ==================== -->
+        <article class="section-card accent-bar-info" id="s3" data-animate>
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2 class="section-title">完整代码：05_Financial_Text_Classification.py</h2>
+            </div>
+            <div class="section-content">
                 <p>
-                    以下代码使用 <code>openai</code> Python SDK，通过阿里云百炼平台调用 <strong>Qwen-Max</strong> 模型执行分类任务。
-                    该代码同样兼容 DeepSeek、智谱 GLM 等支持 OpenAI API 格式的模型服务。
+                    以下是视频中 AI 生成的<strong>原始完整代码</strong>（文件名：<code>05_Financial_Text_Classification.py</code>），
+                    从 CSDN 博客原样复制，未做任何修改。该代码实现了完整的金融文本分类流程：
                 </p>
 
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label">&#128187; 技术栈</div>
+                        <div class="info-item-value">Python + <code>openai</code> SDK + <code>dotenv</code></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#129504; 模型</div>
+                        <div class="info-item-value"><code>qwen3-max</code>（阿里云百炼 DashScope）</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#128203; API 格式</div>
+                        <div class="info-item-value">OpenAI 兼容接口（<code>base_url=dashscope</code>）</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">&#9989; 输出验证</div>
+                        <div class="info-item-value">预期 vs 实际对比 + 一致性检查</div>
+                    </div>
+                </div>
+
                 <div class="code-block">
                     <div class="code-header">
-                        <span class="code-lang">Python — financial_classifier.py</span>
+                        <span class="code-lang">Python — 05_Financial_Text_Classification.py（视频原版代码）</span>
                         <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
                     <div class="code-body"><pre><code><span class="code-keyword">import</span> os
-<span class="code-keyword">import</span> json
 <span class="code-keyword">from</span> dotenv <span class="code-keyword">import</span> load_dotenv
 <span class="code-keyword">from</span> openai <span class="code-keyword">import</span> OpenAI
 
-load_dotenv()
+<span class="code-keyword">def</span> <span class="code-function">main</span>():
+    <span class="code-string">"""
+    金融文本分类任务示例：
+    1. 使用 FewShot 方式向模型展示文本分类任务的示例
+    2. 对4段金融文本进行分类
+    3. 分类类别：['新闻报道','公司公告','财务公告','分析师报告']
+    """</span>
+    <span class="code-comment"># 1. 加载环境变量</span>
+    load_dotenv()
 
-<span class="code-comment"># ========== 配置 ==========
-<span class="code-comment"># 支持任意 OpenAI 兼容接口：Qwen / DeepSeek / GLM 等</span></span>
-client = OpenAI(
-    api_key=os.getenv(<span class="code-string">"DASHSCOPE_API_KEY"</span>, <span class="code-string">"your-api-key-here"</span>),
-    base_url=<span class="code-string">"https://dashscope.aliyuncs.com/compatible-mode/v1"</span>,
-)
+    api_key = os.getenv(<span class="code-string">"API_KEY"</span>)
+    <span class="code-keyword">if</span> not api_key:
+        raise ValueError(<span class="code-string">"未在环境变量或 .env 中找到 API_KEY，请先配置后再运行。"</span>)
 
-MODEL_NAME = <span class="code-string">"qwen-max"</span>  <span class="code-comment"># 或 qwen-plus / deepseek-chat / glm-4 等</span>
-
-<span class="code-comment"># ========== Prompt 模板 ==========
-<span class="code-comment"># （此处为上文 FINANCIAL_CLASSIFICATION_PROMPT 的完整内容，略）</span></span>
-PROMPT_TEMPLATE = <span class="code-string">"""...（同上完整模板）..."""</span>
-
-
-<span class="code-keyword">def</span> <span class="code-function">classify_financial_text</span>(<span class="code-param">text</span>: <span class="code-class">str</span>) -> <span class="code-class">dict</span>:
-    <span class="code-string">"""对单条金融文本执行四分类"""
-</span>
-    prompt = PROMPT_TEMPLATE.format(text_to_classify=text)
-
-    response = client.chat.completions.create(
-        model=MODEL_NAME,
-        messages=[
-            {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, <span class="code-string">"content"</span>: prompt},
-        ],
-        temperature=<span class="code-variable">0.1</span>,       <span class="code-comment"># 分类任务用低温度保证确定性</span>
-        max_tokens=<span class="code-variable">512</span>,
+    <span class="code-comment"># 2. 初始化客户端</span>
+    client = OpenAI(
+        api_key=api_key,
+        base_url=<span class="code-string">"https://dashscope.aliyuncs.com/compatible-mode/v1"</span>,
     )
 
-    result_text = response.choices[<span class="code-variable">0</span>].message.content.strip()
-    <span class="code-comment"># 提取 JSON（处理可能的 markdown 代码块包裹）</span>
-    <span class="code-keyword">if</span> <span class="code-string">"```"</span> <span class="code-keyword">in</span> result_text:
-        json_str = result_text.split(<span class="code-string">"```"</span>)[<span class="code-variable">1</span>]
-        <span class="code-keyword">if</span> json_str.startswith(<span class="code-string">"json"</span>):
-            json_str = json_str[<span class="code-variable">4</span>:]
-        result = json.loads(json_str.strip())
-    <span class="code-keyword">else</span>:
-        result = json.loads(result_text)
+    <span class="code-comment"># 3. 构建 FewShot 示例和任务说明</span>
+    system_prompt = <span class="code-string">"""你是一个专业的金融文本分类助手。你的任务是对给定的金融文本进行分类。
 
-    <span class="code-keyword">return</span> result
+文本分类任务是指：根据文本的内容和特征，将文本归类到预定义的类别中。
 
+你需要将文本分类到以下4个类别之一：
+- 新闻报道：描述金融市场动态、政策变化、市场波动等新闻性内容
+- 公司公告：公司发布的关于业务活动、收购、合作等公告信息
+- 财务公告：涉及公司财务状况、资产负债表、现金流等财务数据的内容
+- 分析师报告：分析行业趋势、投资机会、市场预测等分析性内容
 
-<span class="code-keyword">def</span> <span class="code-function">batch_classify</span>(<span class="code-param">texts</span>: <span class="code-class">list</span>[<span class="code-class">str</span>]) -> <span class="code-class">list</span>[<span class="code-class">dict</span>]:
-    <span class="code-string">"""批量分类多条文本"""
-</span>
+请严格按照以下格式输出：只输出类别名称，不要输出其他内容。
+
+下面是一些示例："""</span>
+
+    <span class="code-comment"># FewShot 示例</span>
+    fewshot_examples = [
+        {
+            <span class="code-string">"role"</span>: <span class="code-string">"user"</span>,
+            <span class="code-string">"content"</span>: <span class="code-string">"\"今日,股市经历了一轮震荡,受到宏观经济数据和全球贸易紧张局势的影响。投资者密切关注美联储可能的政策调整,以适应市场的不确定性。\"是['新闻报道','公司公告','财务公告','分析师报告']里的什么类别?"</span>
+        },
+        {
+            <span class="code-string">"role"</span>: <span class="code-string">"assistant"</span>,
+            <span class="code-string">"content"</span>: <span class="code-string">"新闻报道"</span>
+        },
+        {
+            <span class="code-string">"role"</span>: <span class="code-string">"user"</span>,
+            <span class="code-string">"content"</span>: <span class="code-string">"\"本公司年度财务报告显示,去年公司实现了稳步增长的盈利,同时资产负债表呈现强劲的状况。经济环境的稳定和管理层的有效战略执行为公司的健康发展奠定了基础。\"是['新闻报道','公司公告','财务公告','分析师报告']里的什么类别?"</span>
+        },
+        {
+            <span class="code-string">"role"</span>: <span class="code-string">"assistant"</span>,
+            <span class="code-string">"content"</span>: <span class="code-string">"财务公告"</span>
+        }
+    ]
+
+    <span class="code-comment"># 4. 待分类的文本</span>
+    texts_to_classify = [
+        <span class="code-string">"今日,央行发布公告宣布降低利率,以刺激经济增长。这一降息举措将影响贷款利率,并在未来几个季度内对金融市场产生影响。"</span>,
+        <span class="code-string">"ABC公司今日发布公告称,已成功完成对XYZ公司股权的收购交易。本次交易是ABC公司在扩大业务范围、加强市场竞争力方面的重要举措。据悉,此次收购将进一步巩固ABC公司在行业中的地位,并为未来业务发展提供更广阔的发展空间。详情请见公司官方网站公告栏"</span>,
+        <span class="code-string">"公司资产负债表显示,公司偿债能力强劲,现金流充足,为未来投资和扩张提供了坚实的财务基础。"</span>,
+        <span class="code-string">"最新的分析报告指出,可再生能源行业预计将在未来几年经历持续增长,投资者应该关注这一领域的投资机会"</span>
+    ]
+
+    <span class="code-comment"># 5. 对每段文本进行分类</span>
     results = []
-    <span class="code-keyword">for</span> i, text <span class="code-keyword">in</span> enumerate(texts):
-        <span class="code-keyword">print</span>(f<span class="code-string">"[{i+1}/{len(texts)}] 正在分类..."</span>)
-        result = classify_financial_text(text)
-        results.append(result)
-        <span class="code-keyword">print</span>(f"  → {result[<span class="code-string">'category'</span>]} ({result[<span class="code-string">'confidence'</span>]})")
-    <span class="code-keyword">return</span> results
 
+    <span class="code-keyword">for</span> text <span class="code-keyword">in</span> texts_to_classify:
+        <span class="code-comment"># 构建消息列表</span>
+        messages = [
+            {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, <span class="code-string">"content"</span>: system_prompt},
+            *fewshot_examples,  <span class="code-comment"># 添加 FewShot 示例</span>
+            {
+                <span class="code-string">"role"</span>: <span class="code-string">"user"</span>,
+                <span class="code-string">"content"</span>: f<span class="code-string">"\"{text}\"是['新闻报道','公司公告','财务公告','分析师报告']里的什么类别?"</span>
+            }
+        ]
 
-<span class="code-comment"># ========== 测试数据 ==========
-<span class="code-comment"># 来自真实财经场景的测试样本</span></span>
-test_questions = [
-    <span class="code-string">"今日，央行发布公告宣布降低利率，以刺激经济增长。这一降息举措将影响贷款利率，并在未来几个季度内对金融市场产生影响。"</span>,
-    <span class="code-string">"ABC公司今日发布公告称，已成功完成对XYZ公司股权的收购交易。本次交易总对价为人民币50亿元，资金来源为公司自有资金和银行贷款。"</span>,
-    <span class="code-string">"招商银行公布2025年一季度财报：营业收入892亿元，同比下滑5.2%；净利润289亿元，同比下降3.8%；不良贷款率0.94%，较上年末上升0.02个百分点。"</span>,
-    <span class="code-string">"【中信建投】比亚迪(002594.SZ)深度报告：维持'买入'评级，目标价350元。预计2025-2027年归母净利润分别为480/580/680亿元，当前对应PE仅22x，全球化布局进入收获期。"</span>,
-]
+        <span class="code-comment"># 发送请求</span>
+        completion = client.chat.completions.create(
+            model=<span class="code-string">"qwen3-max"</span>,
+            messages=messages,
+            stream=False,
+        )
 
+        <span class="code-comment"># 获取分类结果</span>
+        classification = completion.choices[<span class="code-variable">0</span>].message.content.strip()
+        results.append(classification)
+
+        print(f<span class="code-string">"文本: {text[:50]}..."</span>)
+        print(f<span class="code-string">"分类结果: {classification}\n"</span>)
+
+    <span class="code-comment"># 6. 输出最终结果列表</span>
+    print(<span class="code-string">"=" * 60)</span>
+    print(<span class="code-string">"最终分类结果:"</span>)
+    print(f<span class="code-string">"{results}"</span>)
+    print(<span class="code-string">"=" * 60)</span>
+
+    <span class="code-comment"># 7. 验证结果是否符合预期</span>
+    expected_results = [<span class="code-string">'新闻报道'</span>, <span class="code-string">'公司公告'</span>, <span class="code-string">'财务公告'</span>, <span class="code-string">'分析师报告'</span>]
+    print(<span class="code-string">"\n预期结果:"</span>, expected_results)
+    print(<span class="code-string">"实际结果:"</span>, results)
+
+    <span class="code-keyword">if</span> results == expected_results:
+        print(<span class="code-string">"✓ 分类结果与预期一致！"</span>)
+    <span class="code-keyword">else</span>:
+        print(<span class="code-string">"⚠ 分类结果与预期不完全一致"</span>)
 
 <span class="code-keyword">if</span> __name__ == <span class="code-string">"__main__"</span>:
-    <span class="code-keyword">print</span>(<span class="code-string">"=" * 60)</span>
-    <span class="code-keyword">print</span>(<span class="code-string">"金融文本分类系统启动"</span>)
-    <span class="code-keyword">print</span>(<span class="code-string">"模型:"</span>, MODEL_NAME)
-    <span class="code-keyword">print</span>(<span class="code-string">"=" * 60)</span>
-
-    results = batch_classify(test_questions)
-
-    <span class="code-keyword">print</span>(<span class="code-string">"\n"</span> + <span class="code-string">"=" * 60)</span>
-    <span class="code-keyword">print</span>(<span class="code-string">"分类结果汇总："</span>)
-    <span class="code-keyword">for</span> i, (q, r) <span class="code-keyword">in</span> enumerate(zip(test_questions, results)):
-        <span class="code-keyword">print</span>(f<span class="code-string">"\n[{i+1}] {q[:40]}..."</span>)
-        <span class="code-keyword">print</span>(f"    分类: {r.get('category', 'N/A')} | 置信度: {r.get('confidence', 'N/A')}"</span>)
-        <span class="code-keyword">print</span>(f"    理由: {r.get('reasoning', 'N/A')}"</span>)</code></pre>
+    main()</code></pre>
                 </div>
 
-                <h3 class="section-subtitle">代码关键参数说明</h3>
+                <h3 class="section-subtitle">代码结构解析</h3>
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>参数</th>
-                                <th>值</th>
-                                <th>作用</th>
-                                <th>调参建议</th>
+                                <th>步骤</th>
+                                <th>代码位置</th>
+                                <th>功能说明</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><code>temperature</code></td>
-                                <td><code>0.1</code></td>
-                                <td>控制输出的随机性/创造性</td>
-                                <td>分类任务用低值(0~0.3)保证确定性；生成任务用高值(0.7~1.0)</td>
+                                <td><strong>Step 1</strong></td>
+                                <td><code>load_dotenv()</code></td>
+                                <td>从 <code>.env</code> 文件加载 <code>API_KEY</code> 环境变量</td>
                             </tr>
                             <tr>
-                                <td><code>model</code></td>
-                                <td><code>qwen-max</code></td>
-                                <td>选择底座大模型</td>
-                                <td>qwen-max(最强) > qwen-plus(性价比) > qwen-turbo(最快)</td>
+                                <td><strong>Step 2</strong></td>
+                                <td><code>OpenAI(client)</code></td>
+                                <td>初始化 OpenAI 兼容客户端，指向阿里云 DashScope</td>
                             </tr>
                             <tr>
-                                <td><code>base_url</code></td>
-                                <td><code>dashscope...</code></td>
-                                <td>API 服务端点</td>
-                                <td>换 DeepSeek 改为 api.deepseek.com，换智谱改 open.bigmodel.cn</td>
+                                <td><strong>Step 3</strong></td>
+                                <td><code>system_prompt</code></td>
+                                <td>定义角色身份 + 4 个类别定义 + 输出格式要求</td>
                             </tr>
                             <tr>
-                                <td><code>max_tokens</code></td>
-                                <td><code>512</code></td>
-                                <td>最大输出 token 数</td>
-                                <td>JSON 输出通常 50-200 tokens 即够，512 留足余量</td>
+                                <td><strong>Step 3+</strong></td>
+                                <td><code>fewshot_examples</code></td>
+                                <td>2 组 user/assistant 对话作为 Few-Shot 示例</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Step 4</strong></td>
+                                <td><code>texts_to_classify</code></td>
+                                <td>4 条待分类的金融文本测试数据</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Step 5</strong></td>
+                                <td><code>for</code> 循环</td>
+                                <td>逐条调用 <code>qwen3-max</code>，打印每条分类结果</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Step 6~7</strong></td>
+                                <td>结果汇总与验证</td>
+                                <td>对比预期结果和实际结果，输出一致性判断</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1784,142 +1499,181 @@ test_questions = [
             </div>
         </article>
 
-        <!-- ==================== Section 6: 结果评估与小节 ==================== -->
-        <article class="section-card" id="s6" data-animate>
+        <!-- ==================== Section 4: 运行结果分析 ==================== -->
+        <article class="section-card accent-bar-accent" id="s4" data-animate>
             <div class="section-header">
-                <span class="section-number">06</span>
-                <h2 class="section-title">分类结果评估 &amp; 本集小结</h2>
+                <span class="section-number">04</span>
+                <h2 class="section-title">运行结果分析</h2>
             </div>
             <div class="section-content">
-
-                <h3 class="section-subtitle">如何评估分类器的效果？</h3>
                 <p>
-                    构建好分类器后，我们需要一套系统的评估方法来衡量其准确性。
-                    对于四分类任务，推荐以下评估流程：
+                    视频中运行了上述代码，终端输出了每条文本的分类结果以及最终的验证结论。
+                    下面展示运行结果的截图和逐条分析：
                 </p>
 
-                <div class="highlight-box success">
-                    <div class="highlight-box-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
-                        四步评估法
-                    </div>
-                    <div class="highlight-box-content">
-                        <ul style="list-style:none;padding:0;margin:0;">
-                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <strong>Step 1 — 准备金标数据集</strong><br>
-                                <span style="color:var(--text-muted);font-size:0.8125rem;">人工标注 30-50 条真实金融文本作为测试集，确保每个类别至少 5-10 条样本</span>
-                            </li>
-                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <strong>Step 2 — 运行批量分类</strong><br>
-                                <span style="color:var(--text-muted);font-size:0.8125rem;">用分类器对所有测试样本逐一打标签，记录每条的 category 和 confidence</span>
-                            </li>
-                            <li style="padding:0.4rem 0;border-bottom:1px solid rgba(85,180,130,0.15);">
-                                <strong>Step 3 — 计算核心指标</strong><br>
-                                <span style="color:var(--text-muted);font-size:0.8125rem;">准确率(Accuracy)=正确数/总数 · 每类精确率(Precision)=TP/(TP+FP) · 每类召回率(Recall)=TP/(TP+FN)</span>
-                            </li>
-                            <li style="padding:0.4rem 0;">
-                                <strong>Step 4 — 分析错误案例</strong><br>
-                                <span style="color:var(--text-muted);font-size:0.8125rem;">重点查看被错误分类的样本，归纳错误模式 → 将典型案例加入 Few-Shot 示例库迭代优化</span>
-                            </li>
-                        </ul>
-                    </div>
+                <div class="figure-container">
+                    <img src="https://aka.doubaocdn.com/s/qzPy1wQgCn" alt="运行结果截图" loading="lazy">
+                    <p class="figure-caption">图 6：视频中的终端运行结果截图（来源：CSDN @dontla 笔记）</p>
                 </div>
 
-                <h3 class="section-subtitle">常见错误类型与优化方向</h3>
+                <h3 class="section-subtitle">终端运行输出还原</h3>
+                <div class="terminal-output">
+                    <div class="terminal-line"><span class="t-dim">文本: 今日,央行发布公告宣布降低利率,以刺激经济增长。这...</span></div>
+                    <div class="terminal-line"><span class="t-info">分类结果: 新闻报道</span></div>
+                    <div class="terminal-line">&nbsp;</div>
+                    <div class="terminal-line"><span class="t-dim">文本: ABC公司今日发布公告称,已成功完成对XYZ公司股权的收...</span></div>
+                    <div class="terminal-line"><span class="t-info">分类结果: 公司公告</span></div>
+                    <div class="terminal-line">&nbsp;</div>
+                    <div class="terminal-line"><span class="t-dim">文本: 公司资产负债表显示,公司偿债能力强劲,现金流充...</span></div>
+                    <div class="terminal-line"><span class="t-info">分类结果: 财务公告</span></div>
+                    <div class="terminal-line">&nbsp;</div>
+                    <div class="terminal-line"><span class="t-dim">文本: 最新的分析报告指出,可再生能源行业预计将在未来几...</span></div>
+                    <div class="terminal-line"><span class="t-info">分类结果: 分析师报告</span></div>
+                    <div class="terminal-line">&nbsp;</div>
+                    <div class="terminal-line"><span class="t-prompt">============================================================</span></div>
+                    <div class="terminal-line"><span class="t-success">最终分类结果:</span></div>
+                    <div class="terminal-line"><span class="t-success">['新闻报道', '公司公告', '财务公告', '分析师报告']</span></div>
+                    <div class="terminal-line"><span class="t-prompt">============================================================</span></div>
+                    <div class="terminal-line">&nbsp;</div>
+                    <div class="terminal-line"><span class="t-info">预期结果: ['新闻报道', '公司公告', '财务公告', '分析师报告']</span></div>
+                    <div class="terminal-line"><span class="t-info">实际结果: ['新闻报道', '公司公告', '财务公告', '分析师报告']</span></div>
+                    <div class="terminal-line">&nbsp;</div>
+                    <div class="terminal-line"><span class="t-success">&#10004; 分类结果与预期一致！</span></div>
+                </div>
+
+                <h3 class="section-subtitle">逐条分类分析</h3>
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>错误类型</th>
-                                <th>典型表现</th>
-                                <th>优化策略</th>
+                                <th>#</th>
+                                <th>文本摘要</th>
+                                <th>关键词特征</th>
+                                <th>模型输出</th>
+                                <th>预期</th>
+                                <th>判定</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>相邻类混淆</strong></td>
-                                <td>公司公告 ↔ 财务公告（两者发布主体相同）</td>
-                                <td>在 Few-Shot 中增加对比示例，强调两者的区分特征</td>
+                                <td><strong>1</strong></td>
+                                <td>央行降息...刺激经济增长</td>
+                                <td><code>央行</code> <code>降息</code> <code>利率</code></td>
+                                <td><code style="color:#2563eb;">新闻报道</code></td>
+                                <td>新闻报道</td>
+                                <td><code style="background:rgba(85,180,130,0.1);color:var(--success);">&#10004; 正确</code></td>
                             </tr>
                             <tr>
-                                <td><strong>混合文本误判</strong></td>
-                                <td>含数据的新闻被归为财务公告</td>
-                                <td>增加「主要论述对象」判断规则的权重</td>
+                                <td><strong>2</strong></td>
+                                <td>ABC公司收购XYZ...公告</td>
+                                <td><code>ABC公司</code> <code>收购</code> <code>公告栏</code></td>
+                                <td><code style="color:#059669;">公司公告</code></td>
+                                <td>公司公告</td>
+                                <td><code style="background:rgba(85,180,130,0.1);color:var(--success);">&#10004; 正确</code></td>
                             </tr>
                             <tr>
-                                <td><strong>JSON 解析失败</strong></td>
-                                <td>模型输出了非 JSON 文本</td>
-                                <td>加强输出格式约束，或在后处理层加 JSON 提取逻辑</td>
+                                <td><strong>3</strong></td>
+                                <td>资产负债表...偿债能力...现金流</td>
+                                <td><code>资产负债表</code> <code>现金流</code> <code>财务基础</code></td>
+                                <td><code style="color:#d97706;">财务公告</code></td>
+                                <td>财务公告</td>
+                                <td><code style="background:rgba(85,180,130,0.1);color:var(--success);">&#10004; 正确</code></td>
                             </tr>
                             <tr>
-                                <td><strong>置信度过高</strong></td>
-                                <td>明显困难的样本仍输出"高"置信度</td>
-                                <td>在 Prompt 中增加置信度校准指导（什么情况应为"中/低"）</td>
+                                <td><strong>4</strong></td>
+                                <td>分析报告...可再生能源...投资机会</td>
+                                <td><code>分析报告</code> <code>增长</code> <code>投资机会</code></td>
+                                <td><code style="color:#7c3aed;">分析师报告</code></td>
+                                <td>分析师报告</td>
+                                <td><code style="background:rgba(85,180,130,0.1);color:var(--success);">&#10004; 正确</code></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <h3 class="section-subtitle">本集知识要点总结</h3>
+                <div class="highlight-box success">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        结果总结
+                    </div>
+                    <div class="highlight-box-content">
+                        <strong>4/4 全部正确！</strong> 准确率 <strong>100%</strong>。
+                        这证明了：<br>
+                        &#8226; System Prompt 中清晰的类别定义有效引导了模型的判断方向<br>
+                        &#8226; 2 组 Few-Shot 示例虽然只覆盖了 2 个类别，但足以让模型泛化到其余 2 个类别<br>
+                        &#8226; <code>qwen3-max</code> 模型在金融文本分类任务上表现出色<br>
+                        &#8226; 「只输出类别名称」的格式约束被严格执行，没有多余文字
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== Section 5: 本集小结 ==================== -->
+        <article class="section-card accent-bar-teal" id="s5" data-animate>
+            <div class="section-header">
+                <span class="section-number">05</span>
+                <h2 class="section-title">本集小结 &amp; 下集预告</h2>
+            </div>
+            <div class="section-content">
+
+                <h3 class="section-subtitle">本集学到了什么？</h3>
                 <div class="info-grid">
                     <div class="info-item">
-                        <div class="info-item-label">🎭 核心技巧</div>
-                        <div class="info-item-value"><strong>Role Playing 角色扮演</strong>——通过 Identity + Expertise + Task + Constraints 四要素构建高质量角色 Prompt</div>
+                        <div class="info-item-label">&#128221; System Prompt 设计</div>
+                        <div class="info-item-value">学会了如何编写<strong>角色设定 + 任务解释 + 类别定义 + 输出格式约束</strong>四位一体的 System Prompt</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">📊 实战场景</div>
-                        <div class="info-item-value"><strong>金融文本四分类</strong>——新闻报道 / 公司公告 / 财务公告 / 分析师报告</div>
+                        <div class="info-item-label">&#128214; Few-Shot 示例构造</div>
+                        <div class="info-item-value">学会了用 <strong>user/assistant 对话对</strong>的形式构造少样本示例，让模型模仿正确的输入输出模式</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">🔑 关键技术</div>
-                        <div class="info-item-value"><strong>Few-Shot 示例驱动</strong>——覆盖全类别 + 理由驱动 + 平衡分布 + 长度匹配 + 注意 Recency Bias</div>
+                        <div class="info-item-label">&#128187; OpenAI SDK 调用</div>
+                        <div class="info-item-value">学会了使用 <code>openai</code> Python SDK 通过兼容接口调用 <strong>qwen3-max</strong> 模型（DashScope）</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-item-label">💻 工程落地</div>
-                        <div class="info-item-value"><strong>OpenAI 兼容接口</strong>——用 python-openai SDK 调用 Qwen/DeepSeek/GLM，temperature=0.1 保证确定性</div>
+                        <div class="info-item-label">&#9989; 结果验证逻辑</div>
+                        <div class="info-item-value">学会了在代码中加入<strong>预期 vs 实际对比</strong>验证逻辑，快速判断分类器效果</div>
                     </div>
                 </div>
 
-                <h3 class="section-subtitle">实践 Checklist</h3>
-                <div class="highlight-box teal" style="margin-top: 1.25rem;">
+                <h3 class="section-subtitle">核心知识回顾</h3>
+                <div class="highlight-box teal">
                     <div class="highlight-box-title">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                        金融分类器自检清单
+                        本集三大收获
                     </div>
                     <div class="highlight-box-content">
                         <ul style="list-style:none;padding:0;margin:0;">
-                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
-                                <code style="background:rgba(80,180,160,0.1);color:var(--teal);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
-                                &nbsp;System Prompt 是否包含 Identity / Expertise / Task / Constraints 四要素？
+                            <li style="padding:0.5rem 0;border-bottom:1px solid rgba(80,180,160,0.15);">
+                                <strong>&#128172; Prompt 设计方法论</strong><br>
+                                <span style="color:var(--text-muted);font-size:0.8125rem;">先解释任务是什么 → 定义候选类别及特征 → 约束输出格式 → 提供 Few-Shot 示例。这个顺序本身就是一种有效的 Prompt 编写范式。</span>
                             </li>
-                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
-                                <code style="background:rgba(80,180,160,0.1);color:var(--teal);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
-                                &nbsp;Four-Shot 示例是否覆盖全部 4 个类别？每个示例是否附带分类理由？
+                            <li style="padding:0.5rem 0;border-bottom:1px solid rgba(80,180,160,0.15);">
+                                <strong>&#128202; Few-Shot 不需要覆盖所有类别</strong><br>
+                                <span style="color:var(--text-muted);font-size:0.8125rem;">本集中仅用了 2 组示例（覆盖「新闻报道」和「财务公告」），但模型成功泛化到了全部 4 个类别。这说明 LLM 的泛化能力很强，Few-Shot 的关键在于<strong>质量而非数量</strong>。</span>
                             </li>
-                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
-                                <code style="background:rgba(80,180,160,0.1);color:var(--teal);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
-                                &nbsp;输出格式是否严格约束为 JSON？是否包含 category / category_en / confidence / reasoning？
-                            </li>
-                            <li style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
-                                <code style="background:rgba(80,180,160,0.1);color:var(--teal);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
-                                &nbsp;API 调用的 temperature 是否设为低值（0~0.3）？是否处理了 JSON 提取的边缘情况？
-                            </li>
-                            <li style="padding:0.3rem 0;">
-                                <code style="background:rgba(80,180,160,0.1);color:var(--teal);padding:2px 6px;border-radius:4px;font-size:0.8125rem;">[ ]</code>
-                                &nbsp;是否用至少 20 条金标数据测试过准确率？是否分析了错误案例并迭代优化了示例库？
+                            <li style="padding:0.5rem 0;">
+                                <strong>&#128187; OpenAI 兼容接口的通用性</strong><br>
+                                <span style="color:var(--text-muted);font-size:0.8125rem;">同一套代码只需修改 <code>base_url</code> 和 <code>api_key</code> 即可切换不同模型服务商（Qwen / DeepSeek / GLM 等），这是目前大模型应用开发的主流模式。</span>
                             </li>
                         </ul>
                     </div>
                 </div>
 
                 <h3 class="section-subtitle">下集预告</h3>
-                <p>
-                    下一集我们将深入探讨 <strong>Few-Shot 少样本学习</strong> 的更多高级技巧——
-                    包括如何动态选择最优示例（Example Selection）、如何利用 Chain-of-Thought 思维链增强分类推理能力、
-                    以及如何在少样本场景下进一步提升模型的表现力。
-                    从「手工编写固定示例」到<strong>「智能动态示例检索」</strong>，
-                    Few-Shot 的进阶玩法值得期待~
-                </p>
+                <div class="highlight-box warning">
+                    <div class="highlight-box-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                        第 04 集：JSON 数据格式输出
+                    </div>
+                    <div class="highlight-box-content">
+                        下一集将继续在金融文本分类的基础上进阶——学习如何让模型输出<strong>结构化的 JSON 数据格式</strong>，
+                        而不仅仅是简单的类别名称字符串。JSON 输出可以让分类结果携带更多信息（如置信度、分类理由等），
+                        更便于程序化处理和系统集成。<br><br>
+                        从 <strong>「只输出类别名」</strong> 到 <strong>「输出结构化 JSON」</strong>，
+                        是提示词工程从「能用」到「好用」的关键一步~
+                    </div>
+                </div>
             </div>
         </article>
 
@@ -1944,8 +1698,9 @@ test_questions = [
         </nav>
         <div class="footer-reference">
             课程来源：<a href="https://www.bilibili.com/video/BV1yjz5BLEoY" target="_blank">B站视频 BV1yjz5BLEoY</a> &middot;
-            P13 起始 &middot;
-            参考：<a href="https://dontla.blog.csdn.net/article/details/157844042" target="_blank">CSDN @dontla 笔记</a>
+            P13 (提示词工程-03) &middot;
+            参考：<a href="https://dontla.blog.csdn.net/article/details/157844042" target="_blank">CSDN @dontla 笔记</a> &middot;
+            <a href="https://blog.csdn.net/zql1455890112/article/details/158464453" target="_blank">CSDN @zql1455890112 笔记</a>
         </div>
     </div>
 </footer>
